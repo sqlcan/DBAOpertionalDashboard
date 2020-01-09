@@ -1,0 +1,752 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2008/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <Body>
+    <ReportItems>
+      <Tablix Name="table1">
+        <TablixBody>
+          <TablixColumns>
+            <TablixColumn>
+              <Width>2.94791in</Width>
+            </TablixColumn>
+            <TablixColumn>
+              <Width>1.76042in</Width>
+            </TablixColumn>
+            <TablixColumn>
+              <Width>2.29167in</Width>
+            </TablixColumn>
+            <TablixColumn>
+              <Width>1in</Width>
+            </TablixColumn>
+          </TablixColumns>
+          <TablixRows>
+            <TablixRow>
+              <Height>0.21in</Height>
+              <TablixCells>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="textbox2">
+                      <CanGrow>true</CanGrow>
+                      <KeepTogether>true</KeepTogether>
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>SQL Version</Value>
+                              <Style>
+                                <FontWeight>Bold</FontWeight>
+                                <Color>White</Color>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                          <Style>
+                            <TextAlign>Left</TextAlign>
+                          </Style>
+                        </Paragraph>
+                      </Paragraphs>
+                      <rd:DefaultName>textbox2</rd:DefaultName>
+                      <Style>
+                        <BackgroundColor>Black</BackgroundColor>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="textbox6">
+                      <CanGrow>true</CanGrow>
+                      <KeepTogether>true</KeepTogether>
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>Build Support End Date</Value>
+                              <Style>
+                                <FontWeight>Bold</FontWeight>
+                                <Color>White</Color>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                          <Style>
+                            <TextAlign>Right</TextAlign>
+                          </Style>
+                        </Paragraph>
+                      </Paragraphs>
+                      <rd:DefaultName>textbox4</rd:DefaultName>
+                      <Style>
+                        <BackgroundColor>Black</BackgroundColor>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="textbox3">
+                      <CanGrow>true</CanGrow>
+                      <KeepTogether>true</KeepTogether>
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>SQL Version Support End Date</Value>
+                              <Style>
+                                <FontWeight>Bold</FontWeight>
+                                <Color>White</Color>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                          <Style>
+                            <TextAlign>Right</TextAlign>
+                          </Style>
+                        </Paragraph>
+                      </Paragraphs>
+                      <rd:DefaultName>textbox3</rd:DefaultName>
+                      <Style>
+                        <BackgroundColor>Black</BackgroundColor>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="textbox5">
+                      <CanGrow>true</CanGrow>
+                      <KeepTogether>true</KeepTogether>
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value># of Instances</Value>
+                              <Style>
+                                <FontWeight>Bold</FontWeight>
+                                <Color>White</Color>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                          <Style>
+                            <TextAlign>Right</TextAlign>
+                          </Style>
+                        </Paragraph>
+                      </Paragraphs>
+                      <rd:DefaultName>textbox5</rd:DefaultName>
+                      <Style>
+                        <BackgroundColor>Black</BackgroundColor>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+              </TablixCells>
+            </TablixRow>
+            <TablixRow>
+              <Height>0.25in</Height>
+              <TablixCells>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="SQLVersion">
+                      <CanGrow>true</CanGrow>
+                      <KeepTogether>true</KeepTogether>
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=Fields!SQLVersion.Value</Value>
+                              <Style>
+                                <TextDecoration>Underline</TextDecoration>
+                                <Color>=IIF(Fields!BuildSupportEndDate.Value &lt;= NOW() AND Fields!SQLVersionSupportEndDate.Value &lt;= NOW(),
+    "LightGrey","DimGray")</Color>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                          <Style>
+                            <TextAlign>Left</TextAlign>
+                          </Style>
+                        </Paragraph>
+                      </Paragraphs>
+                      <rd:DefaultName>SQLVersion</rd:DefaultName>
+                      <ActionInfo>
+                        <Actions>
+                          <Action>
+                            <Drillthrough>
+                              <ReportName>SQLCMDB SQL Instances Summary</ReportName>
+                              <Parameters>
+                                <Parameter Name="SQLServerVersion">
+                                  <Value>=Fields!SQLVersion.Value</Value>
+                                </Parameter>
+                              </Parameters>
+                            </Drillthrough>
+                          </Action>
+                        </Actions>
+                      </ActionInfo>
+                      <Style>
+                        <Border>
+                          <Style>Solid</Style>
+                        </Border>
+                        <BackgroundColor>=IIF(Fields!BuildSupportEndDate.Value &lt;= NOW() AND Fields!SQLVersionSupportEndDate.Value &lt;= NOW(),
+    "Red",
+	IIF(Fields!BuildSupportEndDate.Value &lt;= NOW() AND Fields!SQLVersionSupportEndDate.Value &gt; NOW(),
+	   "Yellow","LimeGreen"))</BackgroundColor>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                    </Textbox>
+                    <rd:Selected>true</rd:Selected>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="BuildSupportEndDate2">
+                      <CanGrow>true</CanGrow>
+                      <KeepTogether>true</KeepTogether>
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=Fields!BuildSupportEndDate.Value</Value>
+                              <Style>
+                                <Format>MMMM dd, yyyy</Format>
+                                <Color>=IIF(Fields!BuildSupportEndDate.Value &lt;= NOW() AND Fields!SQLVersionSupportEndDate.Value &lt;= NOW(),
+    "White","Black")</Color>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                          <Style>
+                            <TextAlign>Right</TextAlign>
+                          </Style>
+                        </Paragraph>
+                      </Paragraphs>
+                      <rd:DefaultName>BuildSupportEndDate</rd:DefaultName>
+                      <Style>
+                        <Border>
+                          <Style>Solid</Style>
+                        </Border>
+                        <BackgroundColor>=IIF(Fields!BuildSupportEndDate.Value &lt;= NOW() AND Fields!SQLVersionSupportEndDate.Value &lt;= NOW(),
+    "Red",
+	IIF(Fields!BuildSupportEndDate.Value &lt;= NOW() AND Fields!SQLVersionSupportEndDate.Value &gt; NOW(),
+	   "Yellow","LimeGreen"))</BackgroundColor>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="SQLVersionSupportEndDate">
+                      <CanGrow>true</CanGrow>
+                      <KeepTogether>true</KeepTogether>
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=Fields!SQLVersionSupportEndDate.Value</Value>
+                              <Style>
+                                <Format>MMMM dd, yyyy</Format>
+                                <Color>=IIF(Fields!BuildSupportEndDate.Value &lt;= NOW() AND Fields!SQLVersionSupportEndDate.Value &lt;= NOW(),
+    "White","Black")</Color>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                          <Style>
+                            <TextAlign>Right</TextAlign>
+                          </Style>
+                        </Paragraph>
+                      </Paragraphs>
+                      <rd:DefaultName>SQLVersionSupportEndDate</rd:DefaultName>
+                      <Style>
+                        <Border>
+                          <Style>Solid</Style>
+                        </Border>
+                        <BackgroundColor>=IIF(Fields!BuildSupportEndDate.Value &lt;= NOW() AND Fields!SQLVersionSupportEndDate.Value &lt;= NOW(),
+    "Red",
+	IIF(Fields!BuildSupportEndDate.Value &lt;= NOW() AND Fields!SQLVersionSupportEndDate.Value &gt; NOW(),
+	   "Yellow","LimeGreen"))</BackgroundColor>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="InstCount">
+                      <CanGrow>true</CanGrow>
+                      <KeepTogether>true</KeepTogether>
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=Fields!InstCount.Value</Value>
+                              <Style>
+                                <Format>#,0;(#,0)</Format>
+                                <Color>=IIF(Fields!BuildSupportEndDate.Value &lt;= NOW() AND Fields!SQLVersionSupportEndDate.Value &lt;= NOW(),
+    "White","Black")</Color>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                          <Style>
+                            <TextAlign>Right</TextAlign>
+                          </Style>
+                        </Paragraph>
+                      </Paragraphs>
+                      <rd:DefaultName>InstCount</rd:DefaultName>
+                      <Style>
+                        <Border>
+                          <Style>Solid</Style>
+                        </Border>
+                        <BackgroundColor>=IIF(Fields!BuildSupportEndDate.Value &lt;= NOW() AND Fields!SQLVersionSupportEndDate.Value &lt;= NOW(),
+    "Red",
+	IIF(Fields!BuildSupportEndDate.Value &lt;= NOW() AND Fields!SQLVersionSupportEndDate.Value &gt; NOW(),
+	   "Yellow","LimeGreen"))</BackgroundColor>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+              </TablixCells>
+            </TablixRow>
+          </TablixRows>
+        </TablixBody>
+        <TablixColumnHierarchy>
+          <TablixMembers>
+            <TablixMember />
+            <TablixMember />
+            <TablixMember />
+            <TablixMember />
+          </TablixMembers>
+        </TablixColumnHierarchy>
+        <TablixRowHierarchy>
+          <TablixMembers>
+            <TablixMember>
+              <KeepWithGroup>After</KeepWithGroup>
+              <RepeatOnNewPage>true</RepeatOnNewPage>
+              <KeepTogether>true</KeepTogether>
+            </TablixMember>
+            <TablixMember>
+              <Group Name="table1_Details_Group">
+                <DataElementName>Detail</DataElementName>
+              </Group>
+              <SortExpressions>
+                <SortExpression>
+                  <Value>=Fields!SortKey.Value</Value>
+                  <Direction>Descending</Direction>
+                </SortExpression>
+              </SortExpressions>
+              <TablixMembers>
+                <TablixMember />
+              </TablixMembers>
+              <DataElementName>Detail_Collection</DataElementName>
+              <DataElementOutput>Output</DataElementOutput>
+              <KeepTogether>true</KeepTogether>
+            </TablixMember>
+          </TablixMembers>
+        </TablixRowHierarchy>
+        <DataSetName>DataSet1</DataSetName>
+        <Top>0.21in</Top>
+        <Height>0.46in</Height>
+        <Width>8in</Width>
+        <Style />
+      </Tablix>
+      <Textbox Name="textbox1">
+        <CanGrow>true</CanGrow>
+        <KeepTogether>true</KeepTogether>
+        <Paragraphs>
+          <Paragraph>
+            <TextRuns>
+              <TextRun>
+                <Value>SQL Server Instance Breakdown by Support Date</Value>
+                <Style>
+                  <FontWeight>Bold</FontWeight>
+                </Style>
+              </TextRun>
+            </TextRuns>
+            <Style>
+              <TextAlign>Center</TextAlign>
+            </Style>
+          </Paragraph>
+        </Paragraphs>
+        <rd:DefaultName>textbox1</rd:DefaultName>
+        <Height>0.21in</Height>
+        <Width>8in</Width>
+        <ZIndex>1</ZIndex>
+        <Style>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+      </Textbox>
+      <Tablix Name="Tablix1">
+        <TablixBody>
+          <TablixColumns>
+            <TablixColumn>
+              <Width>2.65708in</Width>
+            </TablixColumn>
+            <TablixColumn>
+              <Width>2.65708in</Width>
+            </TablixColumn>
+            <TablixColumn>
+              <Width>2.64708in</Width>
+            </TablixColumn>
+          </TablixColumns>
+          <TablixRows>
+            <TablixRow>
+              <Height>0.25in</Height>
+              <TablixCells>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox4">
+                      <CanGrow>true</CanGrow>
+                      <KeepTogether>true</KeepTogether>
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>Fully Supported</Value>
+                              <Style>
+                                <FontWeight>Bold</FontWeight>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                          <Style>
+                            <TextAlign>Center</TextAlign>
+                          </Style>
+                        </Paragraph>
+                      </Paragraphs>
+                      <rd:DefaultName>Textbox4</rd:DefaultName>
+                      <Style>
+                        <Border>
+                          <Color>LightGrey</Color>
+                          <Style>Solid</Style>
+                        </Border>
+                        <BackgroundColor>LimeGreen</BackgroundColor>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox8">
+                      <CanGrow>true</CanGrow>
+                      <KeepTogether>true</KeepTogether>
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>Partially Supported</Value>
+                              <Style>
+                                <FontWeight>Bold</FontWeight>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                          <Style>
+                            <TextAlign>Center</TextAlign>
+                          </Style>
+                        </Paragraph>
+                      </Paragraphs>
+                      <rd:DefaultName>Textbox8</rd:DefaultName>
+                      <Style>
+                        <Border>
+                          <Color>LightGrey</Color>
+                          <Style>Solid</Style>
+                        </Border>
+                        <BackgroundColor>Yellow</BackgroundColor>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox12">
+                      <CanGrow>true</CanGrow>
+                      <KeepTogether>true</KeepTogether>
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>Unsupported</Value>
+                              <Style>
+                                <FontWeight>Bold</FontWeight>
+                                <Color>White</Color>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                          <Style>
+                            <TextAlign>Center</TextAlign>
+                          </Style>
+                        </Paragraph>
+                      </Paragraphs>
+                      <rd:DefaultName>Textbox12</rd:DefaultName>
+                      <Style>
+                        <Border>
+                          <Color>LightGrey</Color>
+                          <Style>Solid</Style>
+                        </Border>
+                        <BackgroundColor>Red</BackgroundColor>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+              </TablixCells>
+            </TablixRow>
+          </TablixRows>
+        </TablixBody>
+        <TablixColumnHierarchy>
+          <TablixMembers>
+            <TablixMember />
+            <TablixMember />
+            <TablixMember />
+          </TablixMembers>
+        </TablixColumnHierarchy>
+        <TablixRowHierarchy>
+          <TablixMembers>
+            <TablixMember />
+          </TablixMembers>
+        </TablixRowHierarchy>
+        <Top>0.81125in</Top>
+        <Left>0.02583in</Left>
+        <Height>0.25in</Height>
+        <Width>7.96124in</Width>
+        <ZIndex>2</ZIndex>
+        <Style>
+          <Border>
+            <Style>None</Style>
+          </Border>
+        </Style>
+      </Tablix>
+    </ReportItems>
+    <Height>1.06125in</Height>
+    <Style />
+  </Body>
+  <Width>8.01207in</Width>
+  <Page>
+    <PageHeader>
+      <Height>0.47917in</Height>
+      <PrintOnFirstPage>true</PrintOnFirstPage>
+      <PrintOnLastPage>true</PrintOnLastPage>
+      <ReportItems>
+        <Textbox Name="Textbox11">
+          <CanGrow>true</CanGrow>
+          <KeepTogether>true</KeepTogether>
+          <Paragraphs>
+            <Paragraph>
+              <TextRuns>
+                <TextRun>
+                  <Value>=Now()</Value>
+                  <Style>
+                    <FontWeight>Bold</FontWeight>
+                    <Format>f</Format>
+                  </Style>
+                </TextRun>
+              </TextRuns>
+              <Style>
+                <TextAlign>Right</TextAlign>
+              </Style>
+            </Paragraph>
+          </Paragraphs>
+          <rd:DefaultName>Textbox10</rd:DefaultName>
+          <Top>0.125in</Top>
+          <Left>4.69791in</Left>
+          <Height>0.23264in</Height>
+          <Width>3.30209in</Width>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+            <PaddingLeft>2pt</PaddingLeft>
+            <PaddingRight>2pt</PaddingRight>
+            <PaddingTop>2pt</PaddingTop>
+            <PaddingBottom>2pt</PaddingBottom>
+          </Style>
+        </Textbox>
+        <Image Name="AHS">
+          <Source>Embedded</Source>
+          <Value>headerLogo</Value>
+          <Height>0.47917in</Height>
+          <Width>1.58333in</Width>
+          <ZIndex>1</ZIndex>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </Image>
+        <Textbox Name="Textbox10">
+          <CanGrow>true</CanGrow>
+          <KeepTogether>true</KeepTogether>
+          <Paragraphs>
+            <Paragraph>
+              <TextRuns>
+                <TextRun>
+                  <Value>SQL Server CMDB Reports</Value>
+                  <Style>
+                    <FontWeight>Bold</FontWeight>
+                  </Style>
+                </TextRun>
+              </TextRuns>
+              <Style>
+                <TextAlign>Right</TextAlign>
+              </Style>
+            </Paragraph>
+          </Paragraphs>
+          <rd:DefaultName>Textbox10</rd:DefaultName>
+          <Left>6.17708in</Left>
+          <Height>0.1875in</Height>
+          <Width>1.82292in</Width>
+          <ZIndex>2</ZIndex>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+            <PaddingLeft>2pt</PaddingLeft>
+            <PaddingRight>2pt</PaddingRight>
+            <PaddingTop>2pt</PaddingTop>
+            <PaddingBottom>2pt</PaddingBottom>
+          </Style>
+        </Textbox>
+      </ReportItems>
+      <Style>
+        <Border>
+          <Style>None</Style>
+        </Border>
+      </Style>
+    </PageHeader>
+    <LeftMargin>1in</LeftMargin>
+    <RightMargin>1in</RightMargin>
+    <TopMargin>1in</TopMargin>
+    <BottomMargin>1in</BottomMargin>
+    <Style />
+  </Page>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="dsMain">
+      <DataSourceReference>dsMain</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>687193ef-d453-4f92-858d-5887e2f12089</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="DataSet1">
+      <Query>
+        <DataSourceName>dsMain</DataSourceName>
+        <CommandText>;with cte AS (
+SELECT   SV.SQLVersion
+	   , SV.SQLVersionSupportEndDate
+	   , SI.SQLInstanceVersionID
+       , (SV.SQLMajorVersion * 100) + SV.SQLMinorVersion AS SQLMajorMinorVersion
+       , (SV.SQLMajorVersion * 1000000) +  (SV.SQLMinorVersion * 10000) + SV.SQLBuild AS SortKey
+     FROM dbo.SQLInstances SI
+     JOIN dbo.Servers S
+       ON SI.ServerID = S.ServerID
+	  AND SI.SQLClusterID IS NULL
+     JOIN dbo.SQLVersions SV
+	   ON SI.SQLInstanceVersionID = SV.SQLVersionID
+WHERE SV.SQLVersion &lt;&gt; 'Unknown'
+
+UNION ALL
+
+SELECT   SV.SQLVersion
+	   , SV.SQLVersionSupportEndDate
+	   , SI.SQLInstanceID
+       , (SV.SQLMajorVersion * 100) + SV.SQLMinorVersion AS SQLMajorMinorVersion
+       , (SV.SQLMajorVersion * 1000000) +  (SV.SQLMinorVersion * 10000) + SV.SQLBuild
+     FROM dbo.SQLInstances SI
+     JOIN dbo.SQLClusters SC
+       ON SI.SQLClusterID = SC.SQLClusterID
+	  AND SI.ServerID IS NULL
+     JOIN dbo.SQLClusterNodes SCN
+       ON SC.SQLClusterID = SCN.SQLClusterID
+	  AND SCN.IsActiveNode = 1
+     JOIN dbo.Servers S
+       ON SCN.SQLNodeID = S.ServerID
+     JOIN dbo.SQLVersions SV
+	   ON SI.SQLInstanceVersionID = SV.SQLVersionID
+WHERE SV.SQLVersion &lt;&gt; 'Unknown'
+),
+cte2 AS (
+SELECT SQLVersion, SQLMajorMinorVersion, SortKey, MAX(SQLVersionSupportEndDate) AS SupportEndDate, COUNT(*) AS InstCount
+ FROM cte
+ GROUP BY SQLVersion, SQLMajorMinorVersion, SortKey),
+cte3 AS (
+SELECT (SV.SQLMajorVersion * 100) + SV.SQLMinorVersion AS SQLMajorMinorVersion, MAX(SQLVersionSupportEndDate) AS SQLVersionSupportEndDate
+  FROM dbo.SQLVersions AS SV
+GROUP BY (SV.SQLMajorVersion * 100) + SV.SQLMinorVersion)
+SELECT cte2.SQLVersion, cte2.InstCount, cte2.SupportEndDate AS BuildSupportEndDate, cte3.SQLVersionSupportEndDate, cte2.SortKey
+  FROM cte2
+  JOIN cte3 
+    ON cte2.SQLMajorMinorVersion = cte3.SQLMajorMinorVersion</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="SQLVersion">
+          <DataField>SQLVersion</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="InstCount">
+          <DataField>InstCount</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="BuildSupportEndDate">
+          <DataField>BuildSupportEndDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="SQLVersionSupportEndDate">
+          <DataField>SQLVersionSupportEndDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="SortKey">
+          <DataField>SortKey</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <EmbeddedImages>
+    <EmbeddedImage Name="headerLogo">
+      <MIMEType>image/gif</MIMEType>
+      <ImageData>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</ImageData>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <Language>en-US</Language>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>f941aeb6-ca0f-4685-9a73-a57ec6353fc4</rd:ReportID>
+</Report>

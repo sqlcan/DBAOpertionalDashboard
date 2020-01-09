@@ -1,0 +1,288 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="dsMain">
+      <rd:DataSourceID>687193ef-d453-4f92-858d-5887e2f12089</rd:DataSourceID>
+      <DataSourceReference>dsMain</DataSourceReference>
+    </DataSource>
+  </DataSources>
+  <rd:ReportID>f941aeb6-ca0f-4685-9a73-a57ec6353fc4</rd:ReportID>
+  <Width>5in</Width>
+  <Body>
+    <Height>0.63in</Height>
+    <ColumnSpacing>0.5in</ColumnSpacing>
+    <ReportItems>
+      <Textbox Name="textbox1">
+        <rd:DefaultName>textbox1</rd:DefaultName>
+        <Value>SQLCMDB Instance Breakdown by Support Date</Value>
+        <Style>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.21in</Height>
+      </Textbox>
+      <Table Name="table1">
+        <Top>0.21in</Top>
+        <Header>
+          <RepeatOnNewPage>true</RepeatOnNewPage>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox2">
+                      <rd:DefaultName>textbox2</rd:DefaultName>
+                      <Value>SQLVersion</Value>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Height>0.21in</Height>
+                      <Width>1in</Width>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox3">
+                      <rd:DefaultName>textbox3</rd:DefaultName>
+                      <Value>SQLVersion Support End Date</Value>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Height>0.21in</Height>
+                      <Width>1in</Width>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox4">
+                      <rd:DefaultName>textbox4</rd:DefaultName>
+                      <Value>Build Support End Date</Value>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Height>0.21in</Height>
+                      <Width>1in</Width>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox5">
+                      <rd:DefaultName>textbox5</rd:DefaultName>
+                      <Value>Inst Count</Value>
+                      <Style>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Height>0.21in</Height>
+                      <Width>1in</Width>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.21in</Height>
+            </TableRow>
+          </TableRows>
+        </Header>
+        <Details>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="SQLVersion">
+                      <rd:DefaultName>SQLVersion</rd:DefaultName>
+                      <Value>=Fields!SQLVersion.Value</Value>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Height>0.21in</Height>
+                      <Width>1in</Width>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="SQLVersionSupportEndDate">
+                      <rd:DefaultName>SQLVersionSupportEndDate</rd:DefaultName>
+                      <Value>=Fields!SQLVersionSupportEndDate.Value</Value>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Height>0.21in</Height>
+                      <Width>1in</Width>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="BuildSupportEndDate">
+                      <rd:DefaultName>BuildSupportEndDate</rd:DefaultName>
+                      <Value>=Fields!BuildSupportEndDate.Value</Value>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Height>0.21in</Height>
+                      <Width>1in</Width>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="InstCount">
+                      <rd:DefaultName>InstCount</rd:DefaultName>
+                      <Value>=Fields!InstCount.Value</Value>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Height>0.21in</Height>
+                      <Width>1in</Width>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.21in</Height>
+            </TableRow>
+          </TableRows>
+        </Details>
+        <TableColumns>
+          <TableColumn>
+            <Width>1in</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>1in</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>1in</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>1in</Width>
+          </TableColumn>
+        </TableColumns>
+        <DataSetName>DataSet1</DataSetName>
+      </Table>
+    </ReportItems>
+  </Body>
+  <Language>en-US</Language>
+  <LeftMargin>1in</LeftMargin>
+  <RightMargin>1in</RightMargin>
+  <TopMargin>1in</TopMargin>
+  <BottomMargin>1in</BottomMargin>
+  <PageWidth>8.5in</PageWidth>
+  <PageHeight>11in</PageHeight>
+  <DataSets>
+    <DataSet Name="DataSet1">
+      <Fields>
+        <Field Name="SQLVersion">
+          <DataField>SQLVersion</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="InstCount">
+          <DataField>InstCount</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="BuildSupportEndDate">
+          <DataField>BuildSupportEndDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="SQLVersionSupportEndDate">
+          <DataField>SQLVersionSupportEndDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="SortKey">
+          <DataField>SortKey</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>dsMain</DataSourceName>
+        <CommandType>Text</CommandType>
+        <CommandText>;with cte AS (
+SELECT   SV.SQLVersion
+	   , SV.SQLVersionSupportEndDate
+	   , SI.SQLInstanceVersionID
+       , (SV.SQLMajorVersion * 100) + SV.SQLMinorVersion AS SQLMajorMinorVersion
+       , (SV.SQLMajorVersion * 1000000) +  (SV.SQLMinorVersion * 10000) + SV.SQLBuild AS SortKey
+     FROM dbo.SQLInstances SI
+     JOIN dbo.Servers S
+       ON SI.ServerID = S.ServerID
+	  AND SI.SQLClusterID IS NULL
+     JOIN dbo.SQLVersions SV
+	   ON SI.SQLInstanceVersionID = SV.SQLVersionID
+WHERE SV.SQLVersion &lt;&gt; 'Unknown'
+
+UNION ALL
+
+SELECT   SV.SQLVersion
+	   , SV.SQLVersionSupportEndDate
+	   , SI.SQLInstanceID
+       , (SV.SQLMajorVersion * 100) + SV.SQLMinorVersion AS SQLMajorMinorVersion
+       , (SV.SQLMajorVersion * 1000000) +  (SV.SQLMinorVersion * 10000) + SV.SQLBuild
+     FROM dbo.SQLInstances SI
+     JOIN dbo.SQLClusters SC
+       ON SI.SQLClusterID = SC.SQLClusterID
+	  AND SI.ServerID IS NULL
+     JOIN dbo.SQLClusterNodes SCN
+       ON SC.SQLClusterID = SCN.SQLClusterID
+	  AND SCN.IsActiveNode = 1
+     JOIN dbo.Servers S
+       ON SCN.SQLNodeID = S.ServerID
+     JOIN dbo.SQLVersions SV
+	   ON SI.SQLInstanceVersionID = SV.SQLVersionID
+WHERE SV.SQLVersion &lt;&gt; 'Unknown'
+),
+cte2 AS (
+SELECT SQLVersion, SQLMajorMinorVersion, SortKey, MAX(SQLVersionSupportEndDate) AS SupportEndDate, COUNT(*) AS InstCount
+ FROM cte
+ GROUP BY SQLVersion, SQLMajorMinorVersion, SortKey),
+cte3 AS (
+SELECT (SV.SQLMajorVersion * 100) + SV.SQLMinorVersion AS SQLMajorMinorVersion, MAX(SQLVersionSupportEndDate) AS SQLVersionSupportEndDate
+  FROM dbo.SQLVersions AS SV
+GROUP BY (SV.SQLMajorVersion * 100) + SV.SQLMinorVersion)
+SELECT cte2.SQLVersion, cte2.InstCount, cte2.SupportEndDate AS BuildSupportEndDate, cte3.SQLVersionSupportEndDate, cte2.SortKey
+  FROM cte2
+  JOIN cte3 
+    ON cte2.SQLMajorMinorVersion = cte3.SQLMajorMinorVersion</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+        <Timeout>0</Timeout>
+      </Query>
+    </DataSet>
+  </DataSets>
+</Report>

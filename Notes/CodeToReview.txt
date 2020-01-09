@@ -1,0 +1,142 @@
+# After all servers have been processed we need to do some house keeping.
+#
+# 1) If its 1st of the month, summarize the results from last month and
+#    save it history table clearning up the main table.
+# 2) If any server has not been accessed in last 30, 60, or 90 days create
+#    proper alerts.
+# 3) If any database has not been accessed in last 30, 60, or 90 days create
+#    proper alerts.
+# 4) If server or db reach 90 days, clearn up related data.
+
+Write-StatusUpdate -Message "Running Archive Process" -Level $Global:OutputLevel_One
+
+# History Cleanup has 3 Phases
+#
+# -- Phase 1 --
+#
+# Clean up all records in the dbo.DiskVolumeSpace table that are older then 32 days.
+# By allowing for data to precist past 31 days we get rich history reference
+# for projecting database and volume growth trends.
+#
+# -- Phase 2 --
+#
+# Only triggered 1st of every month.  Archive data from dbo.DiskVolumeSpace to
+# HIstory.DiskVolumeSpace; store aggregated results for last month.
+#
+# -- Phase 3 --
+#
+# Cleanup the History.DiskVolumeSpace to remove any data that is more then 1 year
+# old.
+
+try
+{
+    $TSQL_Phase1_CleanupOldData = 'DELETE FROM dbo.DiskVolumeSpace
+                                            WHERE DateCaptured <= CAST(DATEADD(Day,-32,GETDATE()) AS DATE)'
+
+    $TSQL_Phase2_ArchiveData = "INSERT INTO History.DiskVolumeSpace (DiskVolumeID, YearMonth, SpaceUsed_mb, TotalSpace_mb)
+                                        SELECT DiskVolumeID, CONVERT(varchar(6),DateCaptured,112), AVG(SpaceUsed_mb), AVG(TotalSpace_mb)
+                                        FROM dbo.DiskVolumeSpace
+                                        WHERE DateCaptured >= CAST(DATEADD(mm,DATEDIFF(mm,0,DATEADD(mm,-1,GETDATE())),0) AS DATE)
+                                        AND DateCaptured <= CAST(DATEADD(dd,-1,DATEADD(mm,DATEDIFF(mm,0,GETDATE()),-1)) AS DATE)
+                                    GROUP BY DiskVolumeID, CONVERT(varchar(6),DateCaptured,112)"
+
+    $TSQL_Phase3_CleanUpArchive = "DELETE FROM History.DiskVolumeSpace
+                                    WHERE YearMonth < CONVERT(VARCHAR(6),DATEADD(MONTH,-61,GETDATE()),112)"
+
+    Write-StatusUpdate -Message "Phase 1: Cleanup Data" -Level $Global:OutputLevel_Two
+    Write-StatusUpdate -Message $TSQL_Phase1_CleanupOldData -Level $Global:OutputLevel_Three -IsTSQL
+
+    Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
+                    -Database $Global:SQLCMDB_DatabaseName `
+                    -Query $TSQL_Phase1_CleanupOldData -ErrorAction Stop
+
+    Write-StatusUpdate "Phase 2: Archive Data" $OUTPUT_LEVEL_TWO
+    $CurrentDate = Get-Date
+    $FirstDayOfMonth = Get-Date -Year $CurrentDate.Year -Month $CurrentDate.Month -Day 1
+    $CurrentDate = $CurrentDate.ToString('yyyyMMdd')
+    $FirstDayOfMonth = $FirstDayOfMonth.ToString('yyyyMMdd')
+
+    if ($CUrrentDate -eq $FirstDayOfMonth)
+    {
+        Write-StatusUpdate -Message "Executing; first of the month"  -Level $Global:OutputLevel_Two
+        Write-StatusUpdate -Message $TSQL_Phase2_ArchiveData -Level $Global:OutputLevel_Three -IsTSQL
+
+        Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
+                        -Database $Global:SQLCMDB_DatabaseName `
+                        -Query $TSQL_Phase2_ArchiveData -ErrorAction Stop
+    }
+    else
+    {
+        Write-StatusUpdate -Message "Skipped; not first of the month." -Level $Global:OutputLevel_Two
+    }
+
+    Write-StatusUpdate -Message "Phase 3: Cleanup Archive Data" -Level $Global:OutputLevel_Two
+    Write-StatusUpdate -Message $TSQL_Phase3_CleanUpArchive -Level $Global:OutputLevel_Three -IsTSQL
+
+    Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
+                    -Database $Global:SQLCMDB_DatabaseName `
+                    -Query $TSQL_Phase3_CleanUpArchive -ErrorAction Stop
+}
+catch
+{
+    Write-StatusUpdate -Message "Archival phase failed. (Unhandled expection)" -Level $Global:OutputLevel_Two -WriteToDB
+    Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -Level $Global:OutputLevel_Seven -WriteToDB
+    Write-Output $Global:Error_FailedToComplete
+}
+
+# Clean up for database space history
+try
+{
+    $TSQL_Phase1_CleanupOldData = 'DELETE FROM dbo.DatabaseSize
+                                            WHERE DateCaptured <= CAST(DATEADD(Day,-32,GETDATE()) AS DATE)'
+
+    $TSQL_Phase2_ArchiveData = "INSERT INTO History.DatabaseSize (DatabaseID, YearMonth, FileType, FileSize_mb)
+                                        SELECT DatabaseID, CONVERT(varchar(6),DateCaptured,112), FileType, AVG(FileSize_mb)
+                                        FROM dbo.DatabaseSize
+                                        WHERE DateCaptured >= CAST(DATEADD(mm,DATEDIFF(mm,0,DATEADD(mm,-1,GETDATE())),0) AS DATE)
+                                        AND DateCaptured <= CAST(DATEADD(dd,-1,DATEADD(mm,DATEDIFF(mm,0,GETDATE()),-1)) AS DATE)
+                                    GROUP BY DatabaseID, CONVERT(varchar(6),DateCaptured,112), FileType"
+
+    $TSQL_Phase3_CleanUpArchive = "DELETE FROM History.DatabaseSize
+                                    WHERE YearMonth < CONVERT(VARCHAR(6),DATEADD(MONTH,-61,GETDATE()),112)"
+
+    Write-StatusUpdate -Message "Phase 1: Cleanup Data" -Level $Global:OutputLevel_Two
+    Write-StatusUpdate -Message $TSQL_Phase1_CleanupOldData -Level $Global:OutputLevel_Three -IsTSQL
+
+    Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
+                    -Database $Global:SQLCMDB_DatabaseName `
+                    -Query $TSQL_Phase1_CleanupOldData -ErrorAction Stop
+
+    Write-StatusUpdate "Phase 2: Archive Data" $OUTPUT_LEVEL_TWO
+    $CurrentDate = Get-Date
+    $FirstDayOfMonth = Get-Date -Year $CurrentDate.Year -Month $CurrentDate.Month -Day 1
+    $CurrentDate = $CurrentDate.ToString('yyyyMMdd')
+    $FirstDayOfMonth = $FirstDayOfMonth.ToString('yyyyMMdd')
+
+    if ($CUrrentDate -eq $FirstDayOfMonth)
+    {
+        Write-StatusUpdate -Message "Executing; first of the month"  -Level $Global:OutputLevel_Two
+        Write-StatusUpdate -Message $TSQL_Phase2_ArchiveData -Level $Global:OutputLevel_Three -IsTSQL
+
+        Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
+                        -Database $Global:SQLCMDB_DatabaseName `
+                        -Query $TSQL_Phase2_ArchiveData -ErrorAction Stop
+    }
+    else
+    {
+        Write-StatusUpdate -Message "Skipped; not first of the month." -Level $Global:OutputLevel_Two
+    }
+
+    Write-StatusUpdate -Message "Phase 3: Cleanup Archive Data" -Level $Global:OutputLevel_Two
+    Write-StatusUpdate -Message $TSQL_Phase3_CleanUpArchive -Level $Global:OutputLevel_Three -IsTSQL
+
+    Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
+                    -Database $Global:SQLCMDB_DatabaseName `
+                    -Query $TSQL_Phase3_CleanUpArchive -ErrorAction Stop
+}
+catch
+{
+    Write-StatusUpdate -Message "Archival phase failed. (Unhandled expection)" -Level $Global:OutputLevel_Two -WriteToDB
+    Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -Level $Global:OutputLevel_Seven -WriteToDB
+    Write-Output $Global:Error_FailedToComplete
+}
