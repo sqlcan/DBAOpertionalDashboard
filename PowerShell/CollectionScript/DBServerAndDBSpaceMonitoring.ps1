@@ -1,81 +1,29 @@
-﻿<# CMS Group IDs - Last Exported on Dec 13, 2016
- 
-Execute CMS.GenerateGroupList in DBA_Resource Database to Get Updated List
- 
-GroupID    GroupName                                                                   IsMonitored
----------- --------------------------------------------------------------------------- -----------
-      2023 DatabaseEngineServerGroup\3DPP                                              0
-      1018 DatabaseEngineServerGroup\3DPP\Express                                      0
-      2022 DatabaseEngineServerGroup\3DPP\Standard                                     0
-      2031 DatabaseEngineServerGroup\AGFA                                              0
-      2045 DatabaseEngineServerGroup\AGFA\No Access                                    0
-      2032 DatabaseEngineServerGroup\AGFA\Prod                                         0
-      2034 DatabaseEngineServerGroup\AGFA\Prod\2000                                    0
-      2035 DatabaseEngineServerGroup\AGFA\Prod\2005                                    0
-      2036 DatabaseEngineServerGroup\AGFA\Prod\2008                                    0
-      2033 DatabaseEngineServerGroup\AGFA\UAT                                          0
-      2038 DatabaseEngineServerGroup\AGFA\UAT\2000                                     0
-      2040 DatabaseEngineServerGroup\AGFA\UAT\2005                                     0
-      2041 DatabaseEngineServerGroup\AGFA\UAT\2008                                     0
-         6 DatabaseEngineServerGroup\Prod                                              0
-         8 DatabaseEngineServerGroup\Prod\2000                                         0
-         9 DatabaseEngineServerGroup\Prod\2005                                         0
-        10 DatabaseEngineServerGroup\Prod\2008                                         0
-        11 DatabaseEngineServerGroup\Prod\2012                                         0
-      2056 DatabaseEngineServerGroup\Prod\2014                                         0
-      2057 DatabaseEngineServerGroup\Prod\2016                                         0
-         7 DatabaseEngineServerGroup\UAT                                               0
-      1012 DatabaseEngineServerGroup\UAT\2000                                          0
-      1013 DatabaseEngineServerGroup\UAT\2005                                          0
-      1014 DatabaseEngineServerGroup\UAT\2008                                          0
-      1015 DatabaseEngineServerGroup\UAT\2012                                          0
-      2055 DatabaseEngineServerGroup\UAT\2014                                          0
-      2058 DatabaseEngineServerGroup\UAT\2016                                          0
-      2030 DatabaseEngineServerGroup\Various                                           0
-      2054 DatabaseEngineServerGroup\Various\AG Listeners                              0
-      2026 DatabaseEngineServerGroup\Various\Aliases                                   0
-      2044 DatabaseEngineServerGroup\Various\Automed - Vendor License                  0
-      2043 DatabaseEngineServerGroup\Various\Deleted Servers                           0
-      2046 DatabaseEngineServerGroup\Various\Express                                   0
-      2047 DatabaseEngineServerGroup\Various\Express\2000                              0
-      2048 DatabaseEngineServerGroup\Various\Express\2005                              0
-      2049 DatabaseEngineServerGroup\Various\Express\2008                              0
-      2050 DatabaseEngineServerGroup\Various\Express\2012                              0
-      2051 DatabaseEngineServerGroup\Various\IBM                                       0
-      2052 DatabaseEngineServerGroup\Various\IBM\2000                                  0
-      2053 DatabaseEngineServerGroup\Various\IBM\2005+                                 0
-      1019 DatabaseEngineServerGroup\Various\Legacy                                    0
-      1010 DatabaseEngineServerGroup\Various\Legacy\Dont Touch 6.5                     0
-      1020 DatabaseEngineServerGroup\Various\Legacy\Prod                               0
-        12 DatabaseEngineServerGroup\Various\Legacy\Prod\7                             0
-      1021 DatabaseEngineServerGroup\Various\Legacy\UAT                                0
-      1011 DatabaseEngineServerGroup\Various\Legacy\UAT\7                              0
-      2025 DatabaseEngineServerGroup\Various\Missing Servers                           0
-      2024 DatabaseEngineServerGroup\Various\New Discovery                             0
-      2019 DatabaseEngineServerGroup\Various\Others                                    0
-      1016 DatabaseEngineServerGroup\Various\Others\DBA_Team_No_Access_Prod            0
-      1017 DatabaseEngineServerGroup\Various\Others\DBA_Team_No_Access_UAT             0
-      2027 DatabaseEngineServerGroup\Various\Veritas Cluster Nodes                     0
+﻿#Import Required Modules for Data Collection
+Import-Module SQLServer -DisableNameChecking
+Import-Module '.\SQLOpsDB\SQLOpsDB.psd1' -DisableNameChecking
 
-#>
-
-#Import Required Modules for Data Collection
-Import-Module SQLPS -DisableNameChecking
-Import-Module 'D:\Scripts\PowerShell\SQLCMDB\SQLCMDB.psd1' -DisableNameChecking
-
+# Before we can utilize the command-lets in SQLOpsDB, it must be initialized.
+if (Initialize-SQLOpsDB -eq $Global:Error_FailedToComplete)
+{
+    Write-Error "Unable to initialize SQLOpsDB.  Cannot continue with collection."
+    return
+}
 
 ## Code Start
 
-Write-StatusUpdate -Message "SQLCMDB - Collection Start" -WriteToDB
+Write-StatusUpdate -Message "SQLOpsDB - Collection Start" -WriteToDB
 
+#region Get Server List
 try
 {
-
     Write-StatusUpdate -Message "Getting list of SQL Instances from CMS Server [$Global:CMS_SQLServerName]."
 
     # Get list of SQL Server Instances from Central Management Server (CMS)
+    #
+    # It is possible to enable selective list of servers to collect based on which CMS groups are enabled
+    # in the Set-CMSGroup command.
+
     $SQLServers = Get-CMSServers
-    #$SQLServers = Get-CMSServers -ServerName 'wssqlb04\testsql2008c'
 }
 catch
 {
@@ -83,8 +31,9 @@ catch
     Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
     return
 }
+#endregion
 
-# Loop through all the SQL Instnaces collected from Central Management Servers (CMS).
+#region Loop through all the SQL Instances collected from Central Management Servers (CMS).
 ForEach ($SQLServerRC in $SQLServers)
 {
 
@@ -1060,6 +1009,7 @@ ForEach ($SQLServerRC in $SQLServers)
     }
 
 }
+#endregion
 
 #Phase 3: Aggregation for Disk Space & Database Space
 Write-StatusUpdate -Message "Phase 3: Aggregation for Disk Space & Database Space"
@@ -1114,6 +1064,6 @@ Write-StatusUpdate -Message "Phase 3: Aggregation for Disk Space & Database Spac
         Truncate-CMDBLog
     }
 
-Write-StatusUpdate "SQLCMDB - Collection End" -WriteToDB
+Write-StatusUpdate "SQLOpsDB - Collection End" -WriteToDB
 
 ## Code End

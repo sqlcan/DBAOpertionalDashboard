@@ -43,7 +43,7 @@ function Write-StatusUpdate
     [Parameter(Position=3, Mandatory=$false)] [switch]$WriteToDB
     )
 
-    $ModuleName = 'Get-CMSServers'
+    $ModuleName = 'Write-StatusUpdate'
     $ModuleVersion = '0.01'
     $ModuleLastUpdated = 'December 13, 2016'
 

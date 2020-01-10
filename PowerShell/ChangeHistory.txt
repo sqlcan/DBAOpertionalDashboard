@@ -1,0 +1,34 @@
+SysOpsDB PowerShell Module Version History
+------------------------------------------
+
+Version Change Guidelines
+* Add/Remove PSM1 File, Change Minor Version. 0.00.xx.0000.
+* Update (New Functionality/Refactor) PSM1 File, Change Minor Version. 0.00.xx.0000.
+* Bug Fix, Change Revision 0.00.00.xxxx.
+
+Date		Version		Author		Comments
+--------------- --------------- --------------- -------------------------------------------------------------------------------
+2020.01.01	3.00.00.0000	Mohit K. Gupta	Re-branded the Toolset from CMDB to SQLOpsDB (SQL Operational Dashboard).
+2020.01.10	3.00.01.0000	Mohit K. Gupta	Introduced new module Initialize-SQLOpsDB.psm1.
+		    3.00.02.0000	Mohit K. Gupta	New dbo.Settings table.
+		    3.00.03.0000	Mohit K. Gupta	New settings names that map to dbo.Settings.
+            3.00.03.0001    Mohit K. Gupta  Fixed bugs in how global settings were being assigned in Initialize-SQLOpsDB.psm1.
+
+
+DBServerAndDBSpaceMonitoring.ps1 Version History
+------------------------------------------------
+
+Date		Version		Author		Comments
+--------------- --------------- --------------- -------------------------------------------------------------------------------
+2015.09.14	V1.01		Mohit K. Gupta	Added additional error handling in DBServerAndDBSpaceMonitoring.ps1 to check
+						for *.extended_properties table before processing the server.
+2015.10.26	V1.02		Mohit K. Gupta  Fixed the bug introduced in V1.03, it would check for extended_properties only
+                                                in sysobjects which does not return any value on SQL Server 2005+.  Therefore
+                                                added additional checks for SQL 2005+.  Also added checks for # of extended 
+                                                Properties.  There should be three core properties in each instance; if these
+                                                are missing, server is skipped and error is logged.
+2015.10.27	V1.03		Mohit K. Gupta	Fixed logic bug in check for extended properties.
+2016.03.21	V1.04		Mohit K. Gupta	Fixed bug in database space calculation.
+2016.06.08	V1.05		Mohit K. Gupta	Added version calculation for SQL 2014 and 2016.
+2017.01.10	V1.06		Mohit K. Gupta	Fixed a bug in date calculation when truncating and cleaning up the data in Phase 3.
+2017.01.24	V1.07		Mohit K. Gupta	Added code to truncate the CMDB Log data.
