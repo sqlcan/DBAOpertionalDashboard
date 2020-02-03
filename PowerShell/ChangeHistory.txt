@@ -13,6 +13,7 @@ Date		Version		Author		Comments
 		    3.00.02.0000	Mohit K. Gupta	New dbo.Settings table.
 		    3.00.03.0000	Mohit K. Gupta	New settings names that map to dbo.Settings.
             3.00.03.0001    Mohit K. Gupta  Fixed bugs in how global settings were being assigned in Initialize-SQLOpsDB.psm1.
+            3.00.03.0002    Mohit K. Gupta  Added additional logging in Initialize-SQLOpsDB and fixed spelling mistake.
 
 
 DBServerAndDBSpaceMonitoring.ps1 Version History

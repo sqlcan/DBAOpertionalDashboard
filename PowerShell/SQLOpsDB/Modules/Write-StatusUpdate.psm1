@@ -18,81 +18,85 @@ Not everything is written to database; this is to allow fo minimal logging.
 Main information defaults to database is server being processed and any errors
 encountered.
 
+.EXAMPLE
+Write-StatusUpdate -Message "This is a test message!"
+Output the message.  This message is only displayed if debug mode is enabled.
+
+.EXAMPLE
+Write-StatusUpdate -Message "This is a test message!" -WriteToDB
+Output the message and write it to the database operational logs.
+
+.EXAMPLE
+Write-StatusUpdate -Message "SELECT * FROM sys.databases" -IsTSQL
+Signals that the message is actually T-SQL code. This message will only output if
+global parameter setting DebugMode_OutputTSQL is enabled.
+
 .INPUTS
 None
 
 .OUTPUTS
-Write-StatusUpdate
+None
 
 .NOTES
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
-2015.08.10 0.01    Inital Development
-2016.12.13 0.02    Removed the level attribute from code; as handling that in the
+2015.08.10 0.00.01 Initial Development
+2016.12.13 0.00.02 Removed the level attribute from code; as handling that in the
                    various modules was adding extra complexity with minimal benefits.
+2020.02.03 0.00.07 Created Parameter Sets for the various combinations.
+                   Updated variable detail to use new JSON connection string property.
+                   Fixed spelling mistakes in output.
+                   Removed all Write-Host messages, used only Write-Output.
+                   Refactor code to clean up some logic statements.
 #>
 
 function Write-StatusUpdate
 {
 
-    [CmdletBinding()] 
+    [CmdletBinding(DefaultParameterSetName='Message')] 
     param( 
-    [Parameter(Position=0, Mandatory=$true)] [string]$Message,
-    [Parameter(Position=1, Mandatory=$false)] [int]$Level=0,   #For Backwards Compatiblity; to be removed serves no purpose.
-    [Parameter(Position=2, Mandatory=$false)] [switch]$IsTSQL,
-    [Parameter(Position=3, Mandatory=$false)] [switch]$WriteToDB
+        [Parameter(ParameterSetName='Message', Mandatory=$true, Position=0)]
+        [Parameter(ParameterSetName='TSQL', Mandatory=$true, Position=0)] 
+        [Parameter(ParameterSetName='WritToDB', Mandatory=$true, Position=0)] [string]$Message,
+        [Parameter(ParameterSetName='TSQL', Mandatory=$true, Position=1)] [switch]$IsTSQL,
+        [Parameter(ParameterSetName='WritToDB', Mandatory=$true, Position=1)] [switch]$WriteToDB
     )
 
     $ModuleName = 'Write-StatusUpdate'
-    $ModuleVersion = '0.01'
-    $ModuleLastUpdated = 'December 13, 2016'
+    $ModuleVersion = '0.07'
+    $ModuleLastUpdated = 'February 3, 2020'
 
     try
     {
+        # Only if debug mode is enabled, output to screen.
         if ($Global:DebugMode)
         {
-
-    
             if ((!($IsTSQL)) -or
                 (($IsTSQL) -and ($Global:DebugMode_OutputTSQL)))
             {
-
-                if (($host.Name -eq "ConsoleHost") -or ($host.Name -eq "Windows PowerShell ISE Host"))
-	            {
-                    Write-Host "$Message"
-                }
-                else
-                {
-                    Write-Output "$Message"
-                }
+                    Write-Output $Message
             }
         }
 
-        if ($WriteToDB)
+        # Write to database if message has been flagged by module.  
+        # Write will only take place if user requested logging.
+
+        if (($WriteToDB) -and ($Global:SQLOpsDB_Log_Enabled))
         {
             $Message = $Message.Replace("'","''")
 
             $TSQL = "
             INSERT INTO dbo.Logs (DateTimeCaptured, Description)
-                 VALUES (GetDate(), '$Message')"
+                VALUES (GetDate(), '$Message')"
 
-
-            Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                            -Database $Global:SQLCMDB_DatabaseName `
+            Invoke-SQLCMD -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                            -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
                             -Query $TSQL -ErrorAction Stop
         }
     }
     catch
     {
-        if (($host.Name -eq "ConsoleHost") -or ($host.Name -eq "Windows PowerShell ISE Host"))
-	    {
-            Write-Host "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Expection"
-            Write-Host "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)"
-        }
-        else
-        {
-            Write-Output "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Expection"
-            Write-Output "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)"
-        }
+        Write-Output "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Exception"
+        Write-Output "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)"
     }
 }

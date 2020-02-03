@@ -25,6 +25,8 @@ Date       Version Comments
                    If settings are not loaded, then it will use default settings in
                    GlobalSettings.psm1.
 2020.01.10 0.00.02 Fixed bug in how global variables are assigned.
+2020.02.03 0.00.04 Added some additional logging in event, invalid range values are supplied.
+                   Fixed spelling mistake in output message.
 #>
 function Initialize-SQLOpsDB
 {
@@ -32,8 +34,8 @@ function Initialize-SQLOpsDB
     param()
 
     $ModuleName = 'Initialize-SQLOpsDB'
-    $ModuleVersion = '0.01'
-    $ModuleLastUpdated = 'January 9, 2020'
+    $ModuleVersion = '0.04'
+    $ModuleLastUpdated = 'February 3, 2020'
 
     try
     {
@@ -100,32 +102,37 @@ function Initialize-SQLOpsDB
 
         if (($Global:SQLOpsDB_Logs_CleanUp_Retention_Days -le 29) -or ($Global:SQLOpsDB_Logs_CleanUp_Retention_Days -ge 181))
         {
+            Write-StatusUpdate -Message "SQLOpsDB_Logs_CleanUp_Retention_Days threshold out of valid range (30 - 180) days. Defaulting to 30." -WriteToDB
             $Global:SQLOpsDB_Logs_CleanUp_Retention_Days = 30
         }
         
         if (($Global:Expired_Objects_CleanUp_Retention_Days -le 89) -or ($Global:Expired_Objects_CleanUp_Retention_Days -ge 121))
         {
+            Write-StatusUpdate -Message "Expired_Objects_CleanUp_Retention_Days threshold out of valid range (90 - 120) days. Defaulting to 90." -WriteToDB
             $Global:Expired_Objects_CleanUp_Retention_Days = 90
         }
 
         if (($Global:Trend_Creation_CleanUp_Retention_Months -le 11) -or ($Global:Trend_Creation_CleanUp_Retention_Months -ge 61))
         {
+            Write-StatusUpdate -Message "Trend_Creation_CleanUp_Retention_Months threshold out of valid range (12 - 60) months. Defaulting to 12." -WriteToDB
             $Global:Trend_Creation_CleanUp_Retention_Months = 12
         }
 
         if (($Global:Aggregate_CleanUp_Retention_Months -le 11) -or ($Global:Aggregate_CleanUp_Retention_Months -ge 61))
         {
+            Write-StatusUpdate -Message "Aggregate_CleanUp_Retention_Months threshold out of valid range (12 - 60) months. Defaulting to 12." -WriteToDB
             $Global:Aggregate_CleanUp_Retention_Months = 12
         }
 
         if (($Global:RawData_CleanUp_Retention_Days -le 30) -or ($Global:RawData_CleanUp_Retention_Days -ge 63))
         {
+            Write-StatusUpdate -Message "RawData_CleanUp_Retention_Days threshold out of valid range (31 - 62) days. Defaulting to 31." -WriteToDB
             $Global:RawData_CleanUp_Retention_Days = 31
         }
     }
     catch
     {
-        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Expectation" -WriteToDB
+        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Exception" -WriteToDB
         Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
         Write-Output $Global:Error_FailedToComplete
     }
