@@ -27,6 +27,11 @@ Date       Version Comments
 2020.01.10 0.00.02 Fixed bug in how global variables are assigned.
 2020.02.03 0.00.04 Added some additional logging in event, invalid range values are supplied.
                    Fixed spelling mistake in output message.
+2020.02.04 0.00.06 The module will be called by every other module.  But it will only execute
+                   on the first run.
+                   I cannot use Write-StatusUpdate in this module, as it uses variables in 
+                   this module to work.  I will replace Write-StatusUpdate with Write-Verbose
+                   to support debugging in future.
 #>
 function Initialize-SQLOpsDB
 {
@@ -34,24 +39,30 @@ function Initialize-SQLOpsDB
     param()
 
     $ModuleName = 'Initialize-SQLOpsDB'
-    $ModuleVersion = '0.04'
-    $ModuleLastUpdated = 'February 3, 2020'
+    $ModuleVersion = '0.06'
+    $ModuleLastUpdated = 'February 4, 2020'
+
+    # Only initialize module if it is first execution.
+    if ($Global:SQLOpsDBInitialized)
+    {
+        Write-Output $Global:Error_Successful 
+        return
+    }
 
     try
     {
-        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
+        Write-Verbose "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
         #Load the settings file.
         $JSONFileToLoad = Join-path (Split-Path $PSCommandPath -Parent) $Global:JSONSettingsFile
-        Write-Output $JSonFileToLoad
         $Global:SQLOpsDBConnections = (Get-Content $JSONFileToLoad | ConvertFrom-Json)
 
-        Write-StatusUpdate -Message $("SQLOpsDB Connect Settings (SQL: {0} Database: {1})" -f $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance, $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database)
-        Write-StatusUpdate -Message $("CMS Connect Settings (SQL: {0} Database: {1})" -f $Global:SQLOpsDBConnections.Connections.CMSServer.SQLInstance, $Global:SQLOpsDBConnections.Connections.CMSServer.Database)
+        Write-Verbose $("SQLOpsDB Connect Settings (SQL: {0} Database: {1})" -f $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance, $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database)
+        Write-Verbose $("CMS Connect Settings (SQL: {0} Database: {1})" -f $Global:SQLOpsDBConnections.Connections.CMSServer.SQLInstance, $Global:SQLOpsDBConnections.Connections.CMSServer.Database)
 
         #Test connections.
         $TSQL = 'SELECT @@ServerName'
-        Write-StatusUpdate -Message $TSQL -IsTSQL
+        Write-Verbose $TSQL
         $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.CMSServer.SQLInstance `
                                     -Database $Global:SQLOpsDBConnections.Connections.CMSServer.Database `
                                     -Query $TSQL
@@ -59,7 +70,7 @@ function Initialize-SQLOpsDB
         # We don't care about results from CMS server, we are just confirming connectivity.
 
         $TSQL = 'SELECT * FROM dbo.Setting'
-        Write-StatusUpdate -Message $TSQL -IsTSQL
+        Write-Verbose $TSQL
         $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
                             -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
                             -Query $TSQL
@@ -94,15 +105,16 @@ function Initialize-SQLOpsDB
             }
         }
         else {
-            $Global:SQLOpsDBInitialized = $true 
-            Write-StatusUpdate -Message "Failed to load settings from dbo.Setting.  Using default settings." -WriteToDB
+            $Global:SQLOpsDBInitialized = $false 
+            Write-Verbose "Failed to load settings from dbo.Setting.  Using default settings." -WriteToDB
+            Write-Output $Global:Error_FailedToComplete
         }
 
         # Validate the range of all the settings.
 
         if (($Global:SQLOpsDB_Logs_CleanUp_Retention_Days -le 29) -or ($Global:SQLOpsDB_Logs_CleanUp_Retention_Days -ge 181))
         {
-            Write-StatusUpdate -Message "SQLOpsDB_Logs_CleanUp_Retention_Days threshold out of valid range (30 - 180) days. Defaulting to 30." -WriteToDB
+            WWrite-StatusUpdate -Message "SQLOpsDB_Logs_CleanUp_Retention_Days threshold out of valid range (30 - 180) days. Defaulting to 30." -WriteToDB
             $Global:SQLOpsDB_Logs_CleanUp_Retention_Days = 30
         }
         
@@ -132,8 +144,8 @@ function Initialize-SQLOpsDB
     }
     catch
     {
-        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Exception" -WriteToDB
-        Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
+        Write-Error "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Exception"
+        Write-Error "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)"
         Write-Output $Global:Error_FailedToComplete
     }
 }

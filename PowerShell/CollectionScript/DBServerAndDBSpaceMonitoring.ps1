@@ -18,11 +18,8 @@ try
 {
     Write-StatusUpdate -Message "Getting list of SQL Instances from CMS Server [$Global:CMS_SQLServerName]."
 
-    # Get list of SQL Server Instances from Central Management Server (CMS)
-    #
-    # It is possible to enable selective list of servers to collect based on which CMS groups are enabled
-    # in the Set-CMSGroup command.
-
+    # Get list of SQL Server Instances from Central Management Server (CMS).
+    # Enable or disable which CMS groups are monitored via Set-CMSGroup commandlet.
     $SQLServers = Get-CMSServers
 }
 catch
@@ -37,17 +34,15 @@ catch
 ForEach ($SQLServerRC in $SQLServers)
 {
 
-    $OutputLevel++
     $SQLServer = $SQLServerRC.name
     $SQLServerFQDN = $SQLServerRC.server_name
     Write-StatusUpdate -Message "Processing SQL Instance [$SQLServerFQDN] ..." -WriteToDB
-        
 
-    # Intialize all the variables for current Instance
+    # Initialize all the variables for current Instance
     [Array] $ServerList = $null
     $IsClustered = 0
     $IsPhysical = 1
-    $InstanceName = 'MSSSQLServer'
+    $SQLInstanceName = 'MSSQLServer'
     $ServerType = 'Stand Alone'
     $EnvironmentType = 'Prod'
     $ServerInstanceIsMonitored = $true
@@ -62,37 +57,56 @@ ForEach ($SQLServerRC in $SQLServers)
     $SQLBuild = 0
     $SQLInstanceAccessible = $true
     $SchemaPrefix = 'sys'
-    $FQDN = 'healthy.bewell.ca'
+    $FQDN = $Global:Default_DomainName
 
     # Before we start processing the SQL Instance, we need to parse out the VCO/Server Name and Instance Name.
     # The connection will still happen with SERVER.FQDN\INSTANCE,PORT or VCO.FQDN\INSTANCE,PORT.
     $SQLServer = $SQLServer.ToLower()
     $SQLServerFQDN = $SQLServerFQDN.ToLower()
+
+    if ($SQLServer.IndexOf(',') -gt -1)
+    {
+        # User has included the port number in display name.  Strip out the port number.
+        #
+        # Raise a warning in logs to correct CMS configuration.
+
+        Write-StatusUpdate -Message "Display Name in CMS misconfigured for [$($TokenizedSQLInstanceName[0])], port number should not be included." -WriteToDB
+        $SQLServer = $SQLServer.Substring(0,$SQLServer.IndexOf(','))
+    }
+
     $TokenizedSQLInstanceName = $($SQLServer.Split(',')).Split('\')
     $TokenizedSQLInstanceNameFQDN = $($SQLServerFQDN.Split(',')).Split('\')
+
+    # Check to make sure server name and server name FQDN follow standards set in CMS.
+    if ($TokenizedSQLInstanceName[0].IndexOf('.') -gt -1)
+    {
+        # User has fully qualified the server name also.  Strip away the domain information.
+        #
+        # Raise a warning in logs to correct CMS configuration.
+
+        Write-StatusUpdate -Message "Display Name in CMS misconfigured for [$($TokenizedSQLInstanceName[0])], domain name should not be included." -WriteToDB
+        $TokenizedSQLInstanceName[0] = $TokenizedSQLInstanceName[0].Substring(0,$TokenizedSQLInstanceName[0].IndexOf('.'))
+        
+    }
+
+    if ($TokenizedSQLInstanceNameFQDN[0].IndexOf('.') -eq -1)
+    {
+        # User is missing fully qualified domain name for server name.  
+        #
+        # Raise a warning in logs to correct CMS configuration.
+
+        Write-StatusUpdate -Message "Server Name in CMS misconfigured for [$($TokenizedSQLInstanceNameFQDN[0])], domain name should be included." -WriteToDB
+        $TokenizedSQLInstanceNameFQDN[0] = [String]::Concat($TokenizedSQLInstanceNameFQDN[0],'.',$FQDN)
+    }
+
     $ServerVNOName = $TokenizedSQLInstanceName[0]
     $ServerVNONameFQDN = $TokenizedSQLInstanceNameFQDN[0]
 
-    # Find the FQDN for the VNO/Server as it will be required when talking to instances and servers that are not
-    # in the default domain.
-    $FQDN = $SQLServerFQDN.Replace($ServerVNOName,'').SubString(1)
-    $FQDN = $($FQDN.Split('\')).Split(',')[0]
-    $SQLInstanceName = 'mssqlserver'
-
-    switch ($TokenizedSQLInstanceName.Count)
+    # If the tokenized array count is two, it means non-default instance name is supplied.
+    if ($TokenizedSQLInstanceName.Count -eq 2)
     {
-        3
-        { # Server\Instance,Port
-            $SQLInstanceName = $TokenizedSQLInstanceName[1]
-            break;
-        }
-        2
-        { # Server\Instance
-            $SQLInstanceName = $TokenizedSQLInstanceName[1]
-            break;
-        }
+        $SQLInstanceName = $TokenizedSQLInstanceName[1]
     }
-
 
     # Check to confirm Extended Properties table exists; as script heavily relies on this table.
     # Also check if Extended Properties are defined for key settings; as it leads to confusion if they are missing.
@@ -130,14 +144,14 @@ ForEach ($SQLServerRC in $SQLServers)
             $TSQL = "SELECT COUNT(*) AS RwCnt FROM $SchemaPrefix.extended_properties WHERE name in ('EnvironmentType','MachineType','ServerType')"
             Write-StatusUpdate -Message $TSQL -IsTSQL
 
-            # Find if the SQL Server a clustered instance (only appicable to FCI running under WFCS)
+            # Find if the SQL Server a clustered instance (only applicable to FCI running under WFCS)
             $Results = Invoke-SQLCMD -ServerInstance $SQLServerFQDN  `
                                         -Database 'master' `
                                         -Query $TSQL -ErrorAction Stop
 
             if ($Results.RwCnt -ne 3)
             {
-                Write-StatusUpdate -Message "Missing one or more of the key extended propertie(s) (EnvironmentType,MachineType,ServerType) in [$SQLServerFQDN]." -WriteToDB
+                Write-StatusUpdate -Message "Missing one or more of the key extended properties (EnvironmentType,MachineType,ServerType) in [$SQLServerFQDN]." -WriteToDB
                 $SQLInstanceAccessible = $false
             }
             else
@@ -146,9 +160,10 @@ ForEach ($SQLServerRC in $SQLServers)
                 $TSQL = "SELECT SERVERPROPERTY('IsClustered') AS IsClustered, @@VERSION AS SQLServerVersion, SERVERPROPERTY('Edition') AS SQLEdition, SERVERPROPERTY('ProductVersion') AS SQLBuild"
                 Write-StatusUpdate -Message $TSQL -IsTSQL
 
-                $SQLInstanceAccessible = $true -and $SQLInstanceAccessible  # must consider the value for previous resultset; therefore both must be true for us to access the instance.
+                # must consider the value for previous result set; therefore both must be true for us to access the instance.
+                $SQLInstanceAccessible = $true -and $SQLInstanceAccessible
 
-                # Find if the SQL Server a clustered instance (only appicable to FCI running under WFCS)
+                # Find if the SQL Server a clustered instance (only applicable to FCI running under WFCS)
                 $Results = Invoke-SQLCMD -ServerInstance $SQLServerFQDN  `
                                             -Database 'master' `
                                             -Query $TSQL -ErrorAction Stop
@@ -162,7 +177,7 @@ ForEach ($SQLServerRC in $SQLServers)
     }
     catch
     {
-        Write-StatusUpdate -Message "Failed to talk to SQL Instance (unhandled exception)." -WriteToDB
+        Write-StatusUpdate -Message "Failed to connect to SQL Instance (unhandled exception)." -WriteToDB
         Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
         $SQLInstanceAccessible = $false
     }
@@ -175,7 +190,7 @@ ForEach ($SQLServerRC in $SQLServers)
         $SQLBuildString = $Results.SQLBuild
         $SQLEdition = $Results.SQLEdition
 
-        #Build the SQL Server Version and Windows Verion Details
+        #Build the SQL Server Version and Windows Version Details
         $TokenizedSQLBuild = $SQLBuildString.Split('.')
 
         [int]$SQLServer_Major = $TokenizedSQLBuild[0]
@@ -221,7 +236,14 @@ ForEach ($SQLServerRC in $SQLServers)
             {
                 $SQLVersion += ' 2016'
             }
-            
+            14
+            {
+                $SQLVersion += ' 2017'
+            }
+            15
+            {
+                $SQLVersion += ' 2019'
+            }
         }
 
         if ($SQLServerVersion -like '*Windows NT 5.0*')
@@ -248,22 +270,23 @@ ForEach ($SQLServerRC in $SQLServers)
         {
             $OperatingSystem = "Windows Server 2012 R2"
         }
+        elseif ($SQLServerVersion -like '*Windows Server 2016*')
+        {
+            $OperatingSystem = "Windows Server 2016"
+        }
+        elseif ($SQLServerVersion -like '*Windows Server 2019*')
+        {
+            $OperatingSystem = "Windows Server 2019"
+        }
 
-        Write-StatusUpdate -Message "SQL Server Vesion: [$SQLVersion]."
-        Write-StatusUpdate -Message "  Windows Version: [$OperatingSystem]."
+        Write-StatusUpdate -Message "SQL Server Version: [$SQLVersion]."
+        Write-StatusUpdate -Message "   Windows Version: [$OperatingSystem]."
 
         # Collected Extended Properties Details
 
-        # AHS Standard -- Since VERITAS clusterds do not register with SQL Sever DMV, there is no way to identify if the current instance is clustered or not.
-        #                 Therefore to identify instnaces as clustered vs stand alone instances; each instance's master database will have extended property
-        #                 that gives this information.  These extended properties will be populated at configuration time.  For older servers DBA team
-        #                 must retroactively update this value.  If not the a VERITAS Clustered instance will be registered as stand alone instance
-        #                 and will show up as duplicate instance running on two nodes.  Generating errors due to non-accessiblity on passive node.
-
-
         # SQL Server 2000 does not have extended properties; however to mimic the functionality Extended Properties table has been created in
         # master database on SQL Server 2000 instances with in [dbo] schema vs SQL Server 2005+'s [sys] schema.
-        if ($SQLServerVersion -eq 'Microsoft SQL Server 2000')
+        if ($SQLVersion -eq 'Microsoft SQL Server 2000')
         {
             $SchemaPrefix = 'dbo'
         }
@@ -277,14 +300,7 @@ ForEach ($SQLServerRC in $SQLServers)
                                     -Database 'master' `
                                     -Query $TSQL -ErrorAction Stop
 
-        if ($Results)
-        { # Extended properties are configured.
-            $ServerType = $Results.value
-        }
-        else
-        { # Extended properties are not configured.
-            $ServerType = 'Stand Alone'
-        }
+        $ServerType = $Results.value
 
         Write-StatusUpdate -Message "Server Type: $ServerType"
 
@@ -295,16 +311,10 @@ ForEach ($SQLServerRC in $SQLServers)
                                     -Database 'master' `
                                     -Query $TSQL -ErrorAction Stop
 
-        if ($Results)
-        { # Extended properties are configured.
-            $EnvironmentType = $Results.value
-        }
-        else
-        { # Extended properties are not configured.
-            $EnvironmentType = 'Prod'
-        }
+        $EnvironmentType = $Results.value
 
-        Write-StatusUpdate -Message "Enviornment: $EnvironmentType"
+
+        Write-StatusUpdate -Message "Environment: $EnvironmentType"
 
         $TSQL = "SELECT value FROM $SchemaPrefix.extended_properties WHERE name = 'MachineType'"
         Write-StatusUpdate -Message $TSQL -IsTSQL
@@ -313,20 +323,13 @@ ForEach ($SQLServerRC in $SQLServers)
                                     -Database 'master' `
                                     -Query $TSQL -ErrorAction Stop
 
-        if ($Results)
-        { # Extended properties are configured.
-            if ($Results.value -eq 'Physical')
-            {
-                $IsPhysical = 1
-            }
-            else
-            {
-                $IsPhysical = 0
-            }
+        if ($Results.value -eq 'Physical')
+        {
+            $IsPhysical = 1
         }
         else
-        { # Extended properties are not configured.
-            $IsPhysical = 1
+        {
+            $IsPhysical = 0
         }
 
         Write-StatusUpdate -Message "Is Physical: $IsPhysical"
@@ -340,9 +343,9 @@ ForEach ($SQLServerRC in $SQLServers)
         {
 
             # If this SQL Server is a clustered instance we need to do additional investigative queries.  TO collect information for
-            # for data and file locations.  This will help calculate which volumns belong to instance where instance stacking is being used.
+            # for data and file locations.  This will help calculate which volumes belong to instance where instance stacking is being used.
 
-            if ($SQLServerVersion -like '*SQL*Server*2000*')
+            if ($SQLVersion -eq 'Microsoft SQL Server 2000')
             {
                 $TSQL = "SELECT DISTINCT LOWER(SUBSTRING(filename,1,LEN(filename)-CHARINDEX('\',LTRIM(REVERSE(filename))))) AS FolderName FROM sysfiles"
             }
@@ -407,18 +410,11 @@ ForEach ($SQLServerRC in $SQLServers)
         }
         else
         {
-
-            # Server name is not being assumed from $SQLServer name collected from CMS because heavy use of Aliases with in AHS domain.
-            #
-            # $PhysicalServerName = Invoke-SQLCMD -ServerInstance $SQLInstance  -Database 'master' -Query "SELECT SERVERPROPERTY('ComputerNamePhysicalNetBIOS') AS ComputerNamePhysicalNetBIOS"
-            #
-            # Removed, now the Server name will be calculated from $SQLSever.  DBA team is working on cleaning up CMS Server list to make sure no Alisas show up under monitored groups.
-
             $ServerList += ,($ServerVNOName,1)
             Write-StatusUpdate -Message "Found Server: $ServerVNOName"
         }
 
-        # Phase 1: Server, Cluster, and Volume Process
+        #region Phase 1: Server, Cluster, and Volume Process
         ForEach ($Server in $ServerList)
         {
             $ServerName = $Server[0]
@@ -437,7 +433,7 @@ ForEach ($SQLServerRC in $SQLServers)
             {
                 try
                 {
-                    $Processors = Get-WmiObject -Class Win32_Processor -ComputerName "$ServerName.$FQDN"
+                    $Processors = Get-WmiObject -Class Win32_Processor -ComputerName $ServerVNONameFQDN
 
                     ForEach ($Processor IN $Processors)
                     {
@@ -448,29 +444,29 @@ ForEach ($SQLServerRC in $SQLServers)
                 }
                 catch [System.Runtime.InteropServices.COMException]
                 {
-                    Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$SQLServerFQDN]; server not found." -WriteToDB
+                    Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerVNONameFQDN]; server not found." -WriteToDB
                     $IsServerAccessible = $false
                 }
                 catch [System.UnauthorizedAccessException]
                 {
-                    Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$SQLServerFQDN]; access denied." -WriteToDB
+                    Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerVNONameFQDN]; access denied." -WriteToDB
                     $IsWMIAccessible = $false
                 }
                 catch [System.Management.ManagementException]
                 {
-                    Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$SQLServerFQDN]; unknown cause." -WriteToDB
+                    Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerVNONameFQDN]; unknown exception." -WriteToDB
                     $IsWMIAccessible = $false
                 }
                 catch
                 {
-                    Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$SQLServerFQDN] (unhandled expection)." -WriteToDB
+                    Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$SQLServerFQDN] (unhandled exception)." -WriteToDB
                     Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
                     $IsServerAccessible = $false
                 }
             }
 
             # If WMI called for processor failed; chances are the volume call failed also.  To minimize the error reporting in
-            # execution log; only attempt server related updates if inital WMI was successful.
+            # execution log; only attempt server related updates if initial WMI was successful.
             if ($IsServerAccessible)
             {
                 # Find the server, if it exists update it; if not add it.
@@ -480,12 +476,12 @@ ForEach ($SQLServerRC in $SQLServers)
                 {
                     $Global:Error_ObjectsNotFound
                     {
-                        Write-StatusUpdate -Message "New server, adding to CMDB."
+                        Write-StatusUpdate -Message "New server, adding to database."
                         $InnerResults = Add-Server $ServerName $OperatingSystem $ProcessorName $NumberOfCores $NumberOfLogicalCores $IsPhysical
                         Switch ($InnerResults)
                         {
                             $Global:Error_Duplicate
-                            {   # This should not happen in code line.  However, it is being handled if a manual entry is made between inital
+                            {   # This should not happen in code line.  However, it is being handled if a manual entry is made between initial
                                 # detection of missing server to adding the new server.
                                 $ServerIsMonitored = $false
                                 Write-StatusUpdate -Message "Failed to Add-Server, duplicate value found [$ServerName]." -WriteToDB
@@ -629,8 +625,7 @@ ForEach ($SQLServerRC in $SQLServers)
                                     Write-StatusUpdate -Message "Failed to update SQL CMDB Cluster Node's info for [$ServerVNOName\$ServerName]."
                             }
 
-                            # AHS does not have requirement to get disk space for Windows 2000 servers.
-                            # - Also WMI calls will need to be updated for Windows 2000 servers.
+                            # Current solution does not support Windows 2000 disk space report.
                             if ($OperatingSystem -ne "Windows Server 2000")
                             {
                                 Write-StatusUpdate -Message "Windows 2003+ Updating Disk Volume Information"
@@ -641,7 +636,7 @@ ForEach ($SQLServerRC in $SQLServers)
 
                                     if ($Results -eq $Global:Error_FailedToComplete)
                                     {
-                                        Write-StatusUpdate -Message "Failed to update the volume space details for [$ServerName.$FQDN]."
+                                        Write-StatusUpdate -Message "Failed to update the volume space details for [$ServerVNONameFQDN]."
                                     }
                                 }
                             }
@@ -675,8 +670,9 @@ ForEach ($SQLServerRC in $SQLServers)
             }
 
         }
+        #endregion
 
-        # Phase 2: SQL Instnaces, Availability Groups, and Databases Process
+        # Phase 2: SQL Instances, Availability Groups, and Databases Process
         $Results = Get-SQLInstance $ServerVNOName $SQLInstanceName
 
         switch ($Results)
@@ -728,7 +724,7 @@ ForEach ($SQLServerRC in $SQLServers)
             Write-StatusUpdate -Message "Instance is monitored."
 
             #Instance is monitored; before we collect the database information; we need to check for any
-            #existing AG configuraiton.  AG is only possible on SQL Server version 2012+.
+            #existing AG configuration.  AG is only possible on SQL Server version 2012+.
             try
             {
                 if ($SQLServer_Major -ge 11)
@@ -762,7 +758,7 @@ ForEach ($SQLServerRC in $SQLServers)
                                                 -Database 'master' `
                                                 -Query $TSQL -ErrorAction Stop
 
-                    # If resultset is empty this instance has no AG on it right now.
+                    # If result set is empty this instance has no AG on it right now.
                     If ($Results)
                     {
                         ForEach ($Record in $Results)

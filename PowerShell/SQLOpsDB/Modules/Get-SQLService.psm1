@@ -16,7 +16,7 @@ Get-SQLService
 
 .EXAMPLE
 Get list of all the services, the command will return an object set with all services
-discoverd on the server.
+discovered on the server.
 
 Get-SQLService -ComputerName ContosoServer
 
@@ -25,7 +25,9 @@ Description
 .NOTES
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
-2020-01-08 0.00.01 New Build
+2020.01.08 0.00.01 New Build
+2020.02.04 0.00.03 Added check for module is initialized.
+                   Fixed a bug in the SSRS version check.
 #>
 function Get-SQLService
 {
@@ -34,9 +36,15 @@ function Get-SQLService
     [Parameter(Position=0, Mandatory=$true)] [string]$ComputerName
     )
 
+    if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
+    {
+        Write-Error "Unable to initialize SQLOpsDB.  Cannot continue with collection."
+        return
+    }
+	
     $ModuleName = 'Get-SQLService'
-    $ModuleVersion = '0.00.01'
-    $ModuleLastUpdated = 'Jan. 1, 2020'
+    $ModuleVersion = '0.00.03'
+    $ModuleLastUpdated = 'February 4, 2020'
 
     try
     {
@@ -69,7 +77,7 @@ function Get-SQLService
 		# Get list of all services that have word "SQL" or "PowerBI" in them.  We are using WMI for Win32_Services.  Becuase WMI for SQL does not provide
 		# list of all SQL services.
 		$Services = Get-WmiObject -Class Win32_Service -ComputerName $ComputerName
-		$Services = $Services | ? {$_.DisplayName -Like '*SQL*' -OR $_.DisplayName -Like '*PowerBI*'-OR $_.Name -Like '*MsDts*'} | SELECT PSComputerName, DisplayName, Name, PathName, StartName, StartMode, State, Status
+		$Services = $Services | Where-Object {$_.DisplayName -Like '*SQL*' -OR $_.DisplayName -Like '*PowerBI*'-OR $_.Name -Like '*MsDts*'} | SELECT PSComputerName, DisplayName, Name, PathName, StartName, StartMode, State, Status
 
 
 		# Get SQL Services Version from WMI -- Get the Latest Name Space available.
@@ -205,8 +213,12 @@ function Get-SQLService
 							$SQLService.Type = 'SSRS'
 							$SQLService.InstanceName = 'MSSQLServer'
 							$WMIReport = (Get-WMIObject -namespace root\microsoft\sqlserver\ReportServer -Class __NAMESPACE -ComputerName $ComputerName) | ? {$_.Name -EQ 'RS_MSSQLServer' -OR $_.Name -EQ 'RS_SSRS'} 
+                            if ($WMIReport.Name -eq 'RS_SSRS')
+                            {   # SSRS 2017+
+                                $SQLService.InstanceName = 'SSRS'
+                            }
 							$WMIReportVersion = (Get-WMIObject -Namespace "root\microsoft\sqlserver\ReportServer\$($WMIReport.Name)" -Class __NAMESPACE -ComputerName $ComputerName) 
-							$SQLService.Build =((Get-WMIObject -Namespace "root\microsoft\sqlserver\ReportServer\$($WMIReport.Name)\$($WMIReportVersion.Name)" -Class MSReportServer_Instance -ComputerName $ComputerName) | ? {$_.InstanceName -EQ 'MSSQLServer'}).Version
+							$SQLService.Build =((Get-WMIObject -Namespace "root\microsoft\sqlserver\ReportServer\$($WMIReport.Name)\$($WMIReportVersion.Name)" -Class MSReportServer_Instance -ComputerName $ComputerName) | ? {$_.InstanceName -EQ $SQLService.InstanceName}).Version
 							$SQLService.Version = ($SQLService.Build).Substring(0,($SQLService.Build).IndexOf('.'))
 							$AddService = $true
 			}

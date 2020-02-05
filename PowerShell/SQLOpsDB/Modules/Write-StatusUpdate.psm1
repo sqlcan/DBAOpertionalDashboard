@@ -48,6 +48,7 @@ Date       Version Comments
                    Fixed spelling mistakes in output.
                    Removed all Write-Host messages, used only Write-Output.
                    Refactor code to clean up some logic statements.
+2020.02.04 0.00.08 Added check to make sure module is initialized.
 #>
 
 function Write-StatusUpdate
@@ -63,8 +64,14 @@ function Write-StatusUpdate
     )
 
     $ModuleName = 'Write-StatusUpdate'
-    $ModuleVersion = '0.07'
-    $ModuleLastUpdated = 'February 3, 2020'
+    $ModuleVersion = '0.08'
+    $ModuleLastUpdated = 'February 4, 2020'
+
+    if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
+    {
+        Write-Error "Unable to initialize SQLOpsDB.  Cannot continue with collection."
+        return
+    }
 
     try
     {
@@ -96,7 +103,7 @@ function Write-StatusUpdate
     }
     catch
     {
-        Write-Output "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Exception"
-        Write-Output "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)"
+        Write-Error "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Exception"
+        Write-Error "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)"
     }
 }

@@ -14,6 +14,10 @@ Date		Version		Author		Comments
 		    3.00.03.0000	Mohit K. Gupta	New settings names that map to dbo.Settings.
             3.00.03.0001    Mohit K. Gupta  Fixed bugs in how global settings were being assigned in Initialize-SQLOpsDB.psm1.
             3.00.03.0002    Mohit K. Gupta  Added additional logging in Initialize-SQLOpsDB and fixed spelling mistake.
+            3.00.03.0003    Mohit K. Gupta  Added check in Write-StatusUpdate to make sure module is initialize.
+            3.00.03.0004    Mohit K. Gupta  Update Initialize-SQLOpsDB to only initialize on first run.
+            3.00.03.0005    Mohit K. Gupta  Added check in Get-SQLService to make sure module is initialized.
+            3.00.03.0006    Mohit K. Gupta  Bug fix how SSRS version is calculated in Get-SQLService.
 
 
 DBServerAndDBSpaceMonitoring.ps1 Version History
@@ -33,3 +37,7 @@ Date		Version		Author		Comments
 2016.06.08	V1.05		Mohit K. Gupta	Added version calculation for SQL 2014 and 2016.
 2017.01.10	V1.06		Mohit K. Gupta	Fixed a bug in date calculation when truncating and cleaning up the data in Phase 3.
 2017.01.24	V1.07		Mohit K. Gupta	Added code to truncate the CMDB Log data.
+2020.02.04  V1.11       Mohit K. Gupta  Added additional checks to make sure server name is configured correctly in CMS.
+                                        Added new SQL versions and Windows versions.
+                                        Spelling correction all over the script.
+                                        Refactored Extended properties check, to remove multiple validations.
