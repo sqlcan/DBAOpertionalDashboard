@@ -49,6 +49,9 @@ Date       Version Comments
                    Removed all Write-Host messages, used only Write-Output.
                    Refactor code to clean up some logic statements.
 2020.02.04 0.00.08 Added check to make sure module is initialized.
+2020.02.05 0.00.09 Fixed bug, which Write-Output.  Using this command-let caused 
+                   all messages to queue up.  My intension was to write to screen,
+                   therefore changed it to Write-Host.
 #>
 
 function Write-StatusUpdate
@@ -60,7 +63,8 @@ function Write-StatusUpdate
         [Parameter(ParameterSetName='TSQL', Mandatory=$true, Position=0)] 
         [Parameter(ParameterSetName='WritToDB', Mandatory=$true, Position=0)] [string]$Message,
         [Parameter(ParameterSetName='TSQL', Mandatory=$true, Position=1)] [switch]$IsTSQL,
-        [Parameter(ParameterSetName='WritToDB', Mandatory=$true, Position=1)] [switch]$WriteToDB
+        [Parameter(ParameterSetName='WritToDB', Mandatory=$true, Position=1)] [switch]$WriteToDB,
+        $Level # Leaving it for backward compatibility, until I can remove it from all modules.
     )
 
     $ModuleName = 'Write-StatusUpdate'
@@ -78,10 +82,16 @@ function Write-StatusUpdate
         # Only if debug mode is enabled, output to screen.
         if ($Global:DebugMode)
         {
+
             if ((!($IsTSQL)) -or
                 (($IsTSQL) -and ($Global:DebugMode_OutputTSQL)))
             {
-                    Write-Output $Message
+                # We can only output to host screen.  If I use Write-Output, it queues up all the messages
+                # which break data moving from one module to next.
+                if (($host.Name -eq "ConsoleHost") -or ($host.Name -eq "Windows PowerShell ISE Host"))
+	            {
+                    Write-Host $Message
+                }
             }
         }
 

@@ -657,7 +657,7 @@ ForEach ($SQLServerRC in $SQLServers)
 
                             if ($Results -eq $Global:Error_FailedToComplete)
                             {
-                                Write-StatusUpdate -Message "Failed to update the volume space details for [$ServerName.$FQDN]."
+                                Write-StatusUpdate -Message "Failed to update the volume space details for [$ServerName.$FQDN]." -WriteToDB
                             }
                         }
                     }
@@ -667,6 +667,21 @@ ForEach ($SQLServerRC in $SQLServers)
                     }
 
                 }
+            }
+
+            $SQLServices = Get-SISQLService -ComputerName $ServerVNONameFQDN
+
+            if ($SQLServices)
+            {
+                $Results = Update-SQLService -ComputerName $ServerName -Data $SQLServices
+
+                if ($Results -eq $Global:Error_FailedToComplete)
+                {
+                    Write-StatusUpdate -Message "Failed to update SQL Services Detail for [$ServerVNONameFQDN]" -WriteToDB
+                }
+            }
+            else {
+                Write-StatusUpdate -Message "Failed to collect SQL Services Detail for [$ServerVNONameFQDN]" -WriteToDB
             }
 
         }
@@ -985,7 +1000,7 @@ ForEach ($SQLServerRC in $SQLServers)
             }
             catch
             {
-                Write-StatusUpdate -Message "Failed to talk to SQL Instance (unhandled expection)." -WriteToDB
+                Write-StatusUpdate -Message "Failed to talk to SQL Instance (unhandled exception)." -WriteToDB
                 Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
                 $SQLInstanceAccessible = $false
             }

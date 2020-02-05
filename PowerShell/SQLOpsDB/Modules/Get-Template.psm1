@@ -31,10 +31,15 @@ function Get-Template
 {
     [CmdletBinding()] 
     param( 
-    [Parameter(Position=0, Mandatory=$true)] [string]$ServerVNOName,
-    [Parameter(Position=1, Mandatory=$true)] [string]$SQLInstanceName
+    [Parameter(Position=0, Mandatory=$true)] [string]$ComputerName
     )
 
+    if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
+    {
+        Write-Error "Unable to initialize SQLOpsDB.  Cannot continue with collection."
+        return
+    }
+    
     $ModuleName = 'Get-Template'
     $ModuleVersion = '0.01'
     $ModuleLastUpdated = 'June 9, 2016'
@@ -47,8 +52,8 @@ function Get-Template
         $TSQL = "-- To Do T-SQL Code"
         Write-StatusUpdate -Message $TSQL
 
-        $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                    -Database $Global:SQLCMDB_DatabaseName `
+        $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
                                     -Query $TSQL
         
         # If no result sets are returned return an error; unless return the appropriate resultset.

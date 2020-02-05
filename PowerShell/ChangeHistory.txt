@@ -18,6 +18,10 @@ Date		Version		Author		Comments
             3.00.03.0004    Mohit K. Gupta  Update Initialize-SQLOpsDB to only initialize on first run.
             3.00.03.0005    Mohit K. Gupta  Added check in Get-SQLService to make sure module is initialized.
             3.00.03.0006    Mohit K. Gupta  Bug fix how SSRS version is calculated in Get-SQLService.
+            3.00.03.0007    Mohit K. Gupta  Updated Get-SQLService to Get-SISQLService.  
+            3.00.04.0007    Mohit K. Gupta  New Module Get-SQLService to get list of services saved in SQLOpsDB database.
+            3.00.04.0008    Mohit K. Gupta  Fixed bug with Write-StatusUpdate to screen.
+            3.00.04.0009    Mohit K. Gupta  Fixed bugs with Initialize-SQLOpsDB.
 
 
 DBServerAndDBSpaceMonitoring.ps1 Version History

@@ -23,15 +23,17 @@ Date       Version Comments
                    Load the settings from the database and initialize the configuration.
                    Validate the range of each setting.
                    If settings are not loaded, then it will use default settings in
-                   GlobalSettings.psm1.
+                    GlobalSettings.psm1.
 2020.01.10 0.00.02 Fixed bug in how global variables are assigned.
 2020.02.03 0.00.04 Added some additional logging in event, invalid range values are supplied.
                    Fixed spelling mistake in output message.
 2020.02.04 0.00.06 The module will be called by every other module.  But it will only execute
-                   on the first run.
+                    on the first run.
                    I cannot use Write-StatusUpdate in this module, as it uses variables in 
-                   this module to work.  I will replace Write-StatusUpdate with Write-Verbose
-                   to support debugging in future.
+                    this module to work.  I will replace Write-StatusUpdate with Write-Verbose
+                    to support debugging in future.
+2020.02.05 0.00.08 Fixed bugs with how string value for "0" was being translated to $true.
+                   Fixed multiple configuration mis-spelling. Made sure they match the database.
 #>
 function Initialize-SQLOpsDB
 {
@@ -39,8 +41,8 @@ function Initialize-SQLOpsDB
     param()
 
     $ModuleName = 'Initialize-SQLOpsDB'
-    $ModuleVersion = '0.06'
-    $ModuleLastUpdated = 'February 4, 2020'
+    $ModuleVersion = '0.08'
+    $ModuleLastUpdated = 'February 5, 2020'
 
     # Only initialize module if it is first execution.
     if ($Global:SQLOpsDBInitialized)
@@ -84,24 +86,27 @@ function Initialize-SQLOpsDB
             $Global:SQLOpsDBInitialized = $true
             ForEach ($Setting in $Results)
             {
+                Write-Verbose "Configuring Setting [$($Setting.SettingName)] -- Changing Value to Configuration [$($Setting.SettingValue)]"
+
                 switch ($Setting.SettingName)
                 {
-                    "DebugMode" {$Global:DebugMode = [Bool]$Setting.SettingValue}
-                    "DebugMode_WriteToDB" {$Global:DebugMode_WriteToDB = [Bool]$Setting.SettingValue}
-                    "DebugMode_OutputTSQL" {$Global:DebugMode_OutputTSQL = [Bool]$Setting.SettingValue}
-                    "SQLOpsDB_Log_Enabled" {$Global:SQLOpsDB_Log_Enabled = [Bool]$Setting.SettingValue}
-                    "SQLOpsDB_Log_CleanUp_Enabled" {$Global:SQLOpsDB_Log_CleanUp_Enabled = [Bool]$Setting.SettingValue}
+                    "DebugModeEnabled" {$Global:DebugMode = [Bool]([Int]$Setting.SettingValue)}
+                    "DebugMode_WriteToDB" {$Global:DebugMode_WriteToDB = [Bool]([Int]$Setting.SettingValue)}
+                    "DebugMode_OutputTSQL" {$Global:DebugMode_OutputTSQL = [Bool]([Int]$Setting.SettingValue)}
+                    "SQLOpsDB_Logs_Enabled" {$Global:SQLOpsDB_Log_Enabled = [Bool]([Int]$Setting.SettingValue)}
+                    "SQLOpsDB_Logs_CleanUp_Enabled" {$Global:SQLOpsDB_Log_CleanUp_Enabled = [Bool]([Int]$Setting.SettingValue)}
                     "SQLOpsDB_Logs_CleanUp_Retention_Days" {$Global:SQLOpsDB_Logs_CleanUp_Retention_Days = [Int]$Setting.SettingValue}
-                    "Expired_Objects_Enabled" {$Global:Expired_Objects_Enabled = [Bool]$Setting.SettingValue}
+                    "Expired_Objects_Enabled" {$Global:Expired_Objects_Enabled = [Bool]([Int]$Setting.SettingValue)}
                     "Expired_Objects_CleanUp_Retention_Days" {$Global:Expired_Objects_CleanUp_Retention_Days = [Int]$Setting.SettingValue}
-                    "Trend_Creation_Enabled" {$Global:Trend_Creation_Enabled = [Bool]$Setting.SettingValue}
-                    "Trend_Creation_CleanUp_Enabled" {$Global:Trend_Creation_CleanUp_Enabled = [Bool]$Setting.SettingValue}
+                    "Trend_Creation_Enabled" {$Global:Trend_Creation_Enabled = [Bool]([Int]$Setting.SettingValue)}
+                    "Trend_Creation_CleanUp_Enabled" {$Global:Trend_Creation_CleanUp_Enabled = [Bool]([Int]$Setting.SettingValue)}
                     "Trend_Creation_CleanUp_Retention_Months" {$Global:Trend_Creation_CleanUp_Retention_Months = [Int]$Setting.SettingValue}
-                    "Aggregate_CleanUp_Enabled" {$Global:Aggregate_CleanUp_Enabled = [Bool]$Setting.SettingValue}
+                    "Aggregate_CleanUp_Enabled" {$Global:Aggregate_CleanUp_Enabled = [Bool]([Int]$Setting.SettingValue)}
                     "Aggregate_CleanUp_Retention_Months" {$Global:Aggregate_CleanUp_Retention_Months = [Int]$Setting.SettingValue}
-                    "RawData_CleanUp_Enabled" {$Global:RawData_CleanUp_Enabled = [Bool]$Setting.SettingValue}
+                    "RawData_CleanUp_Enabled" {$Global:RawData_CleanUp_Enabled = [Bool]([Int]$Setting.SettingValue)}
                     "Default_DomainName" {$Global:Default_DomainName = [String]$Setting.SettingValue}
                 }
+
             }
         }
         else {
