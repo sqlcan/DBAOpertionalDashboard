@@ -22,6 +22,10 @@ Date		Version		Author		Comments
             3.00.04.0007    Mohit K. Gupta  New Module Get-SQLService to get list of services saved in SQLOpsDB database.
             3.00.04.0008    Mohit K. Gupta  Fixed bug with Write-StatusUpdate to screen.
             3.00.04.0009    Mohit K. Gupta  Fixed bugs with Initialize-SQLOpsDB.
+2020.02.06  3.00.05.0009    Mohit K. Gupta  New module to collect error logs Get-SISQLErrorLogs.
+            3.00.06.0009    Mohit K. Gupta  New module to save error logs Update-SQLErrorLog.
+            3.00.07.0009    Mohit K. Gupta  New module to split parts of a Computer Name or Server Instance names.
+            3.00.08.0009    Mohit K. Gupta  New module to last time errors were collected, Get-SQLErrorLogStats --- NOT FINISHED.
 
 
 DBServerAndDBSpaceMonitoring.ps1 Version History

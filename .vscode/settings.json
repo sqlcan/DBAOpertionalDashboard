@@ -1,10 +1,12 @@
 {
     "cSpell.words": [
+        "Dont",
         "GETDATE",
         "SISQL",
         "SSAS",
         "SSIS",
         "SSRS",
+        "datetime",
         "varchar"
     ]
 }

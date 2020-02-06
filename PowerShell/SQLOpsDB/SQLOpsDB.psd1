@@ -74,8 +74,11 @@
     '.\Modules\Initialize-SQLOpsDB.psm1';
     '.\Modules\Write-StatusUpdate.psm1';
     '.\Modules\GlobalSettings.psm1';
+    # SQL Service Modules
     '.\Modules\Get-SQLService.psm1';
     '.\Modules\Update-SQLService.psm1';
+    # SQL Error Log Modules
+    '.\Modules\Update-SQLErrorLog.psm1'
     #'.\Modules\Add-Database.psm1';
     '.\Modules\Add-Server.psm1';
     '.\Modules\Add-SQLCluster.psm1';
@@ -97,7 +100,7 @@
     '.\Modules\Add-AG.psm1';
     '.\Modules\Update-AG.psm1';
     '.\Modules\Set-CMSGroups.psm1';
-    #'.\Modules\Update-CMSGroups.psm1';
+    #'.\Modules\Update-CMSGroups.psm1'; #Does not exist.
     '.\Modules\Get-CMSServers.psm1';
     '.\Modules\Aggregate-CMDBMonthlyData.psm1';
     '.\Modules\Truncate-CMDBData.psm1';
@@ -105,6 +108,9 @@
     '.\Modules\Delete-CMDBData.psm1';
     '.\Modules\Truncate-CMDBLog.psm1';
     '.\Modules\Get-SISQLService.psm1';
+    '.\Modules\Get-SISQLErrorLogs.psm1';
+    # Support Modules
+    '.\Modules\Split-Parts.psm1'
     #'.\Modules\.psm1';
     )
 
