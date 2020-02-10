@@ -78,7 +78,9 @@
     '.\Modules\Get-SQLService.psm1';
     '.\Modules\Update-SQLService.psm1';
     # SQL Error Log Modules
-    '.\Modules\Update-SQLErrorLog.psm1'
+    '.\Modules\Update-SQLErrorLog.psm1';
+    '.\Modules\Get-SQLErrorLogStats.psm1';
+    '.\Modules\Update-SQLErrorLogStats.psm1';
     #'.\Modules\Add-Database.psm1';
     '.\Modules\Add-Server.psm1';
     '.\Modules\Add-SQLCluster.psm1';
