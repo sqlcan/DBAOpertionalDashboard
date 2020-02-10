@@ -9,6 +9,13 @@ if (Initialize-SQLOpsDB -eq $Global:Error_FailedToComplete)
     return
 }
 
+# Data Collection Switches
+#
+# Goal of this switches is to turn on and off part of the data collection script.
+
+$DCS_ErrorLogs = $true            # Collect SQL Server Error Logs
+$DSC_DiscoverSQLServices = $true  # Review SQL Services Installed on a Server.
+
 ## Code Start
 
 Write-StatusUpdate -Message "SQLOpsDB - Collection Start" -WriteToDB
@@ -669,19 +676,22 @@ ForEach ($SQLServerRC in $SQLServers)
                 }
             }
 
-            $SQLServices = Get-SISQLService -ComputerName $ServerVNONameFQDN
-
-            if ($SQLServices)
+            if ($DSC_DiscoverSQLServices)
             {
-                $Results = Update-SQLService -ComputerName $ServerName -Data $SQLServices
+                $SQLServices = Get-SISQLService -ComputerName $ServerVNONameFQDN
 
-                if ($Results -eq $Global:Error_FailedToComplete)
+                if ($SQLServices)
                 {
-                    Write-StatusUpdate -Message "Failed to update SQL Services Detail for [$ServerVNONameFQDN]" -WriteToDB
+                    $Results = Update-SQLService -ComputerName $ServerName -Data $SQLServices
+
+                    if ($Results -eq $Global:Error_FailedToComplete)
+                    {
+                        Write-StatusUpdate -Message "Failed to update SQL Services Detail for [$ServerVNONameFQDN]" -WriteToDB
+                    }
                 }
-            }
-            else {
-                Write-StatusUpdate -Message "Failed to collect SQL Services Detail for [$ServerVNONameFQDN]" -WriteToDB
+                else {
+                    Write-StatusUpdate -Message "Failed to collect SQL Services Detail for [$ServerVNONameFQDN]" -WriteToDB
+                }
             }
 
         }
@@ -1010,6 +1020,17 @@ ForEach ($SQLServerRC in $SQLServers)
             if ($Results -eq $Global:Error_FailedToComplete)
             {
                 Write-StatusUpdate -Message "Failed to Update-SQLInstance for [$ServerVNOName\$SQLInstanceName]."
+            }
+
+            if ($DCS_ErrorLogs)
+            {
+                # Get SQL Instance Error Logs.  Get the last collect date, then get only errors since last collection.
+                # record the errors in SQLOpsDB.  Then update all collection date time.
+
+                $LastDataCollection = Get-SQLErrorLogStats -ServerInstance $SQLServerFQDN
+                $ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerFQDN -After $LastDataCollection.LastDateTimeCaptured
+                Update-SQLErrorLog -ServerInstance $SQLServerFQDN -Data $ErrorLogs | Out-Null
+                Update-SQLErrorLogStats -ServerInstance $SQLServerFQDN | Out-Null
             }
                 
         }

@@ -3,28 +3,33 @@
 Get-SQLErrorLogStats
 
 .DESCRIPTION 
-Get-SQLErrorLogStats
+Gets the last date/time error logs were collected.  If this is a new instance
+for which no error logs are collected, then it will call Update-SQLErrorLogStats 
+to set it to Jan 1, 1900 midnight.
 
-.PARAMETER ServerVNOName
-Left side part of ServerName\InstanceName pair.
-
-.PARAMETER SQLInstanceName
-Right side part of ServerName\InstanceName pair.
+.PARAMETER ServerInstance
+Get the last collection date/time for SQL instance. 
 
 .INPUTS
 None
 
 .OUTPUTS
-Get-SQLErrorLogStats
+Date/time of the last error log collection.
 
 .EXAMPLE
-PowerShell Command Let
+Get-SQLErrorLogStats -ServerInstance ContosoSQL
 
-Description
+Get details for this instance.
+
+.EXAMPLE
+Get-SQLErrorLogStats
+
+Get details for all instances and their last collection date/time.
 
 .NOTES
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
+2020.02.07 0.00.01 Initial Version.
 #>
 function Get-SQLErrorLogStats
 {
@@ -41,7 +46,7 @@ function Get-SQLErrorLogStats
     
     $ModuleName = 'Get-SQLErrorLogStats'
     $ModuleVersion = '0.01'
-    $ModuleLastUpdated = 'June 9, 2016'
+    $ModuleLastUpdated = 'February 7, 2020'
 
     try
     {
@@ -79,7 +84,7 @@ function Get-SQLErrorLogStats
             $TSQL += "WHERE SI.SQLInstanceID = $($ServerInstanceObj.SQLInstanceID)"
         }
 
-        Write-StatusUpdate -Message $TSQL
+        Write-StatusUpdate -Message $TSQL -IsTSQL
 
         $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
                                     -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `

@@ -3,29 +3,36 @@
 Update-SQLErrorLogStats
 
 .DESCRIPTION 
-Update-SQLErrorLogStats
+Update the last collection date for SQL Server instance.  This information
+is used to make sure we are only selecting errors since last collection.
 
-.PARAMETER ServerVNOName
-Left side part of ServerName\InstanceName pair.
+.PARAMETER ServerInstance
+SQL Server instance for which the date needs to be updated.
 
-.PARAMETER SQLInstanceName
-Right side part of ServerName\InstanceName pair.
-
+.PARAMETER DateTime
+Specify a specific date that needs to be updated.  If not supplied, it will 
+use current date.
 
 .INPUTS
 None
 
 .OUTPUTS
-Update-SQLErrorLogStats
+Results for current instance.
 
 .EXAMPLE
-PowerShell Command Let
+Update-SQLErrorLogStats -ServerInstance ContosoSQL
 
-Description
+Update the collection date/time to now.
+
+.EXAMPLE
+Update-SQLErrorLogStats -ServerInstance ContosoSQL -DateTime '2020-01-01 00:00:00'
+
+Set the date time for collect date to Jan 1, 2020 Midnight.  
 
 .NOTES
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
+2020.02.07 0.00.01 Initial Version.
 #>
 function Update-SQLErrorLogStats
 {
@@ -44,7 +51,7 @@ function Update-SQLErrorLogStats
     
     $ModuleName = 'Update-SQLErrorLogStats'
     $ModuleVersion = '0.01'
-    $ModuleLastUpdated = 'June 9, 2016'
+    $ModuleLastUpdated = 'February 7, 2020'
    
     try
     {
@@ -101,6 +108,7 @@ function Update-SQLErrorLogStats
                     AND SI.ServerID IS NULL
                   WHERE SI.SQLInstanceID = $($ServerInstanceObj.SQLInstanceID)"
 
+        Write-StatusUpdate -Message $TSQL -IsTSQL
         $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
                                     -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
                                     -Query $TSQL
