@@ -34,14 +34,19 @@ Get only the errors after Feb. 1st 12AM.
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2020.02.06 0.00.01 Initial Version
+2020.02.13 0.00.03 Updated the parameters with parameter set names.
+                   Updated reference to Get-SQLInstance to use new variable name.
 #>
 function Get-SISQLErrorLogs
 {
-    [CmdletBinding()] 
+    [CmdletBinding(DefaultParameterSetName='ServerInstance')] 
     param( 
-    [Parameter(Position=0, Mandatory=$true)] [string]$ServerInstance,
-    [Parameter(Position=1, Mandatory=$false)] [datetime]$After,
-    [Parameter(Position=2, Mandatory=$false, DontShow)] [Switch]$Internal
+    [Parameter(ParameterSetName='ServerInstance',Position=0, Mandatory=$true)]
+    [Parameter(ParameterSetName='After',Position=0, Mandatory=$true)]
+    [Parameter(ParameterSetName='Internal', Position=0, Mandatory=$true)] [string]$ServerInstance,
+    [Parameter(ParameterSetName='After',Position=1, Mandatory=$true)] [datetime]$After,
+    [Parameter(ParameterSetName='After',Position=2, Mandatory=$false)]
+    [Parameter(ParameterSetName='Internal', Position=1, Mandatory=$false, DontShow)] [Switch]$Internal
     )
 
     if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
@@ -51,11 +56,10 @@ function Get-SISQLErrorLogs
     }
     
     $ModuleName = 'Get-SISQLErrorLogs'
-    $ModuleVersion = '0.01'
-    $ModuleLastUpdated = 'February 6, 2020'
+    $ModuleVersion = '0.03'
+    $ModuleLastUpdated = 'February 13, 2020'
 
-    $ServerInstanceParts = Split-Parts -ServerInstance $ServerInstance
-    $ServerInstanceObj = Get-SQLInstance -ServerVNOName $ServerInstanceParts.ComputerName -SQLInstanceName $ServerInstanceParts.SQLInstanceName
+    $ServerInstanceObj = Get-SQLInstance -ServerInstance $ServerInstance -Internal:$Internal
 
     if ($Internal)
     {

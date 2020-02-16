@@ -27,9 +27,13 @@ Get-SQLErrorLogStats
 Get details for all instances and their last collection date/time.
 
 .NOTES
-Date       Version Comments
----------- ------- ------------------------------------------------------------------
-2020.02.07 0.00.01 Initial Version.
+Date        Version Comments
+----------  ------- ------------------------------------------------------------------
+2020.02.07  0.00.01 Initial Version.
+2020.02.13  0.00.04 Updated reference to Get-SQLInstance to use new variable name.
+                    Refactored code.
+                    Updated T-SQL code to use the view, to make it easier to get instance
+                     details.
 #>
 function Get-SQLErrorLogStats
 {
@@ -45,19 +49,23 @@ function Get-SQLErrorLogStats
     }
     
     $ModuleName = 'Get-SQLErrorLogStats'
-    $ModuleVersion = '0.01'
-    $ModuleLastUpdated = 'February 7, 2020'
+    $ModuleVersion = '0.04'
+    $ModuleLastUpdated = 'February 13, 2020'
 
     try
     {
         Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
+        #What is T-SQL Doing?
+        $TSQL = "SELECT SI.ComputerName, SI.SQLInstanceName, ER.LastDateTimeCaptured
+                   FROM dbo.SQLErrorLog_Stats ER
+                   JOIN dbo.vSQLInstances SI
+                     ON ER.SQLInstanceID = SI.SQLInstanceID "
+
         if (!([String]::IsNullOrEmpty($ServerInstance)))
         {
-            $ServerInstanceParts = Split-Parts -ServerInstance $ServerInstance
-
             # Validate sql instance exists.
-            $ServerInstanceObj = Get-SQLInstance -ServerVNOName $ServerInstanceParts.ComputerName -SQLInstanceName $ServerInstanceParts.SQLInstanceName
+            $ServerInstanceObj = Get-SQLInstance -ServerInstance $ServerInstance -Internal
 
             IF ($ServerInstanceObj -eq $Global:Error_ObjectsNotFound)
             {
@@ -65,22 +73,7 @@ function Get-SQLErrorLogStats
                 Write-Output $Global:Error_FailedToComplete
                 return
             }
-        }
 
-        #What is T-SQL Doing?
-        $TSQL = "SELECT CASE WHEN SI.ServerID IS NULL THEN SC.SQLClusterName ELSE S.ServerName END AS ComputerName, SI.SQLInstanceName, ER.LastDateTimeCaptured
-                   FROM dbo.SQLErrorLog_Stats ER
-                   JOIN dbo.SQLInstances SI
-                     ON ER.SQLInstanceID = SI.SQLInstanceID
-              LEFT JOIN dbo.Servers S
-                     ON SI.ServerID = S.ServerID
-                    AND SI.SQLClusterID IS NULL
-              LEFT JOIN dbo.SQLClusters SC
-                     ON SI.SQLClusterID = SC.SQLClusterID
-                    AND SI.ServerID IS NULL "
-
-        if (!([String]::IsNullOrEmpty($ServerInstance)))
-        {
             $TSQL += "WHERE SI.SQLInstanceID = $($ServerInstanceObj.SQLInstanceID)"
         }
 

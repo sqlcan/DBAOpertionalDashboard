@@ -49,3 +49,4 @@ Date		Version		Author		Comments
                                         Added new SQL versions and Windows versions.
                                         Spelling correction all over the script.
                                         Refactored Extended properties check, to remove multiple validations.
+2020.02.13  V1.12       Mohit K. Gupta  Updated references to Get-SQLInstance to use new standard variable name.

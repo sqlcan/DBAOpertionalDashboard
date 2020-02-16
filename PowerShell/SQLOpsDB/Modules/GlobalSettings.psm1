@@ -34,9 +34,9 @@ $Global:SQLOpsDBInitialized = $false
 [String]$Global:Default_DomainName = $null # Loaded from dbo.Setting.
 
 # Key Settings
-$Global:CMS_SQLServerName = "MOGUPTA-PC01"
+$Global:CMS_SQLServerName = "MOGUPTA-PC02"
 $Global:CMS_DatabaseName = "msdb"
-$Global:SQLCMDB_SQLServerName = "MOGUPTA-PC01"
+$Global:SQLCMDB_SQLServerName = "MOGUPTA-PC02"
 $Global:SQLCMDB_DatabaseName = "DBA_Dashboard_PROD"
 
 # Global Settings Below as above, these are kept for backwards compatibility.

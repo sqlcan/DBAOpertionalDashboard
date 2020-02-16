@@ -23,9 +23,10 @@ Update-SQLErrorLog -ServerInstance Contoso -Data $Data
 Take the data passed in and save it in SQLOpsDB for ServerInstance.
 
 .NOTES
-Date       Version Comments
----------- ------- ------------------------------------------------------------------
-2020.02.06 0.00.01 Initial version.
+Date        Version Comments
+----------  ------- ------------------------------------------------------------------
+2020.02.06  0.00.01 Initial version.
+2020.02.13  0.00.02 Updated reference to Get-SQLInstance to use new variable name.
 #>
 function Update-SQLErrorLog
 {
@@ -42,13 +43,11 @@ function Update-SQLErrorLog
     }
     
     $ModuleName = 'Update-SQLErrorLog'
-    $ModuleVersion = '0.01'
-    $ModuleLastUpdated = 'February 6, 2020'
-
-    $ServerInstanceParts = Split-Parts -ServerInstance $ServerInstance
+    $ModuleVersion = '0.02'
+    $ModuleLastUpdated = 'February 13, 2020'
 
     # Validate sql instance exists.
-    $ServerInstanceObj = Get-SQLInstance -ServerVNOName $ServerInstanceParts.ComputerName -SQLInstanceName $ServerInstanceParts.SQLInstanceName
+    $ServerInstanceObj = Get-SQLInstance -ServerInstance $ServerInstance
 
     IF ($ServerInstanceObj -eq $Global:Error_ObjectsNotFound)
     {

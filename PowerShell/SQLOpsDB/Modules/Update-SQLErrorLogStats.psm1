@@ -30,9 +30,11 @@ Update-SQLErrorLogStats -ServerInstance ContosoSQL -DateTime '2020-01-01 00:00:0
 Set the date time for collect date to Jan 1, 2020 Midnight.  
 
 .NOTES
-Date       Version Comments
----------- ------- ------------------------------------------------------------------
-2020.02.07 0.00.01 Initial Version.
+Date        Version Comments
+----------  ------- ------------------------------------------------------------------
+2020.02.07  0.00.01 Initial Version.
+2020.02.13  0.00.03 Updated reference to Get-SQLInstance to use new variable name.
+                    Refactored how results are returned.
 #>
 function Update-SQLErrorLogStats
 {
@@ -50,17 +52,15 @@ function Update-SQLErrorLogStats
     }
     
     $ModuleName = 'Update-SQLErrorLogStats'
-    $ModuleVersion = '0.01'
-    $ModuleLastUpdated = 'February 7, 2020'
+    $ModuleVersion = '0.03'
+    $ModuleLastUpdated = 'February 13, 2020'
    
     try
     {
         Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
-        $ServerInstanceParts = Split-Parts -ServerInstance $ServerInstance
-
-        # Validate sql instance exists.
-        $ServerInstanceObj = Get-SQLInstance -ServerVNOName $ServerInstanceParts.ComputerName -SQLInstanceName $ServerInstanceParts.SQLInstanceName
+        # Validate sql instance exists. 
+        $ServerInstanceObj = Get-SQLInstance -ServerInstance $ServerInstance -Internal
     
         IF ($ServerInstanceObj -eq $Global:Error_ObjectsNotFound)
         {
@@ -95,24 +95,7 @@ function Update-SQLErrorLogStats
                       -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
                       -Query $TSQL
         
-        #What is T-SQL Doing?
-        $TSQL = "SELECT CASE WHEN SI.ServerID IS NULL THEN SC.SQLClusterName ELSE S.ServerName END AS ComputerName, SI.SQLInstanceName, ER.LastDateTimeCaptured
-                   FROM dbo.SQLErrorLog_Stats ER
-                   JOIN dbo.SQLInstances SI
-                     ON ER.SQLInstanceID = SI.SQLInstanceID
-              LEFT JOIN dbo.Servers S
-                     ON SI.ServerID = S.ServerID
-                    AND SI.SQLClusterID IS NULL
-              LEFT JOIN dbo.SQLClusters SC
-                     ON SI.SQLClusterID = SC.SQLClusterID
-                    AND SI.ServerID IS NULL
-                  WHERE SI.SQLInstanceID = $($ServerInstanceObj.SQLInstanceID)"
-
-        Write-StatusUpdate -Message $TSQL -IsTSQL
-        $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
-                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
-                                    -Query $TSQL
-                                                                        
+        $Results = Get-SQLErrorLogStats -ServerInstance $ServerInstance                                                                        
         Write-Output $Results
     }
     catch
