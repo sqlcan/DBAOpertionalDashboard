@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-Update-SQLErrorLog
+Update-SQLOpSQLErrorLog
 
 .DESCRIPTION 
-Update-SQLErrorLog
+Update-SQLOpSQLErrorLog
 
 .PARAMETER ServerInstance
 SQL Server instance name for which the error log is being uploaded.
@@ -18,7 +18,7 @@ None
 Nothing.
 
 .EXAMPLE
-Update-SQLErrorLog -ServerInstance Contoso -Data $Data
+Update-SQLOpSQLErrorLog -ServerInstance Contoso -Data $Data
 
 Take the data passed in and save it in SQLOpsDB for ServerInstance.
 
@@ -27,13 +27,15 @@ Date        Version Comments
 ----------  ------- ------------------------------------------------------------------
 2020.02.06  0.00.01 Initial version.
 2020.02.13  0.00.02 Updated reference to Get-SQLInstance to use new variable name.
+2020.02.19  0.00.04 Updated module name to Update-SQLOpSQLErrorLog.
+                    Updated reference to Get-SQLOpSQLInstance.
 #>
-function Update-SQLErrorLog
+function Update-SQLOpSQLErrorLog
 {
     [CmdletBinding()] 
     param( 
     [Parameter(Position=0, Mandatory=$true)] [string]$ServerInstance,
-    [Parameter(Position=0, Mandatory=$true)] $Data
+    [Parameter(Position=1, Mandatory=$true)] $Data
     )
 
     if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
@@ -42,12 +44,12 @@ function Update-SQLErrorLog
         return
     }
     
-    $ModuleName = 'Update-SQLErrorLog'
-    $ModuleVersion = '0.02'
-    $ModuleLastUpdated = 'February 13, 2020'
+    $ModuleName = 'Update-SQLOpSQLErrorLog'
+    $ModuleVersion = '0.04'
+    $ModuleLastUpdated = 'February 19, 2020'
 
     # Validate sql instance exists.
-    $ServerInstanceObj = Get-SQLInstance -ServerInstance $ServerInstance
+    $ServerInstanceObj = Get-SqlOpSQLInstance -ServerInstance $ServerInstance
 
     IF ($ServerInstanceObj -eq $Global:Error_ObjectsNotFound)
     {
@@ -71,6 +73,8 @@ function Update-SQLErrorLog
     try
     {
 
+        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
+
         # Create a staging table to store the results.  Using staging table, we can do batch process.
         # Other option would be row-by-row operation.
 
@@ -89,8 +93,6 @@ function Update-SQLErrorLog
         Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
                       -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
                       -Query $TSQL
-
-        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
         # Load the Staging table we just created.
         Write-SqlTableData -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `

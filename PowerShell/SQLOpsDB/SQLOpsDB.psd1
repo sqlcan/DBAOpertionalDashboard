@@ -74,13 +74,16 @@
     '.\Modules\Initialize-SQLOpsDB.psm1';
     '.\Modules\Write-StatusUpdate.psm1';
     '.\Modules\GlobalSettings.psm1';
-    # SQL Service Modules
-    '.\Modules\Get-SQLService.psm1';
-    '.\Modules\Update-SQLService.psm1';
-    # SQL Error Log Modules
-    '.\Modules\Update-SQLErrorLog.psm1';
-    '.\Modules\Get-SQLErrorLogStats.psm1';
-    '.\Modules\Update-SQLErrorLogStats.psm1';
+    # Command Lets to interact with SQL Ops DB.
+        # SQL Instance
+        '.\Modules\Get-SQLOpSQLInstance.psm1';
+        # SQL Service
+        '.\Modules\Get-SQLService.psm1';
+        '.\Modules\Update-SQLService.psm1';
+        # SQL Error Log Modules
+        '.\Modules\Update-SQLOpSQLErrorLog.psm1';
+        '.\Modules\Get-SQLOpSQLErrorLogStats.psm1';
+        '.\Modules\Update-SQLOpSQLErrorLog.psm1';
     #'.\Modules\Add-Database.psm1';
     '.\Modules\Add-Server.psm1';
     '.\Modules\Add-SQLCluster.psm1';
@@ -90,7 +93,6 @@
     '.\Modules\Get-Server.psm1';
     '.\Modules\Get-SQLCluster.psm1';
     '.\Modules\Get-SQLClusterNode.psm1';
-    '.\Modules\Get-SQLInstance.psm1';
     '.\Modules\Update-Database.psm1';
     '.\Modules\Update-Server.psm1';
     '.\Modules\Update-SQLCluster.psm1';

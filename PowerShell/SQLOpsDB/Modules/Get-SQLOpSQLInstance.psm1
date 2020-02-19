@@ -23,12 +23,12 @@ None
 List of SQL instance details.
 
 .EXAMPLE
-Get-SQLInstance -ServerInstance ContosSQL
+Get-SqlOpSQLInstance -ServerInstance ContosSQL
 
 Return SQL instance if found, if not it will return error not found (-3).
 
 .EXAMPLE
-Get-SQLInstance -ListAvailable
+Get-SqlOpSQLInstance -ListAvailable
 
 Return list of all instances.
 
@@ -43,8 +43,10 @@ Date        Version Comments
                     Refactored code.
                     Added documentation.
                     Added support to list all the instances if needed.
+2020.02.19  0.01.07 Updated command let name to avoid conflict with SQLServer
+                     official Microsoft PowerShell module.
 #>
-function Get-SQLInstance
+function Get-SqlOpSQLInstance
 {
     [CmdletBinding(DefaultParameterSetName='List')] 
     param( 
@@ -66,9 +68,9 @@ function Get-SQLInstance
         $ListAvailable = $true
     }
 
-    $ModuleName = 'Get-SQLInstance'
-    $ModuleVersion = '0.01.05'
-    $ModuleLastUpdated = 'February 13, 2020'
+    $ModuleName = 'Get-SqlOpSQLInstance'
+    $ModuleVersion = '0.01.07'
+    $ModuleLastUpdated = 'February 19, 2020'
 
     Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
@@ -108,7 +110,7 @@ function Get-SQLInstance
     }
     catch
     {
-        Write-StatusUpdate -Message "Failed to Get-SQLInstance (unhandled exception)." -WriteToDB
+        Write-StatusUpdate -Message "Failed to Get-SqlOpSQLInstance (unhandled exception)." -WriteToDB
         Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
         Write-Output $Global:Error_FailedToComplete
     }

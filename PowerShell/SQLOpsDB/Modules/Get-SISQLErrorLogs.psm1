@@ -36,6 +36,7 @@ Date       Version Comments
 2020.02.06 0.00.01 Initial Version
 2020.02.13 0.00.03 Updated the parameters with parameter set names.
                    Updated reference to Get-SQLInstance to use new variable name.
+2020.02.19 0.00.04 Updated command-let name for Get-SQLOpSQLInstance.
 #>
 function Get-SISQLErrorLogs
 {
@@ -56,10 +57,10 @@ function Get-SISQLErrorLogs
     }
     
     $ModuleName = 'Get-SISQLErrorLogs'
-    $ModuleVersion = '0.03'
-    $ModuleLastUpdated = 'February 13, 2020'
+    $ModuleVersion = '0.00.04'
+    $ModuleLastUpdated = 'February 19, 2020'
 
-    $ServerInstanceObj = Get-SQLInstance -ServerInstance $ServerInstance -Internal:$Internal
+    $ServerInstanceObj = Get-SqlOpSQLInstance -ServerInstance $ServerInstance -Internal:$Internal
 
     if ($Internal)
     {

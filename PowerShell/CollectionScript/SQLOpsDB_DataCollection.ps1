@@ -698,7 +698,7 @@ ForEach ($SQLServerRC in $SQLServers)
         #endregion
 
         # Phase 2: SQL Instances, Availability Groups, and Databases Process
-        $Results = Get-SQLInstance -ServerInstance $SQLServerFQDN -Internal
+        $Results = Get-SqlOpSQLInstance -ServerInstance $SQLServerFQDN -Internal
 
         switch ($Results)
         {
@@ -721,7 +721,7 @@ ForEach ($SQLServerRC in $SQLServers)
                     }
                     default
                     {
-                        $InnerResults = Get-SQLInstance -ServerInstance $SQLServerFQDN -Internal
+                        $InnerResults = Get-SqlOpSQLInstance -ServerInstance $SQLServerFQDN -Internal
                         $ServerInstanceIsMonitored = $InnerResults.IsMonitored
                         $SQLInstanceID = $InnerResults.SQLInstanceID
                         break;
@@ -1027,10 +1027,10 @@ ForEach ($SQLServerRC in $SQLServers)
                 # Get SQL Instance Error Logs.  Get the last collect date, then get only errors since last collection.
                 # record the errors in SQLOpsDB.  Then update all collection date time.
 
-                $LastDataCollection = Get-SQLErrorLogStats -ServerInstance $SQLServerFQDN
+                $LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerFQDN
                 $ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerFQDN -After $LastDataCollection.LastDateTimeCaptured -Internal
-                Update-SQLErrorLog -ServerInstance $SQLServerFQDN -Data $ErrorLogs | Out-Null
-                Update-SQLErrorLogStats -ServerInstance $SQLServerFQDN | Out-Null
+                Update-SQLOpSQLErrorLog -ServerInstance $SQLServerFQDN -Data $ErrorLogs | Out-Null
+                Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerFQDN | Out-Null
             }
                 
         }

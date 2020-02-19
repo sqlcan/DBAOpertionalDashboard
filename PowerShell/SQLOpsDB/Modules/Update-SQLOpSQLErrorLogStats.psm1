@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Update-SQLErrorLogStats
+Update-SQLOpSQLErrorLogStats
 
 .DESCRIPTION 
 Update the last collection date for SQL Server instance.  This information
@@ -20,12 +20,12 @@ None
 Results for current instance.
 
 .EXAMPLE
-Update-SQLErrorLogStats -ServerInstance ContosoSQL
+Update-SQLOpSQLErrorLogStats -ServerInstance ContosoSQL
 
 Update the collection date/time to now.
 
 .EXAMPLE
-Update-SQLErrorLogStats -ServerInstance ContosoSQL -DateTime '2020-01-01 00:00:00'
+Update-SQLOpSQLErrorLogStats -ServerInstance ContosoSQL -DateTime '2020-01-01 00:00:00'
 
 Set the date time for collect date to Jan 1, 2020 Midnight.  
 
@@ -35,8 +35,10 @@ Date        Version Comments
 2020.02.07  0.00.01 Initial Version.
 2020.02.13  0.00.03 Updated reference to Get-SQLInstance to use new variable name.
                     Refactored how results are returned.
+2020.02.19  0.00.05 Updated reference to Get-SQLOpSQLInstance.
+                    Updated module name to Get-SQLOpSQLErrorLogStats.
 #>
-function Update-SQLErrorLogStats
+function Update-SQLOpSQLErrorLogStats
 {
     [CmdletBinding()] 
     param( 
@@ -51,16 +53,16 @@ function Update-SQLErrorLogStats
         return
     }
     
-    $ModuleName = 'Update-SQLErrorLogStats'
-    $ModuleVersion = '0.03'
-    $ModuleLastUpdated = 'February 13, 2020'
+    $ModuleName = 'Update-SQLOpSQLErrorLogStats'
+    $ModuleVersion = '0.05'
+    $ModuleLastUpdated = 'February 19, 2020'
    
     try
     {
         Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
         # Validate sql instance exists. 
-        $ServerInstanceObj = Get-SQLInstance -ServerInstance $ServerInstance -Internal
+        $ServerInstanceObj = Get-SqlOpSQLInstance -ServerInstance $ServerInstance -Internal
     
         IF ($ServerInstanceObj -eq $Global:Error_ObjectsNotFound)
         {
@@ -95,7 +97,7 @@ function Update-SQLErrorLogStats
                       -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
                       -Query $TSQL
         
-        $Results = Get-SQLErrorLogStats -ServerInstance $ServerInstance                                                                        
+        $Results = Get-SQLOpsSQLErrorLogStats -ServerInstance $ServerInstance                                                                        
         Write-Output $Results
     }
     catch

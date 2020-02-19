@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Get-SQLErrorLogStats
+Get-SQLOpSQLErrorLogStats
 
 .DESCRIPTION 
 Gets the last date/time error logs were collected.  If this is a new instance
@@ -17,12 +17,12 @@ None
 Date/time of the last error log collection.
 
 .EXAMPLE
-Get-SQLErrorLogStats -ServerInstance ContosoSQL
+Get-SQLOpSQLErrorLogStats -ServerInstance ContosoSQL
 
 Get details for this instance.
 
 .EXAMPLE
-Get-SQLErrorLogStats
+Get-SQLOpSQLErrorLogStats
 
 Get details for all instances and their last collection date/time.
 
@@ -34,8 +34,10 @@ Date        Version Comments
                     Refactored code.
                     Updated T-SQL code to use the view, to make it easier to get instance
                      details.
+2020.02.19  0.00.05 Updated module name to Get-SQLOpSQLErrorLogStats.
+                    Updated reference to Get-SQLOpSQLInstance.
 #>
-function Get-SQLErrorLogStats
+function Get-SQLOpSQLErrorLogStats
 {
     [CmdletBinding()] 
     param( 
@@ -48,9 +50,9 @@ function Get-SQLErrorLogStats
         return
     }
     
-    $ModuleName = 'Get-SQLErrorLogStats'
-    $ModuleVersion = '0.04'
-    $ModuleLastUpdated = 'February 13, 2020'
+    $ModuleName = 'Get-SQLOpSQLErrorLogStats'
+    $ModuleVersion = '0.06'
+    $ModuleLastUpdated = 'February 19, 2020'
 
     try
     {
@@ -65,7 +67,7 @@ function Get-SQLErrorLogStats
         if (!([String]::IsNullOrEmpty($ServerInstance)))
         {
             # Validate sql instance exists.
-            $ServerInstanceObj = Get-SQLInstance -ServerInstance $ServerInstance -Internal
+            $ServerInstanceObj = Get-SqlOpSQLInstance -ServerInstance $ServerInstance -Internal
 
             IF ($ServerInstanceObj -eq $Global:Error_ObjectsNotFound)
             {
@@ -91,7 +93,7 @@ function Get-SQLErrorLogStats
 
             if (!([String]::IsNullOrEmpty($ServerInstance)))
             {
-                $Results = Update-SQLErrorLogStats -ServerInstance $ServerInstance -DateTime '1900-01-01 00:00:00'
+                $Results = Update-SQLOpSQLErrorLogStats -ServerInstance $ServerInstance -DateTime '1900-01-01 00:00:00'
                 Write-Output $Results
             }
             else {
