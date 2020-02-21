@@ -3,7 +3,7 @@ Import-Module SQLServer -DisableNameChecking
 Import-Module '.\SQLOpsDB\SQLOpsDB.psd1' -DisableNameChecking
 
 # Before we can utilize the command-lets in SQLOpsDB, it must be initialized.
-if (Initialize-SQLOpsDB -eq $Global:Error_FailedToComplete)
+if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
 {
     Write-Error "Unable to initialize SQLOpsDB.  Cannot continue with collection."
     return
@@ -27,7 +27,7 @@ try
 
     # Get list of SQL Server Instances from Central Management Server (CMS).
     # Enable or disable which CMS groups are monitored via Set-CMSGroup commandlet.
-    $SQLServers = Get-CMSServers
+    $SQLServers = Get-CMSServers #-ServerName contoso.com
 }
 catch
 {
@@ -1029,7 +1029,10 @@ ForEach ($SQLServerRC in $SQLServers)
 
                 $LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerFQDN
                 $ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerFQDN -After $LastDataCollection.LastDateTimeCaptured -Internal
-                Update-SQLOpSQLErrorLog -ServerInstance $SQLServerFQDN -Data $ErrorLogs | Out-Null
+                if ($ErrorLogs)
+                {
+                    Update-SQLOpSQLErrorLog -ServerInstance $SQLServerFQDN -Data $ErrorLogs | Out-Null
+                }
                 Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerFQDN | Out-Null
             }
                 

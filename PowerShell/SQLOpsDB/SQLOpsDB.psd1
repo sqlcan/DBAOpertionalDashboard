@@ -84,6 +84,8 @@
         '.\Modules\Update-SQLOpSQLErrorLog.psm1';
         '.\Modules\Get-SQLOpSQLErrorLogStats.psm1';
         '.\Modules\Update-SQLOpSQLErrorLog.psm1';
+        # SQL Jobs Modules
+        '.\Modules\Get-SISQLJobs.psm1';
     #'.\Modules\Add-Database.psm1';
     '.\Modules\Add-Server.psm1';
     '.\Modules\Add-SQLCluster.psm1';
