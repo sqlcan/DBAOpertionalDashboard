@@ -26,6 +26,7 @@ Date		Version		Author		Comments
             3.00.06.0009    Mohit K. Gupta  New module to save error logs Update-SQLErrorLog.
             3.00.07.0009    Mohit K. Gupta  New module to split parts of a Computer Name or Server Instance names.
             3.00.08.0009    Mohit K. Gupta  New module to last time errors were collected, Get-SQLErrorLogStats --- NOT FINISHED.
+2020.02.27  3.00.08.0010    Mohit K. Gupta  Updated manifest file to include Update-SQLOpSQLErrorLogStats.  Issue #34.
 
 
 DBServerAndDBSpaceMonitoring.ps1 Version History

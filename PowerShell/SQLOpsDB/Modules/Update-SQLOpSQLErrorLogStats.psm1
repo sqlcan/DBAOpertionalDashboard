@@ -37,6 +37,7 @@ Date        Version Comments
                     Refactored how results are returned.
 2020.02.19  0.00.05 Updated reference to Get-SQLOpSQLInstance.
                     Updated module name to Get-SQLOpSQLErrorLogStats.
+2020.02.27  0.00.06 Fixed Bug #33.
 #>
 function Update-SQLOpSQLErrorLogStats
 {
@@ -54,8 +55,8 @@ function Update-SQLOpSQLErrorLogStats
     }
     
     $ModuleName = 'Update-SQLOpSQLErrorLogStats'
-    $ModuleVersion = '0.05'
-    $ModuleLastUpdated = 'February 19, 2020'
+    $ModuleVersion = '0.06'
+    $ModuleLastUpdated = 'February 27, 2020'
    
     try
     {
@@ -97,7 +98,7 @@ function Update-SQLOpSQLErrorLogStats
                       -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
                       -Query $TSQL
         
-        $Results = Get-SQLOpsSQLErrorLogStats -ServerInstance $ServerInstance                                                                        
+        $Results = Get-SQLOpSQLErrorLogStats -ServerInstance $ServerInstance                                                                        
         Write-Output $Results
     }
     catch

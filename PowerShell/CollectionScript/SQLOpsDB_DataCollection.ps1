@@ -863,39 +863,54 @@ ForEach ($SQLServerRC in $SQLServers)
                 if ($SQLServer_Major -eq 8)
                 {
                     $TSQL = " SELECT   $SQLInstanceID AS InstanceID
-                                     , CAST('00000000-0000-0000-0000-000000000000' AS uniqueidentifier) AS AGGuid
-                                     , name AS DatabaseName
-                                     , '----' AS FileType
-		                             , 0 AS FileSize_mb                                        
+                                        , CAST('00000000-0000-0000-0000-000000000000' AS uniqueidentifier) AS AGGuid
+                                        , name AS DatabaseName
+                                        , CASE
+                                            WHEN ((status & 8 = 8) OR (status & 16 = 16) OR (status & 24 = 24)) and (status & 512 <> 512) THEN
+                                                'Online'
+                                            WHEN status & 512 = 512 THEN
+                                                'Offline'
+                                            WHEN status & 1024 = 1024 THEN
+                                                'Read Only'
+                                            ELSE
+                                                'Unknown'
+                                        END AS DatabaseState
+                                        , '----' AS FileType
+                                        , 0 AS FileSize_mb                                        
                                 FROM sysdatabases
                                 WHERE dbid NOT IN (1,3,4)"
                 }
                 elseif (($SQLServer_Major -ge 9) -and ($SQLServer_Major -le 10))
                 {
                     $TSQL = "   WITH DBDetails
-                                    AS (SELECT   DB_NAME(database_id) AS DatabaseName
+                                    AS (SELECT   DB_NAME(D.database_id) AS DatabaseName
+                                                , D.state_desc AS DatabaseState
 	                                            , CASE WHEN type = 0 THEN 'Data' ELSE 'Log' END AS FileType
 				                                , size/128 AS FileSize_mb
-                                        FROM sys.master_files
-                                        WHERE database_id NOT IN (1,3,4))
+                                        FROM sys.master_files mf
+                                        JOIN sys.databases D
+                                          ON mf.database_id = D.database_id
+                                        WHERE D.database_id NOT IN (1,3,4))
                                 SELECT   $SQLInstanceID AS InstanceID
                                         , CAST('00000000-0000-0000-0000-000000000000' AS uniqueidentifier) AS AGGuid
                                         , DatabaseName
+                                        , DatabaseState
                                         , FileType
 		                                , SUM(FileSize_mb) AS FileSize_mb
                                 FROM DBDetails
-                            GROUP BY DatabaseName, FileType"
+                            GROUP BY DatabaseName, DatabaseState, FileType"
                 }
                 else
                 {
                     $TSQL = "  WITH DBDetails
                                     AS (SELECT   ISNULL(AG.group_id,CAST('00000000-0000-0000-0000-000000000000' AS uniqueidentifier)) AS AGGuid
                                             , DB_NAME(MF.database_id) AS DatabaseName
+                                            , D.state_desc AS DatabaseState
                                             , CASE WHEN type = 0 THEN 'Data' ELSE 'Log' END AS FileType
                                             , size/128 AS FileSize_mb
                                         FROM sys.master_files MF
                                     LEFT JOIN sys.databases D
-                                            ON MF.database_id = D.Database_id
+                                            ON MF.database_id = D.database_id
                                     LEFT JOIN sys.availability_replicas AR
                                             ON D.replica_id = AR.replica_id
                                     LEFT JOIN sys.availability_groups AG
@@ -904,10 +919,11 @@ ForEach ($SQLServerRC in $SQLServers)
                             SELECT   $SQLInstanceID AS InstanceID
                                     , AGGuid
                                     , DatabaseName
+                                    , DatabaseState 
                                     , FileType
 		                            , SUM(FileSize_mb) AS FileSize_mb
                                 FROM DBDetails
-                            GROUP BY AGGuid, DatabaseName, FileType"
+                            GROUP BY AGGuid, DatabaseName, DatabaseState, FileType"
                 }
                 Write-StatusUpdate -Message $TSQL -IsTSQL                    
                 $Results = Invoke-SQLCMD -ServerInstance $SQLServerFQDN  `
@@ -928,15 +944,16 @@ ForEach ($SQLServerRC in $SQLServers)
 
                     # Update database catalog
                     $TSQL = "WITH CTE AS
-                            ( SELECT DISTINCT SQLInstanceID, DatabaseName
+                            ( SELECT DISTINCT SQLInstanceID, DatabaseName, DatabaseState
                                 FROM Staging.DatabaseSizeDetails)
                             MERGE dbo.Databases AS Target
-                            USING (SELECT SQLInstanceID, DatabaseName FROM CTE) AS Source (SQLInstanceID, DatabaseName)
+                            USING (SELECT SQLInstanceID, DatabaseName, DatabaseState FROM CTE) AS Source (SQLInstanceID, DatabaseName, DatabaseState)
                             ON (Target.SQLInstanceID = Source.SQLInstanceID AND Target.DatabaseName = Source.DatabaseName)
                             WHEN MATCHED THEN
-	                            UPDATE SET Target.LastUpdated = GETDATE()
+	                            UPDATE SET Target.LastUpdated = GETDATE(),
+                                           Target.DatabaseState = Source.DatabaseState
                             WHEN NOT MATCHED THEN
-                                INSERT (SQLInstanceID, DatabaseName, IsMonitored, DiscoveryOn, LastUpdated) VALUES (Source.SQLInstanceID, Source.DatabaseName, 1, GetDate(), GetDate());"
+                                INSERT (SQLInstanceID, DatabaseName, DatabaseState, IsMonitored, DiscoveryOn, LastUpdated) VALUES (Source.SQLInstanceID, Source.DatabaseName, Source.DatabaseState, 1, GetDate(), GetDate());"
 
                     Write-StatusUpdate -Message $TSQL -IsTSQL                    
                     $Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
