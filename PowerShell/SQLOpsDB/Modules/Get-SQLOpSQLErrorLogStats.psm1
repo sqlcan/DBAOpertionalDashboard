@@ -34,8 +34,9 @@ Date        Version Comments
                     Refactored code.
                     Updated T-SQL code to use the view, to make it easier to get instance
                      details.
-2020.02.19  0.00.05 Updated module name to Get-SQLOpSQLErrorLogStats.
+2020.02.19  0.00.06 Updated module name to Get-SQLOpSQLErrorLogStats.
                     Updated reference to Get-SQLOpSQLInstance.
+2020.03.02  0.00.07 Changed how to default data is calculated.  Issue #36.
 #>
 function Get-SQLOpSQLErrorLogStats
 {
@@ -51,8 +52,8 @@ function Get-SQLOpSQLErrorLogStats
     }
     
     $ModuleName = 'Get-SQLOpSQLErrorLogStats'
-    $ModuleVersion = '0.06'
-    $ModuleLastUpdated = 'February 19, 2020'
+    $ModuleVersion = '0.07'
+    $ModuleLastUpdated = 'March 2, 2020'
 
     try
     {
@@ -89,11 +90,11 @@ function Get-SQLOpSQLErrorLogStats
         if (!($Results))
         {
             # If this is for a SQL instance, then it means there has been no collection for this instance to-date.
-            # Create a new default entry in the database and return 1900-01-01 as date.
+            # Create a new default entry in the database and return current date - 30 days as date.
 
             if (!([String]::IsNullOrEmpty($ServerInstance)))
             {
-                $Results = Update-SQLOpSQLErrorLogStats -ServerInstance $ServerInstance -DateTime '1900-01-01 00:00:00'
+                $Results = Update-SQLOpSQLErrorLogStats -ServerInstance $ServerInstance -DateTime ((get-date).AddDays(-30).toString("yyyy-MM-dd HH:mm:ss"))
                 Write-Output $Results
             }
             else {
