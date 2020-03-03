@@ -28,7 +28,11 @@ Date       Version Comments
 				   Fixed a bug in the SSRS version check.
 2020.02.05 0.00.05 Renamed Command-Let to Get-SISQLService, because it interacts with
 					the infrastructure.
-				   Updated service name from SQLAgent to "SQL Agent."
+                   Updated service name from SQLAgent to "SQL Agent."
+2020.03.02 0.00.08 Excluded additional services from being scanned, AD Helper and SQL Writer.
+                   Added check for SQL class required for version under WMI.
+                   Fixed some spelling mistakes.
+                   (Issue #35)
 #>
 function Get-SISQLService
 {
@@ -44,8 +48,8 @@ function Get-SISQLService
     }
 	
     $ModuleName = 'Get-SISQLService'
-    $ModuleVersion = '0.00.05'
-    $ModuleLastUpdated = 'February 4, 2020'
+    $ModuleVersion = '0.00.08'
+    $ModuleLastUpdated = 'March 2, 2020'
 
     try
     {
@@ -64,21 +68,33 @@ function Get-SISQLService
 			[string] $Build;
 		}
 
-		function Get-SQLVersion ($ServiceName) {
-
-			ForEach ($SQLServiceCM In $SQLServicesCM)
-			{
-				if ($SQLServiceCM.ServiceName -eq $ServiceName)
-				{
-					return $SQLServiceCM.PropertyStrValue
-				}
-			}
+        function Get-SQLVersion ($ServiceName)
+        {
+            # We can only return version of the $SQLServiceCM was collected successfully. 
+            #
+            # This function returns the version information from WMI call, function is used to minimize
+            # the number of WMI calls.
+            if (!($SQLWMIClassMissing))
+            {
+			    ForEach ($SQLServiceCM In $SQLServicesCM)
+			    {
+				    if ($SQLServiceCM.ServiceName -eq $ServiceName)
+				    {
+					    return $SQLServiceCM.PropertyStrValue
+				    }
+			    }
+            }
+            else
+            {
+                return '0.0.0.0'
+            }
 		}
 
-		# Get list of all services that have word "SQL" or "PowerBI" in them.  We are using WMI for Win32_Services.  Becuase WMI for SQL does not provide
+		# Get list of all services that have word "SQL" or "PowerBI" in them.  We are using WMI for Win32_Services.  Because WMI for SQL does not provide
 		# list of all SQL services.
 		$Services = Get-WmiObject -Class Win32_Service -ComputerName $ComputerName
-		$Services = $Services | Where-Object {$_.DisplayName -Like '*SQL*' -OR $_.DisplayName -Like '*PowerBI*'-OR $_.Name -Like '*MsDts*'} | SELECT PSComputerName, DisplayName, Name, PathName, StartName, StartMode, State, Status
+		$Services = $Services | Where-Object {($_.DisplayName -Like '*SQL*' -OR $_.DisplayName -Like '*PowerBI*'-OR $_.Name -Like '*MsDts*') -and
+                                              ($_.Name -ne 'MSSQLServerADHelper100' -and $_.Name -ne 'SQLWriter')} | SELECT PSComputerName, DisplayName, Name, PathName, StartName, StartMode, State, Status
 
 
 		# Get SQL Services Version from WMI -- Get the Latest Name Space available.
@@ -102,10 +118,20 @@ function Get-SISQLService
 			}
 		}
 
-		$SQLCMNameSpace = "root\microsoft\sqlserver\ComputerManagement$SQLVersion"
-		$SQLServicesCM = Get-wmiobject -Namespace $SQLCMNameSpace -Class SqlServiceAdvancedProperty -ComputerName $ComputerName | ? {$_.PropertyName -EQ 'Version'} | SELECT PropertyName, PropertyStrValue, ServiceName
+        $SQLWMIClassMissing = $false
 
+        if ((((Get-wmiobject -Namespace $SQLCMNameSpace -ComputerName $ComputerName -List) | ? {$_.Name -eq 'SqlServiceAdvancedProperty'}) | Measure-Object).Count -ne 1)
+        {
+            # Require SQL class is missing, therefore version information will not be available.  Report it in logs.
 
+            Write-StatusUpdate -Message "WMI Class [SqlServiceAdvancedProperty] Missing under Namespace [$SQLCMNameSpace] - SQL Services' version information not collected." -WriteToDB
+            $SQLWMIClassMissing = $true
+        }
+        else
+        {
+		    $SQLCMNameSpace = "root\microsoft\sqlserver\ComputerManagement$SQLVersion"
+		    $SQLServicesCM = Get-wmiobject -Namespace $SQLCMNameSpace -Class SqlServiceAdvancedProperty -ComputerName $ComputerName | ? {$_.PropertyName -EQ 'Version'} | SELECT PropertyName, PropertyStrValue, ServiceName
+        }
 		# Create an Empty Array to Hold List of Services
 		$SQLServices = @()
 
@@ -271,7 +297,7 @@ function Get-SISQLService
     }
     catch
     {
-        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Expection" -WriteToDB
+        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Expecting" -WriteToDB
         Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
         Write-Output $Global:Error_FailedToComplete
     }
