@@ -27,6 +27,8 @@ Date		Version		Author		Comments
             3.00.07.0009    Mohit K. Gupta  New module to split parts of a Computer Name or Server Instance names.
             3.00.08.0009    Mohit K. Gupta  New module to last time errors were collected, Get-SQLErrorLogStats --- NOT FINISHED.
 2020.02.27  3.00.08.0010    Mohit K. Gupta  Updated manifest file to include Update-SQLOpSQLErrorLogStats.  Issue #34.
+2020.03.01  3.00.08.0011    Mohit K. Gupta  Issue #36.  Changed the history date scan to -30 days from today.
+            3.00.08.0012    Mohit K. Gupta  Issue #35.  Bug fixes, additional error handling, and excluding additional services.
 
 
 DBServerAndDBSpaceMonitoring.ps1 Version History
@@ -44,10 +46,11 @@ Date		Version		Author		Comments
 2015.10.27	V1.03		Mohit K. Gupta	Fixed logic bug in check for extended properties.
 2016.03.21	V1.04		Mohit K. Gupta	Fixed bug in database space calculation.
 2016.06.08	V1.05		Mohit K. Gupta	Added version calculation for SQL 2014 and 2016.
-2017.01.10	V1.06		Mohit K. Gupta	Fixed a bug in date calculation when truncating and cleaning up the data in Phase 3.
+2017.01.10	V1.06		Mohit K. Gupta	Fixed a bug in date calculation when truncating and cleaning up the data in Phase 3.0.
 2017.01.24	V1.07		Mohit K. Gupta	Added code to truncate the CMDB Log data.
 2020.02.04  V1.11       Mohit K. Gupta  Added additional checks to make sure server name is configured correctly in CMS.
                                         Added new SQL versions and Windows versions.
                                         Spelling correction all over the script.
                                         Refactored Extended properties check, to remove multiple validations.
 2020.02.13  V1.12       Mohit K. Gupta  Updated references to Get-SQLInstance to use new standard variable name.
+2020.03.02  V1.13       Mohit K. Gupta  Added progress report for number of servers processed. Issue #37.

@@ -28,6 +28,8 @@ try
     # Get list of SQL Server Instances from Central Management Server (CMS).
     # Enable or disable which CMS groups are monitored via Set-CMSGroup commandlet.
     $SQLServers = Get-CMSServers #-ServerName contoso.com
+    $TotalServers = ($SQLServers | Measure-Object).Count
+    $ServersRunningCount = 0
 }
 catch
 {
@@ -43,7 +45,8 @@ ForEach ($SQLServerRC in $SQLServers)
 
     $SQLServer = $SQLServerRC.name
     $SQLServerFQDN = $SQLServerRC.server_name
-    Write-StatusUpdate -Message "Processing SQL Instance [$SQLServerFQDN] ..." -WriteToDB
+    $ServersRunningCount++
+    Write-StatusUpdate -Message "Processing SQL Instance [$SQLServerFQDN] ($ServersRunningCount/$TotalServers) ..." -WriteToDB
 
     # Initialize all the variables for current Instance
     [Array] $ServerList = $null
