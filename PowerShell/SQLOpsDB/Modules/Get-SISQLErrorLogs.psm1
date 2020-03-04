@@ -37,6 +37,7 @@ Date       Version Comments
 2020.02.13 0.00.03 Updated the parameters with parameter set names.
                    Updated reference to Get-SQLInstance to use new variable name.
 2020.02.19 0.00.04 Updated command-let name for Get-SQLOpSQLInstance.
+2020.03.03 0.00.05 Hid internal parameter in parameter set After.
 #>
 function Get-SISQLErrorLogs
 {
@@ -46,7 +47,7 @@ function Get-SISQLErrorLogs
     [Parameter(ParameterSetName='After',Position=0, Mandatory=$true)]
     [Parameter(ParameterSetName='Internal', Position=0, Mandatory=$true)] [string]$ServerInstance,
     [Parameter(ParameterSetName='After',Position=1, Mandatory=$true)] [datetime]$After,
-    [Parameter(ParameterSetName='After',Position=2, Mandatory=$false)]
+    [Parameter(ParameterSetName='After',Position=2, Mandatory=$false, DontShow)]
     [Parameter(ParameterSetName='Internal', Position=1, Mandatory=$false, DontShow)] [Switch]$Internal
     )
 
@@ -57,8 +58,8 @@ function Get-SISQLErrorLogs
     }
     
     $ModuleName = 'Get-SISQLErrorLogs'
-    $ModuleVersion = '0.00.04'
-    $ModuleLastUpdated = 'February 19, 2020'
+    $ModuleVersion = '0.00.05'
+    $ModuleLastUpdated = 'March 3, 2020'
 
     $ServerInstanceObj = Get-SqlOpSQLInstance -ServerInstance $ServerInstance -Internal:$Internal
 
