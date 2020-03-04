@@ -33,8 +33,9 @@ Date       Version Comments
                    Added check for SQL class required for version under WMI.
                    Fixed some spelling mistakes.
                    (Issue #35)
-2020.03.04 0.00.10 Fixed parsing error with service version.
+2020.03.04 0.00.11 Fixed parsing error with service version.
                    Additional error handling for WMI calls and namespace resolutions.
+                   Changed the filter for AD Helper service to exclude all versions.
 #>
 function Get-SISQLService
 {
@@ -50,7 +51,7 @@ function Get-SISQLService
     }
 	
     $ModuleName = 'Get-SISQLService'
-    $ModuleVersion = '0.00.10'
+    $ModuleVersion = '0.00.11'
     $ModuleLastUpdated = 'March 4, 2020'
 
     try
@@ -115,7 +116,7 @@ function Get-SISQLService
 		# list of all SQL services.
 		$Services = Get-WmiObject -Class Win32_Service -ComputerName $ComputerName
 		$Services = $Services | Where-Object {($_.DisplayName -Like '*SQL*' -OR $_.DisplayName -Like '*PowerBI*'-OR $_.Name -Like '*MsDts*') -and
-                                              ($_.Name -ne 'MSSQLServerADHelper100' -and $_.Name -ne 'SQLWriter')} | SELECT PSComputerName, DisplayName, Name, PathName, StartName, StartMode, State, Status
+                                              ($_.Name -notlike 'MSSQLServerADHelper*' -and $_.Name -ne 'SQLWriter')} | SELECT PSComputerName, DisplayName, Name, PathName, StartName, StartMode, State, Status
 
 
 		# Get SQL Services Version from WMI -- Get the Latest Name Space available.
