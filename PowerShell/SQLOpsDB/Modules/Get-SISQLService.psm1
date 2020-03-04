@@ -33,7 +33,8 @@ Date       Version Comments
                    Added check for SQL class required for version under WMI.
                    Fixed some spelling mistakes.
                    (Issue #35)
-2020.03.04 0.00.09 Fixed parsing error with service version.
+2020.03.04 0.00.10 Fixed parsing error with service version.
+                   Additional error handling for WMI calls and namespace resolutions.
 #>
 function Get-SISQLService
 {
@@ -49,8 +50,8 @@ function Get-SISQLService
     }
 	
     $ModuleName = 'Get-SISQLService'
-    $ModuleVersion = '0.00.08'
-    $ModuleLastUpdated = 'March 2, 2020'
+    $ModuleVersion = '0.00.10'
+    $ModuleLastUpdated = 'March 4, 2020'
 
     try
     {
@@ -138,20 +139,28 @@ function Get-SISQLService
 			}
 		}
 
-        $SQLWMIClassMissing = $false
+        $SQLWMIClassMissing = $true
+        if ($SQLVersion -ne 0)
+        {            
+            $SQLCMNameSpace = "root\microsoft\sqlserver\ComputerManagement$SQLVersion"
 
-        if ((((Get-wmiobject -Namespace $SQLCMNameSpace -ComputerName $ComputerName -List) | ? {$_.Name -eq 'SqlServiceAdvancedProperty'}) | Measure-Object).Count -ne 1)
-        {
-            # Require SQL class is missing, therefore version information will not be available.  Report it in logs.
+            if ((((Get-wmiobject -Namespace $SQLCMNameSpace -ComputerName $ComputerName -List) | ? {$_.Name -eq 'SqlServiceAdvancedProperty'}) | Measure-Object).Count -ne 1)
+            {
+                # Require SQL class is missing, therefore version information will not be available.  Report it in logs.
 
-            Write-StatusUpdate -Message "WMI Class [SqlServiceAdvancedProperty] Missing under Namespace [$SQLCMNameSpace] - SQL Services' version information not collected." -WriteToDB
-            $SQLWMIClassMissing = $true
+                Write-StatusUpdate -Message "WMI Class [SqlServiceAdvancedProperty] Missing under Namespace [$SQLCMNameSpace] - SQL Services' version information not collected." -WriteToDB
+            }
+            else
+            {		    
+                $SQLWMIClassMissing = $false
+		        $SQLServicesCM = Get-wmiobject -Namespace $SQLCMNameSpace -Class SqlServiceAdvancedProperty -ComputerName $ComputerName | ? {$_.PropertyName -EQ 'Version'} | SELECT PropertyName, PropertyStrValue, ServiceName
+            }
         }
         else
         {
-		    $SQLCMNameSpace = "root\microsoft\sqlserver\ComputerManagement$SQLVersion"
-		    $SQLServicesCM = Get-wmiobject -Namespace $SQLCMNameSpace -Class SqlServiceAdvancedProperty -ComputerName $ComputerName | ? {$_.PropertyName -EQ 'Version'} | SELECT PropertyName, PropertyStrValue, ServiceName
+            Write-StatusUpdate -Message "WMI Class [ComputerManagement*] Missing under Namespace [root\microsoft\sqlserver] - SQL Services' version information not collected." -WriteToDB
         }
+
 		# Create an Empty Array to Hold List of Services
 		$SQLServices = @()
 
