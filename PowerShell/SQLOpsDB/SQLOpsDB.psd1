@@ -18,7 +18,7 @@
     ModuleToProcess = ''
 
     # Version number of this module.
-    ModuleVersion = '3.00.08.0012'
+    ModuleVersion = '3.00.08.0013'
 
     # ID used to uniquely identify this module
     GUID = '4baba076-b43c-40a3-a483-16eed455f676'

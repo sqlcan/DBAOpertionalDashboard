@@ -11,6 +11,9 @@ Server instance from which to capture the logs.
 .PARAMETER After
 Date time value from which to capture.
 
+.PARAMETER Before
+Date time value from which to capture.
+
 .PARAMETER Internal
 For internal processes, it exposes the ID value of the SQL Server instance. 
 
@@ -38,18 +41,21 @@ Date       Version Comments
                    Updated reference to Get-SQLInstance to use new variable name.
 2020.02.19 0.00.04 Updated command-let name for Get-SQLOpSQLInstance.
 2020.03.03 0.00.05 Hid internal parameter in parameter set After.
-2020.03.04 0.00.06 Added few more error messages to track.
+2020.03.04 0.00.08 Added few more error messages to track.
+                   Added functionality to get errors in a time range.
+                   Refactored the parameter sets.
 #>
 function Get-SISQLErrorLogs
 {
     [CmdletBinding(DefaultParameterSetName='ServerInstance')] 
     param( 
     [Parameter(ParameterSetName='ServerInstance',Position=0, Mandatory=$true)]
-    [Parameter(ParameterSetName='After',Position=0, Mandatory=$true)]
-    [Parameter(ParameterSetName='Internal', Position=0, Mandatory=$true)] [string]$ServerInstance,
-    [Parameter(ParameterSetName='After',Position=1, Mandatory=$true)] [datetime]$After,
-    [Parameter(ParameterSetName='After',Position=2, Mandatory=$false, DontShow)]
-    [Parameter(ParameterSetName='Internal', Position=1, Mandatory=$false, DontShow)] [Switch]$Internal
+    [Parameter(ParameterSetName='TimeSlice',Position=0, Mandatory=$true)] [string]$ServerInstance,
+
+    [Parameter(ParameterSetName='TimeSlice',Position=1, Mandatory=$false)] [datetime]$After,
+    [Parameter(ParameterSetName='TimeSlice',Position=2, Mandatory=$false)] [datetime]$Before,
+
+    [Parameter(Mandatory=$false, DontShow)] [Switch]$Internal
     )
 
     if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
@@ -59,8 +65,8 @@ function Get-SISQLErrorLogs
     }
     
     $ModuleName = 'Get-SISQLErrorLogs'
-    $ModuleVersion = '0.00.05'
-    $ModuleLastUpdated = 'March 3, 2020'
+    $ModuleVersion = '0.00.08'
+    $ModuleLastUpdated = 'March 4, 2020'
 
     $ServerInstanceObj = Get-SqlOpSQLInstance -ServerInstance $ServerInstance -Internal:$Internal
 
@@ -85,13 +91,21 @@ function Get-SISQLErrorLogs
     {
         Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
-        if ([String]::IsNullOrEmpty($After))
+        if (([String]::IsNullOrEmpty($After)) -and (([String]::IsNullOrEmpty($Before))))
         {
             $SQLErrorLogs = Get-SqlErrorLog -ServerInstance $ServerInstance -Ascending
         }
-        else
+        elseif (!([String]::IsNullOrEmpty($After)) -and (([String]::IsNullOrEmpty($Before))))
         {
             $SQLErrorLogs = Get-SqlErrorLog -ServerInstance $ServerInstance -Ascending -After $After
+        }
+        elseif (([String]::IsNullOrEmpty($After)) -and (!([String]::IsNullOrEmpty($Before))))
+        {
+            $SQLErrorLogs = Get-SqlErrorLog -ServerInstance $ServerInstance -Ascending -Before $Before
+        }
+        else
+        {
+            $SQLErrorLogs = Get-SqlErrorLog -ServerInstance $ServerInstance -Ascending -After $After -Before $Before
         }
 
         $CaptureNextLine = $false
