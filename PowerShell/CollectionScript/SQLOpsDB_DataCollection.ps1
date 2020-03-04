@@ -1047,53 +1047,61 @@ ForEach ($SQLServerRC in $SQLServers)
 
             if ($DCS_ErrorLogs)
             {
-                # Get SQL Instance Error Logs.  Get the last collect date, then get only errors since last collection.
-                # record the errors in SQLOpsDB.  Then update all collection date time.
-
-                if ($DCS_ThrottleErrorLogCollection)
+                # Cannot collect error logs from SQL 2000.  Get-SQLErrorLog is not backwards compatible.
+                if ($SQLServer_Major -ne 8)
                 {
+                    # Get SQL Instance Error Logs.  Get the last collect date, then get only errors since last collection.
+                    # record the errors in SQLOpsDB.  Then update all collection date time.
 
-                    $LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerFQDN
-                    $Last30Hours = (Get-Date).AddHours(-30)
-                    $StartDataCollectionTime = [DateTime]$LastDataCollection.LastDateTimeCaptured
-
-                    $StartProcessTime = Get-Date
-
-                    if ($Last30Hours -ge $StartDataCollectionTime)
+                    if ($DCS_ThrottleErrorLogCollection)
                     {
-                        Write-StatusUpdate -Message "Skipping Error Logs for [$SQLServerFQDN].  Skipped from '$LastDataCollection' to '$Last30Hours'."
-                        $StartDataCollectionTime = $Last30Hours
+
+                        $LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerFQDN
+                        $Last30Hours = (Get-Date).AddHours(-30)
+                        $StartDataCollectionTime = [DateTime]$LastDataCollection.LastDateTimeCaptured
+
+                        $StartProcessTime = Get-Date
+
+                        if ($Last30Hours -ge $StartDataCollectionTime)
+                        {
+                            Write-StatusUpdate -Message "Skipping Error Logs for [$SQLServerFQDN].  Skipped from '$LastDataCollection' to '$Last30Hours'."
+                            $StartDataCollectionTime = $Last30Hours
+                        }
+
+                        While (($EndProcessTime - $StartProcessTime).Seconds -le $DCS_ThrottleLimit * 60)
+                        {
+                            # Cycle through error log one hour at a time.
+
+                            $OneHourPlus = $StartDataCollectionTime.AddHours(1)
+                            $ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerFQDN -After $StartDataCollectionTime -Before $OneHourPlus -Internal
+                            if ($ErrorLogs)
+                            {
+                                Update-SQLOpSQLErrorLog -ServerInstance $SQLServerFQDN -Data $ErrorLogs | Out-Null
+                            }
+                            Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerFQDN -DateTime $OneHourPlus | Out-Null 
+
+                            $StartDataCollectionTime = $OneHourPlus
+                            if ($StartDataCollectionTime.AddHours(1) -ge (Get-Date))
+                            {
+                                break
+                            }
+                            $EndProcessTime = Get-Date
+                        }
                     }
-
-                    While (($EndProcessTime - $StartProcessTime).Seconds -le $DCS_ThrottleLimit * 60)
+                    else
                     {
-                        # Cycle through error log one hour at a time.
-
-                        $OneHourPlus = $StartDataCollectionTime.AddHours(1)
-                        $ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerFQDN -After $StartDataCollectionTime -Before $OneHourPlus -Internal
+                        $LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerFQDN
+                        $ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerFQDN -After $LastDataCollection.LastDateTimeCaptured -Internal
                         if ($ErrorLogs)
                         {
                             Update-SQLOpSQLErrorLog -ServerInstance $SQLServerFQDN -Data $ErrorLogs | Out-Null
                         }
-                        Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerFQDN -DateTime $OneHourPlus | Out-Null 
-
-                        $StartDataCollectionTime = $OneHourPlus
-                        if ($StartDataCollectionTime.AddHours(1) -ge (Get-Date))
-                        {
-                            break
-                        }
-                        $EndProcessTime = Get-Date
+                        Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerFQDN | Out-Null   
                     }
                 }
                 else
                 {
-                    $LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerFQDN
-                    $ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerFQDN -After $LastDataCollection.LastDateTimeCaptured -Internal
-                    if ($ErrorLogs)
-                    {
-                        Update-SQLOpSQLErrorLog -ServerInstance $SQLServerFQDN -Data $ErrorLogs | Out-Null
-                    }
-                    Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerFQDN | Out-Null   
+                    Write-StatusUpdate -Message "Skipping Error Logs for [$SQLServerFQDN].  SQL Server 2000 not supported." -WriteToDB
                 }
             }
                 

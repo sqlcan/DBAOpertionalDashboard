@@ -30,6 +30,7 @@ Date		Version		Author		Comments
 2020.03.01  3.00.08.0011    Mohit K. Gupta  Issue #36.  Changed the history date scan to -30 days from today.
             3.00.08.0012    Mohit K. Gupta  Issue #35.  Bug fixes, additional error handling, and excluding additional services.
 2020.03.04  3.00.08.0013    Mohit K. Gupta  Issue #38.  Added Before/After time columns in Get-SISQLErrorLogs.
+            3.00.08.0016    Mohit K. Gupta  Multiple fixes in Get-SISQLService Issue #39-41
 
 
 DBServerAndDBSpaceMonitoring.ps1 Version History
@@ -56,3 +57,4 @@ Date		Version		Author		Comments
 2020.02.13  V1.12       Mohit K. Gupta  Updated references to Get-SQLInstance to use new standard variable name.
 2020.03.02  V1.13       Mohit K. Gupta  Added progress report for number of servers processed. Issue #37.
 2020.03.04  V1.14       Mohit K. Gupta  Added throttle functionality for error log collection.
+            V1.15       Mohit K. Gupta  Stopped collection for Error Logs against SQL 2000.
