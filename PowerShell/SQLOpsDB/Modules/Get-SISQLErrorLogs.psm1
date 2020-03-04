@@ -38,6 +38,7 @@ Date       Version Comments
                    Updated reference to Get-SQLInstance to use new variable name.
 2020.02.19 0.00.04 Updated command-let name for Get-SQLOpSQLInstance.
 2020.03.03 0.00.05 Hid internal parameter in parameter set After.
+2020.03.04 0.00.06 Added few more error messages to track.
 #>
 function Get-SISQLErrorLogs
 {
@@ -156,6 +157,14 @@ function Get-SISQLErrorLogs
                 $CaptureMsg = $true
             }
             elseif ($Msg.Text -like 'SQL Server has encountered*occurrence(s) of I/O requests taking longer than*')
+            {
+                $CaptureMsg = $true
+            }
+            elseif ($Msg.Text -like 'Process ID*was killed by hostname*')
+            {
+                $CaptureMsg = $true
+            }
+            elseif ($Msg.Text -like '*Stack Dump*')
             {
                 $CaptureMsg = $true
             }
