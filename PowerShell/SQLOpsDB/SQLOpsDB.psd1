@@ -18,7 +18,7 @@
     ModuleToProcess = ''
 
     # Version number of this module.
-    ModuleVersion = '3.00.08.0013'
+    ModuleVersion = '3.00.09.0017'
 
     # ID used to uniquely identify this module
     GUID = '4baba076-b43c-40a3-a483-16eed455f676'
@@ -81,6 +81,7 @@
         '.\Modules\Get-SQLService.psm1';
         '.\Modules\Update-SQLService.psm1';
         # SQL Error Log Modules
+        '.\Modules\Get-SQLErrorLogs.psm1';
         '.\Modules\Update-SQLOpSQLErrorLog.psm1';
         '.\Modules\Get-SQLOpSQLErrorLogStats.psm1';
         '.\Modules\Update-SQLOpSQLErrorLog.psm1';
