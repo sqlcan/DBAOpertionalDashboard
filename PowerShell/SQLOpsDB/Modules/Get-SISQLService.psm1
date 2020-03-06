@@ -36,6 +36,8 @@ Date       Version Comments
 2020.03.04 0.00.11 Fixed parsing error with service version.
                    Additional error handling for WMI calls and namespace resolutions.
                    Changed the filter for AD Helper service to exclude all versions.
+2020.03.06 0.00.12 Expose service status.
+                   Refactor code and fixed some spelling mistakes.
 #>
 function Get-SISQLService
 {
@@ -51,8 +53,8 @@ function Get-SISQLService
     }
 	
     $ModuleName = 'Get-SISQLService'
-    $ModuleVersion = '0.00.11'
-    $ModuleLastUpdated = 'March 4, 2020'
+    $ModuleVersion = '0.00.13'
+    $ModuleLastUpdated = 'March 6, 2020'
 
     try
     {
@@ -68,7 +70,8 @@ function Get-SISQLService
 			[string] $StartMode;
 			[string] $ServiceAccount;
 			[int] $Version;
-			[string] $Build;
+            [string] $Build;
+            [string] $Status;
 		}
 
         function Get-SQLVersion ($ServiceName)
@@ -183,7 +186,8 @@ function Get-SISQLService
 			$SQLService.DisplayName = $Service.DisplayName
 			$SQLService.StartMode = $Service.StartMode
 			$SQLService.Path = $Service.PathName
-			$SQLService.ServiceAccount = $Service.StartName
+            $SQLService.ServiceAccount = $Service.StartName
+            $SQLService.Status = $Service.Status
 
 			# SQL Engine || Default Instance
 			If ($Service.Name -Like 'MSSQLServer')
@@ -191,7 +195,6 @@ function Get-SISQLService
 				$SQLService.Type = 'Engine'
 				$SQLService.InstanceName = 'MSSQLServer'
 				$SQLService.Build = Get-SQLVersion $Service.Name
-				$SQLService.Version = Parse-Version $SQLService.Build
 				$AddService = $true        
 			}
 
@@ -201,7 +204,6 @@ function Get-SISQLService
 				$SQLService.Type = 'Engine'
 				$SQLService.InstanceName = $($Service.Name).Substring(6)
 				$SQLService.Build = Get-SQLVersion $Service.Name
-				$SQLService.Version = Parse-Version $SQLService.Build
 				$AddService = $true
 			}
 
@@ -211,7 +213,6 @@ function Get-SISQLService
 				$SQLService.Type = 'SSAS'
 				$SQLService.InstanceName = "MSSQLServerOLAPService"
 				$SQLService.Build = Get-SQLVersion $Service.Name
-				$SQLService.Version = Parse-Version $SQLService.Build
 				$AddService = $true
 			}
 
@@ -221,11 +222,10 @@ function Get-SISQLService
 				$SQLService.Type = 'SSAS'
 				$SQLService.InstanceName = $($Service.Name).Substring(7)
 				$SQLService.Build = Get-SQLVersion $Service.Name
-				$SQLService.Version = Parse-Version $SQLService.Build
 				$AddService = $true
 			}
 
-			# SQL Agent || Default Instnace
+			# SQL Agent || Default Instance
 			ElseIf ($Service.Name -LIke 'SQLServerAgent')
 			{
 				$SQLService.Type = 'SQLAgent'
@@ -234,11 +234,10 @@ function Get-SISQLService
 				$SQLAgentExe = $SQLAgentExe.Replace(':\','$\')
 				$SQLAgentExe = "\\$($SQLService.ServerName)\$SQLAgentExe"
 				$SQLService.Build = ((Get-ChildItem $SQLAgentExe).VersionInfo).ProductVersion
-				$SQLService.Version = Parse-Version $SQLService.Build
 				$AddService = $true
 			}
 
-			# SQL Agent || Named Instnace
+			# SQL Agent || Named Instance
 			ElseIf ($Service.Name -LIke 'SQLAgent$*')
 			{
 				$SQLService.Type = 'SQL Agent'
@@ -248,7 +247,6 @@ function Get-SISQLService
 				$SQLAgentExe = $SQLAgentExe.Replace(':\','$\')
 				$SQLAgentExe = "\\$($SQLService.ServerName)\$SQLAgentExe"
 				$SQLService.Build = ((Get-ChildItem $SQLAgentExe).VersionInfo).ProductVersion
-				$SQLService.Version = Parse-Version $SQLService.Build
 				$AddService = $true
 			}
 
@@ -259,7 +257,6 @@ function Get-SISQLService
 				$SQLService.Type = 'PowerBI (SSRS)'
 				$SQLService.InstanceName = 'PBIRS'
 				$SQLService.Build = (Get-WMIObject -namespace root\microsoft\sqlserver\ReportServer\RS_PBIRS\V15 -Class MSReportServer_Instance -ComputerName $ComputerName).Version
-				$SQLService.Version = Parse-Version $SQLService.Build
 				$AddService = $true
 			}
 			# SSRS || Default Instance || Starting SQL 2017, you can only have single instance for SSRS per server
@@ -276,7 +273,6 @@ function Get-SISQLService
                             }
 							$WMIReportVersion = (Get-WMIObject -Namespace "root\microsoft\sqlserver\ReportServer\$($WMIReport.Name)" -Class __NAMESPACE -ComputerName $ComputerName) 
 							$SQLService.Build =((Get-WMIObject -Namespace "root\microsoft\sqlserver\ReportServer\$($WMIReport.Name)\$($WMIReportVersion.Name)" -Class MSReportServer_Instance -ComputerName $ComputerName) | ? {$_.InstanceName -EQ $SQLService.InstanceName}).Version
-							$SQLService.Version = Parse-Version $SQLService.Build
 							$AddService = $true
 			}
 			# SSRS || Named Instance || Only for SQL Server 2016 and older.
@@ -287,7 +283,6 @@ function Get-SISQLService
 							$WMIReport = (Get-WMIObject -namespace root\microsoft\sqlserver\ReportServer -Class __NAMESPACE -ComputerName $ComputerName) | ? {$_.Name -EQ "RS_$($SQLService.InstanceName)"}
 							$WMIReportVersion = (Get-WMIObject -Namespace "root\microsoft\sqlserver\ReportServer\$($WMIReport.Name)" -Class __NAMESPACE -ComputerName $ComputerName)
 							$SQLService.Build =((Get-WMIObject -Namespace "root\microsoft\sqlserver\ReportServer\$($WMIReport.Name)\$($WMIReportVersion.Name)" -Class MSReportServer_Instance -ComputerName $ComputerName) | ? {$_.InstanceName -EQ "$($SQLService.InstanceName)"}).Version
-							$SQLService.Version = Parse-Version $SQLService.Build
 							$AddService = $true
 			}
 			# SSIS || Single Instance Application
@@ -300,7 +295,6 @@ function Get-SISQLService
 				$SSISExec = $SSISExec.Replace(':\','$\')
 				$SSISExec = "\\$($SQLService.ServerName)\$SSISExec"
 				$SQLService.Build = ((Get-ChildItem $SSISExec).VersionInfo).ProductVersion
-				$SQLService.Version = Parse-Version $SQLService.Build
 				$AddService = $true
 			}
 			# MSSQLFDLauncher || Single Instance Application
@@ -313,12 +307,12 @@ function Get-SISQLService
 				$FTSExec = $FTSExec.Replace(':\','$\')
 				$FTSExec = "\\$($SQLService.ServerName)\$FTSExec"
 				$SQLService.Build = ((Get-ChildItem $FTSExec).VersionInfo).ProductVersion
-				$SQLService.Version = Parse-Version $SQLService.Build
 				$AddService = $true
 			}
 
 			if ($AddService)
 			{
+                $SQLService.Version = Parse-Version $SQLService.Build
 				$SQLServices += $SQLService
 			}
 		}

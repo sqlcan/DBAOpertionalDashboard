@@ -12,6 +12,7 @@ CREATE TABLE dbo.SQLService (SQLServiceID INT PRIMARY KEY IDENTITY (1,1) NOT NUL
 							 ServiceAccount VARCHAR(50),
 							 ServiceVersion INT,
 							 ServiceBuild VARCHAR(25),
+							 Status VARCHAR(25),
 							 DiscoveryOn DATE DEFAULT(GetDate()),
 							 LastUpdated DATE DEFAULT(GetDate()))
 GO

@@ -32,6 +32,7 @@ Date		Version		Author		Comments
 2020.03.04  3.00.08.0013    Mohit K. Gupta  Issue #38.  Added Before/After time columns in Get-SISQLErrorLogs.
             3.00.08.0016    Mohit K. Gupta  Multiple fixes in Get-SISQLService Issue #39-41
 2020.03.05  3.00.09.0017    Mohit K. Gupta  Created new module to scan for error logs, Get-SQLErrorLogs.
+2020.03.06  3.00.09.0018    Mohit K. Gupta  Exposed SQL Services current status.
 
 
 DBServerAndDBSpaceMonitoring.ps1 Version History

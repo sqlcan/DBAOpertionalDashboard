@@ -26,6 +26,7 @@ Description
 Date       Version  Comments
 ---------- -------- ------------------------------------------------------------------
 2020.02.05 00.00.01 Initial Version
+2020.03.06 00.00.02 Saved the services current status.
 #>
 function Update-SQLService
 {
@@ -42,8 +43,8 @@ function Update-SQLService
     }
     
     $ModuleName = 'Update-SQLService'
-    $ModuleVersion = '0.01'
-    $ModuleLastUpdated = 'June 9, 2016'
+    $ModuleVersion = '0.02'
+    $ModuleLastUpdated = 'March 6, 2020'
 
     try
     {
@@ -87,7 +88,8 @@ function Update-SQLService
                                 StartMode varchar(25) NULL,
                                 ServiceAccount varchar(50) NULL,
                                 ServiceVersion int NULL,
-                                ServiceBuild varchar(25) NULL
+                                ServiceBuild varchar(25) NULL,
+                                Status varchar(25) NULL
                             )
                             GO"
         Write-StatusUpdate -Message $TSQL -IsTSQL
@@ -109,25 +111,26 @@ function Update-SQLService
         USING
         (SELECT S.ServerID, ServiceName, InstanceName, DisplayName,
                 FilePath, ServiceType, StartMode, ServiceAccount,
-                ServiceVersion, ServiceBuild
+                ServiceVersion, ServiceBuild, Status
           FROM Staging.SQLServiceDetails SSS
           JOIN dbo.Servers S
             ON SSS.ServerName = S.ServerName) AS Source (ServerID, ServiceName, InstanceName, DisplayName,
                 FilePath, ServiceType, StartMode, ServiceAccount,
-                ServiceVersion, ServiceBuild)
+                ServiceVersion, ServiceBuild, Status)
             ON (Target.ServerID = Source.ServerID and Target.ServiceName = Source.ServiceName)
         WHEN MATCHED THEN
             UPDATE SET LastUpdated = GETDATE(),
                        ServiceAccount = Source.ServiceAccount,
                        ServiceVersion = Source.ServiceVersion,
-                       ServiceBuild = Source.ServiceBuild
+                       ServiceBuild = Source.ServiceBuild,
+                       Status = Source.Status
         WHEN NOT MATCHED THEN
             INSERT (ServerID, ServiceName, InstanceName, DisplayName,
                 FilePath, ServiceType, StartMode, ServiceAccount,
-                ServiceVersion, ServiceBuild)
+                ServiceVersion, ServiceBuild, Status)
         VALUES (Source.ServerID, Source.ServiceName, Source.InstanceName, Source.DisplayName,
                 Source.FilePath, Source.ServiceType, Source.StartMode, Source.ServiceAccount,
-                Source.ServiceVersion, Source.ServiceBuild);"
+                Source.ServiceVersion, Source.ServiceBuild, Source.Status);"
 
         Write-StatusUpdate -Message $TSQL -IsTSQL
 
