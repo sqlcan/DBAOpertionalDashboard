@@ -60,3 +60,4 @@ Date		Version		Author		Comments
 2020.03.02  V1.13       Mohit K. Gupta  Added progress report for number of servers processed. Issue #37.
 2020.03.04  V1.14       Mohit K. Gupta  Added throttle functionality for error log collection.
             V1.15       Mohit K. Gupta  Stopped collection for Error Logs against SQL 2000.
+2020.03.06  V1.16       Mohit K. Gupta  Exposed additional logging when Error Logs are throttled.

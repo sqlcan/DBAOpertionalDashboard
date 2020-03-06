@@ -17,7 +17,7 @@ $DCS_ErrorLogs = $true                  # Collect SQL Server Error Logs
 $DCS_ThrottleErrorLogCollection = $true # If enabled, each server will be given at most $DCS_ThrottleLimit
                                         # in minutes to process the error logs.
 $DCS_ThrottleLimit = 1                  # Time in minutes to process the error log files per instance.
-$DSC_DiscoverSQLServices = $true        # Review SQL Services Installed on a Server.
+$DCS_DiscoverSQLServices = $true        # Review SQL Services Installed on a Server.
 
 ## Code Start
 
@@ -682,7 +682,7 @@ ForEach ($SQLServerRC in $SQLServers)
                 }
             }
 
-            if ($DSC_DiscoverSQLServices)
+            if ($DCS_DiscoverSQLServices)
             {
                 $SQLServices = Get-SISQLService -ComputerName $ServerVNONameFQDN
 
@@ -1064,9 +1064,11 @@ ForEach ($SQLServerRC in $SQLServers)
 
                         if ($Last30Hours -ge $StartDataCollectionTime)
                         {
-                            Write-StatusUpdate -Message "Skipping Error Logs for [$SQLServerFQDN].  Skipped from '$LastDataCollection' to '$Last30Hours'."
+                            Write-StatusUpdate -Message "Skipping Error Logs for [$SQLServerFQDN].  Skipped from '$LastDataCollection' to '$Last30Hours'." -WriteToDB
                             $StartDataCollectionTime = $Last30Hours
                         }
+
+                        $ThrottleTriggered = $true
 
                         While (($EndProcessTime - $StartProcessTime).Seconds -le $DCS_ThrottleLimit * 60)
                         {
@@ -1083,9 +1085,15 @@ ForEach ($SQLServerRC in $SQLServers)
                             $StartDataCollectionTime = $OneHourPlus
                             if ($StartDataCollectionTime.AddHours(1) -ge (Get-Date))
                             {
+                                $ThrottleTriggered = $false
                                 break
                             }
                             $EndProcessTime = Get-Date
+                        }
+
+                        if ($ThrottleTriggered)
+                        {
+                            Write-StatusUpdate -Message "Throttle Setting Triggered. Error logs for [$SQLServerFQDN] did not finish.  Collection finished to [$StartDataCollectionTime]." -WriteToDB
                         }
                     }
                     else
