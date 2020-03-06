@@ -26,6 +26,7 @@ Get list of all the SSRS instances installed on ContosoSQL.
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2020.02.05 0.00.01 Initial Version
+2020.03.06 0.00.02 Exposed Service Status
 #>
 function Get-SQLService
 {
@@ -44,8 +45,8 @@ function Get-SQLService
     }
 
     $ModuleName = 'Get-SQLService'
-    $ModuleVersion = '0.01'
-    $ModuleLastUpdated = 'February 5, 2020'
+    $ModuleVersion = '0.02'
+    $ModuleLastUpdated = 'March 6, 2020'
 
     try
     {
@@ -62,6 +63,7 @@ function Get-SQLService
                         , SS.ServiceAccount
                         , SS.ServiceVersion
                         , SS.ServiceBuild
+                        , SS.Status
                    FROM dbo.SQLService SS
                    JOIN dbo.Servers S
                      ON SS.ServerID = S.ServerID
