@@ -33,6 +33,7 @@ Date		Version		Author		Comments
             3.00.08.0016    Mohit K. Gupta  Multiple fixes in Get-SISQLService Issue #39-41
 2020.03.05  3.00.09.0017    Mohit K. Gupta  Created new module to scan for error logs, Get-SQLErrorLogs.
 2020.03.06  3.00.09.0018    Mohit K. Gupta  Exposed SQL Services current status.
+            3.00.10.0018    Mohit K. Gupta  Added five new modules for getting & managing SQL Jobs and history.
 
 
 DBServerAndDBSpaceMonitoring.ps1 Version History
@@ -61,3 +62,4 @@ Date		Version		Author		Comments
 2020.03.04  V1.14       Mohit K. Gupta  Added throttle functionality for error log collection.
             V1.15       Mohit K. Gupta  Stopped collection for Error Logs against SQL 2000.
 2020.03.06  V1.16       Mohit K. Gupta  Exposed additional logging when Error Logs are throttled.
+            V1.17       Mohit K. Gupta  Collect and save SQL Jobs and their execution history.

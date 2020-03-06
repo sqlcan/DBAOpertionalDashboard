@@ -18,6 +18,7 @@ $DCS_ThrottleErrorLogCollection = $true # If enabled, each server will be given 
                                         # in minutes to process the error logs.
 $DCS_ThrottleLimit = 1                  # Time in minutes to process the error log files per instance.
 $DCS_DiscoverSQLServices = $true        # Review SQL Services Installed on a Server.
+$DCS_SQLJobs = $true                    # Collect SQL Jobs and their History
 
 ## Code Start
 
@@ -1110,6 +1111,28 @@ ForEach ($SQLServerRC in $SQLServers)
                 else
                 {
                     Write-StatusUpdate -Message "Skipping Error Logs for [$SQLServerFQDN].  SQL Server 2000 not supported." -WriteToDB
+                }
+            }
+
+            if ($DCS_SQLJobs)
+            {
+                # Cannot collect job stats from SQL 2000.  I don't have a SQL 2000 server.
+                if ($SQLServer_Major -ne 8)
+                {
+                    # Get SQL Instance Error Logs.  Get the last collect date, then get only errors since last collection.
+                    # record the errors in SQLOpsDB.  Then update all collection date time.
+
+                    $LastDataCollection = Get-SQLOpsJobStatus -ServerInstance $SQLServerFQDN
+                    $SQLJobs = Get-SISQLJobs -ServerInstance $SQLServerFQDN -After $LastDataCollection.LastDateTimeCaptured -Internal
+                    if ($ErrorLogs)
+                    {
+                        Update-SQLOpSQLJobs -ServerInstance $SQLServerFQDN -Data $SQLJobs | Out-Null
+                    }
+                    Update-SQLOpsJobStatus -ServerInstance $SQLServerFQDN | Out-Null   
+                }
+                else
+                {
+                    Write-StatusUpdate -Message "Skipping SQL Job collection for [$SQLServerFQDN].  SQL Server 2000 not supported." -WriteToDB
                 }
             }
                 
