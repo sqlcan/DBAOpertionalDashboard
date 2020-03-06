@@ -33,6 +33,7 @@ Set the date time for collect date to Jan 1, 2020 Midnight.
 Date        Version Comments
 ----------  ------- ------------------------------------------------------------------
 2020.03.06  0.00.01 Initial Version.
+            0.00.02 Fixed bug, was call Get-SQLOpSQLErrorLogStats vs Get-SQLOpSQLJobStats.
 #>
 function Update-SQLOpSQLJobStats
 {
@@ -50,7 +51,7 @@ function Update-SQLOpSQLJobStats
     }
     
     $ModuleName = 'Update-SQLOpSQLJobStats'
-    $ModuleVersion = '0.01'
+    $ModuleVersion = '0.02'
     $ModuleLastUpdated = 'March 6, 2020'
    
     try
@@ -93,7 +94,7 @@ function Update-SQLOpSQLJobStats
                       -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
                       -Query $TSQL
         
-        $Results = Get-SQLOpSQLErrorLogStats -ServerInstance $ServerInstance                                                                        
+        $Results = Get-SQLOpSQLJobStats -ServerInstance $ServerInstance                                                                        
         Write-Output $Results
     }
     catch

@@ -63,3 +63,4 @@ Date		Version		Author		Comments
             V1.15       Mohit K. Gupta  Stopped collection for Error Logs against SQL 2000.
 2020.03.06  V1.16       Mohit K. Gupta  Exposed additional logging when Error Logs are throttled.
             V1.17       Mohit K. Gupta  Collect and save SQL Jobs and their execution history.
+            V1.17.03    Mohit K. Gupta  Minor mistakes in command-let names.

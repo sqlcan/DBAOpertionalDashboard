@@ -1122,13 +1122,13 @@ ForEach ($SQLServerRC in $SQLServers)
                     # Get SQL Instance Error Logs.  Get the last collect date, then get only errors since last collection.
                     # record the errors in SQLOpsDB.  Then update all collection date time.
 
-                    $LastDataCollection = Get-SQLOpsJobStatus -ServerInstance $SQLServerFQDN
+                    $LastDataCollection = Get-SQLOpSQLJobStats -ServerInstance $SQLServerFQDN
                     $SQLJobs = Get-SISQLJobs -ServerInstance $SQLServerFQDN -After $LastDataCollection.LastDateTimeCaptured -Internal
-                    if ($ErrorLogs)
+                    if ($SQLJobs)
                     {
                         Update-SQLOpSQLJobs -ServerInstance $SQLServerFQDN -Data $SQLJobs | Out-Null
                     }
-                    Update-SQLOpsJobStatus -ServerInstance $SQLServerFQDN | Out-Null   
+                    Update-SQLOpSQLJobStats -ServerInstance $SQLServerFQDN | Out-Null   
                 }
                 else
                 {

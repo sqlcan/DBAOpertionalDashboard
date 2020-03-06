@@ -45,6 +45,7 @@ Date       Version Comments
                    Added functionality to get errors in a time range.
                    Refactored the parameter sets.
 2020.03.05 0.00.09 Update to use a custom Error Log collector.
+2020.03.06 0.00.10 Bug fix with how new error log collector was called.
 #>
 function Get-SISQLErrorLogs
 {
@@ -66,8 +67,8 @@ function Get-SISQLErrorLogs
     }
     
     $ModuleName = 'Get-SISQLErrorLogs'
-    $ModuleVersion = '0.00.09'
-    $ModuleLastUpdated = 'March 5, 2020'
+    $ModuleVersion = '0.00.10'
+    $ModuleLastUpdated = 'March 6, 2020'
 
     $ServerInstanceObj = Get-SqlOpSQLInstance -ServerInstance $ServerInstance -Internal:$Internal
 
@@ -94,19 +95,19 @@ function Get-SISQLErrorLogs
 
         if (([String]::IsNullOrEmpty($After)) -and (([String]::IsNullOrEmpty($Before))))
         {
-            $SQLErrorLogs = Get-SqlErrorLogs -ServerInstance $ServerInstance -Ascending
+            $SQLErrorLogs = Get-SqlErrorLogs -ServerInstance $ServerInstance
         }
         elseif (!([String]::IsNullOrEmpty($After)) -and (([String]::IsNullOrEmpty($Before))))
         {
-            $SQLErrorLogs = Get-SqlErrorLogs -ServerInstance $ServerInstance -Ascending -After $After
+            $SQLErrorLogs = Get-SqlErrorLogs -ServerInstance $ServerInstance -After $After
         }
         elseif (([String]::IsNullOrEmpty($After)) -and (!([String]::IsNullOrEmpty($Before))))
         {
-            $SQLErrorLogs = Get-SqlErrorLogs -ServerInstance $ServerInstance -Ascending -Before $Before
+            $SQLErrorLogs = Get-SqlErrorLogs -ServerInstance $ServerInstance -Before $Before
         }
         else
         {
-            $SQLErrorLogs = Get-SqlErrorLogs -ServerInstance $ServerInstance -Ascending -After $After -Before $Before
+            $SQLErrorLogs = Get-SqlErrorLogs -ServerInstance $ServerInstance -After $After -Before $Before
         }
 
         $CaptureNextLine = $false
