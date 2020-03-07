@@ -36,8 +36,9 @@ Date       Version Comments
 2020.03.04 0.00.11 Fixed parsing error with service version.
                    Additional error handling for WMI calls and namespace resolutions.
                    Changed the filter for AD Helper service to exclude all versions.
-2020.03.06 0.00.12 Expose service status.
-                   Refactor code and fixed some spelling mistakes.
+2020.03.06 0.00.13 Expose service status.
+				   Refactor code and fixed some spelling mistakes.
+2020.03.07 0.00.14 Fixed the field for status if service is running or stopped.
 #>
 function Get-SISQLService
 {
@@ -53,7 +54,7 @@ function Get-SISQLService
     }
 	
     $ModuleName = 'Get-SISQLService'
-    $ModuleVersion = '0.00.13'
+    $ModuleVersion = '0.00.14'
     $ModuleLastUpdated = 'March 6, 2020'
 
     try
@@ -187,7 +188,7 @@ function Get-SISQLService
 			$SQLService.StartMode = $Service.StartMode
 			$SQLService.Path = $Service.PathName
             $SQLService.ServiceAccount = $Service.StartName
-            $SQLService.Status = $Service.Status
+            $SQLService.Status = $Service.State
 
 			# SQL Engine || Default Instance
 			If ($Service.Name -Like 'MSSQLServer')
