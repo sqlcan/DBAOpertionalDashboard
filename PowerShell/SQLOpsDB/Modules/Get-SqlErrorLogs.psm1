@@ -36,6 +36,7 @@ Get only the errors after Feb. 1st 12AM.
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2020.03.05 0.00.01 Initial Version
+2020.03.09 0.00.02 Removed development code left behind.
 #>
 function Get-SQLErrorLogs
 {
@@ -55,8 +56,8 @@ function Get-SQLErrorLogs
     }
     
     $ModuleName = 'Get-SQLErrorLogs'
-    $ModuleVersion = '0.00.01'
-    $ModuleLastUpdated = 'March 5, 2020'
+    $ModuleVersion = '0.00.02'
+    $ModuleLastUpdated = 'March 9, 2020'
 
     $TSQL = "DECLARE @StartDateTime DATETIME
     DECLARE @EndDateTime DATETIME
@@ -126,9 +127,6 @@ function Get-SQLErrorLogs
         }
 
         $Parameters = "StartDateTime=$After", "EndDateTime=$Before"
-
-        $TSQL
-        $Parameters
 
         $SQLErrorLogs = Invoke-Sqlcmd -ServerInstance $ServerInstance `
                                       -Database master `

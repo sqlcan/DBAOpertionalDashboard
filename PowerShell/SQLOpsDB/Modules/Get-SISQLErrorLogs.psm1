@@ -46,6 +46,8 @@ Date       Version Comments
                    Refactored the parameter sets.
 2020.03.05 0.00.09 Update to use a custom Error Log collector.
 2020.03.06 0.00.10 Bug fix with how new error log collector was called.
+2020.03.09 0.00.11 Bug fix.  Changed the date field name from Date to LogDate.
+
 #>
 function Get-SISQLErrorLogs
 {
@@ -67,8 +69,8 @@ function Get-SISQLErrorLogs
     }
     
     $ModuleName = 'Get-SISQLErrorLogs'
-    $ModuleVersion = '0.00.10'
-    $ModuleLastUpdated = 'March 6, 2020'
+    $ModuleVersion = '0.00.11'
+    $ModuleLastUpdated = 'March 9, 2020'
 
     $ServerInstanceObj = Get-SqlOpSQLInstance -ServerInstance $ServerInstance -Internal:$Internal
 
@@ -136,14 +138,14 @@ function Get-SISQLErrorLogs
                 {
                     $ErrorToReport = New-Object SQLErrorMsg
                     $ErrorToReport.Message = $CompleteMsg
-                    $ErrorToReport.DateTimeCaptured = $Msg.Date
+                    $ErrorToReport.DateTimeCaptured = $Msg.LogDate
                     $ErrorToReport.ServerInstance = $Msg.ServerInstance
                     $ErrorToReport.SQLInstanceID = $ServerInstanceObj.SQLInstanceID
                 }
                 else {
                     $ErrorToReport = New-Object SQLErrorMsg_ex
                     $ErrorToReport.Message = $CompleteMsg
-                    $ErrorToReport.DateTimeCaptured = $Msg.Date
+                    $ErrorToReport.DateTimeCaptured = $Msg.LogDate
                     $ErrorToReport.ServerInstance = $Msg.ServerInstance                   
                 }
 
