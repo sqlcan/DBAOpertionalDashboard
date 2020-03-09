@@ -36,8 +36,11 @@ Date       Version Comments
 2020.03.04 0.00.11 Fixed parsing error with service version.
                    Additional error handling for WMI calls and namespace resolutions.
                    Changed the filter for AD Helper service to exclude all versions.
-2020.03.06 0.00.12 Expose service status.
+2020.03.06 0.00.13 Expose service status.
                    Refactor code and fixed some spelling mistakes.
+2020.03.09 0.00.15 Two bugs both with SQL Server 2000.  One agent services does not have
+                    instance parameters (i).
+                   Second bug, WMI name space sqlserver does not exist.
 #>
 function Get-SISQLService
 {
@@ -53,8 +56,8 @@ function Get-SISQLService
     }
 	
     $ModuleName = 'Get-SISQLService'
-    $ModuleVersion = '0.00.13'
-    $ModuleLastUpdated = 'March 6, 2020'
+    $ModuleVersion = '0.00.15'
+    $ModuleLastUpdated = 'March 9, 2020'
 
     try
     {
@@ -127,21 +130,32 @@ function Get-SISQLService
 		#
 		# Get-WMIObject -class __Namespace -namespace root\microsoft\sqlserver | select name
 
-		$SQLNameSpaces = Get-WMIObject -class __Namespace -namespace root\microsoft\sqlserver -ComputerName $ComputerName | select name
-		$SQLVersion = 0
 
-		ForEach ($SQLNameSpace in $SQLNameSpaces)
-		{
-			$NameSpaceName = $SQLNameSpace.name
+        $SQLVersion = 0
+        $SQLNameSpace = $null
 
-			If ($NameSpaceName -like 'ComputerManagement*')
-			{
-				If (($NameSpaceName.Substring(18) -as [int]) -gt $SQLVersion)
-				{
-					$SQLVersion = ($NameSpaceName.Substring(18) -as [int])
-				}
-			}
-		}
+        if ((Get-WMIObject -class __Namespace -namespace root\microsoft -ComputerName $ComputerName  | ? {$_.Name -eq 'sqlserver'} | Measure-Object).Count -eq 1)
+        {
+		    $SQLNameSpaces = Get-WMIObject -class __Namespace -namespace root\microsoft\sqlserver -ComputerName $ComputerName | select name
+		    $SQLVersion = 0
+
+		    ForEach ($SQLNameSpace in $SQLNameSpaces)
+		    {
+			    $NameSpaceName = $SQLNameSpace.name
+
+			    If ($NameSpaceName -like 'ComputerManagement*')
+			    {
+				    If (($NameSpaceName.Substring(18) -as [int]) -gt $SQLVersion)
+				    {
+					    $SQLVersion = ($NameSpaceName.Substring(18) -as [int])
+				    }
+			    }
+		    }
+        }
+        else
+        {
+            Write-StatusUpdate -Message "WMI Namespace [sqlserver] Missing under Namespace [root\microsoft] - SQL Services' version information not collected." -WriteToDB
+        }
 
         $SQLWMIClassMissing = $true
         if ($SQLVersion -ne 0)
@@ -230,7 +244,14 @@ function Get-SISQLService
 			{
 				$SQLService.Type = 'SQLAgent'
 				$SQLService.InstanceName = 'MSSQLServer'
-				$SQLAgentExe = ($SQLService.Path).Substring(0,($SQLService.Path).IndexOf(' -i')).Replace('"','')
+                if (($SQLService.Path).IndexOf(' -i') -gt -1)
+                {
+				    $SQLAgentExe = ($SQLService.Path).Substring(0,($SQLService.Path).IndexOf(' -i')).Replace('"','')
+                }
+                else
+                {
+                    $SQLAgentExe = ($SQLService.Path).Replace('"','')
+                }
 				$SQLAgentExe = $SQLAgentExe.Replace(':\','$\')
 				$SQLAgentExe = "\\$($SQLService.ServerName)\$SQLAgentExe"
 				$SQLService.Build = ((Get-ChildItem $SQLAgentExe).VersionInfo).ProductVersion
