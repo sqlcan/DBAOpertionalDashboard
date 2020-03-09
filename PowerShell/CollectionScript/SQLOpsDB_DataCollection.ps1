@@ -1065,7 +1065,7 @@ ForEach ($SQLServerRC in $SQLServers)
 
                         if ($Last30Hours -ge $StartDataCollectionTime)
                         {
-                            Write-StatusUpdate -Message "Skipping Error Logs for [$SQLServerFQDN].  Skipped from '$LastDataCollection' to '$Last30Hours'." -WriteToDB
+                            Write-StatusUpdate -Message "Skipping Error Logs for [$SQLServerFQDN].  Skipped from '$StartDataCollectionTime' to '$Last30Hours'." -WriteToDB
                             $StartDataCollectionTime = $Last30Hours
                         }
 
