@@ -38,9 +38,11 @@ Date       Version Comments
                    Changed the filter for AD Helper service to exclude all versions.
 2020.03.06 0.00.13 Expose service status.
                    Refactor code and fixed some spelling mistakes.
-2020.03.09 0.00.15 Two bugs both with SQL Server 2000.  One agent services does not have
+2020.03.07 0.00.14 Fixed the field for status if service is running or stopped.
+2020.03.09 0.00.16 Two bugs both with SQL Server 2000.  One agent services does not have
                     instance parameters (i).
                    Second bug, WMI name space sqlserver does not exist.
+				   Refactor code and fixed some spelling mistakes.
 #>
 function Get-SISQLService
 {
@@ -56,7 +58,7 @@ function Get-SISQLService
     }
 	
     $ModuleName = 'Get-SISQLService'
-    $ModuleVersion = '0.00.15'
+    $ModuleVersion = '0.00.16'
     $ModuleLastUpdated = 'March 9, 2020'
 
     try
@@ -201,7 +203,7 @@ function Get-SISQLService
 			$SQLService.StartMode = $Service.StartMode
 			$SQLService.Path = $Service.PathName
             $SQLService.ServiceAccount = $Service.StartName
-            $SQLService.Status = $Service.Status
+            $SQLService.Status = $Service.State
 
 			# SQL Engine || Default Instance
 			If ($Service.Name -Like 'MSSQLServer')
