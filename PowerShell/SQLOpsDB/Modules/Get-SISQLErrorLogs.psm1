@@ -195,14 +195,14 @@ function Get-SISQLErrorLogs
                 {
                     $ErrorToReport = New-Object SQLErrorMsg
                     $ErrorToReport.Message = $Msg.Text
-                    $ErrorToReport.DateTimeCaptured = $Msg.Date
+                    $ErrorToReport.DateTimeCaptured = $Msg.LogDate
                     $ErrorToReport.ServerInstance = $Msg.ServerInstance
                     $ErrorToReport.SQLInstanceID = $ServerInstanceObj.SQLInstanceID
                 }
                 else {
                     $ErrorToReport = New-Object SQLErrorMsg_ex
                     $ErrorToReport.Message = $Msg.Text
-                    $ErrorToReport.DateTimeCaptured = $Msg.Date
+                    $ErrorToReport.DateTimeCaptured = $Msg.LogDate
                     $ErrorToReport.ServerInstance = $Msg.ServerInstance                   
                 }
 
