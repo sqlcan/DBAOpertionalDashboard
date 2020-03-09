@@ -39,10 +39,11 @@ Date       Version Comments
 2020.03.06 0.00.13 Expose service status.
                    Refactor code and fixed some spelling mistakes.
 2020.03.07 0.00.14 Fixed the field for status if service is running or stopped.
-2020.03.09 0.00.16 Two bugs both with SQL Server 2000.  One agent services does not have
+2020.03.09 0.00.17 Two bugs both with SQL Server 2000.  One agent services does not have
                     instance parameters (i).
                    Second bug, WMI name space sqlserver does not exist.
-				   Refactor code and fixed some spelling mistakes.
+                   Refactor code and fixed some spelling mistakes.
+                   SSRS 2005 WMI does not expose build information, defaulted to 9.0.0.0.
 #>
 function Get-SISQLService
 {
@@ -58,7 +59,7 @@ function Get-SISQLService
     }
 	
     $ModuleName = 'Get-SISQLService'
-    $ModuleVersion = '0.00.16'
+    $ModuleVersion = '0.00.17'
     $ModuleLastUpdated = 'March 9, 2020'
 
     try
@@ -287,26 +288,40 @@ function Get-SISQLService
 			# SSRS 2017 Default Name is RS_SSRS
 			ElseIf (($Service.Name -LIke 'SQLServerReport*') -or ($Service.Name -LIke 'ReportServer'))
 			{
-							$SQLService.Type = 'SSRS'
-							$SQLService.InstanceName = 'MSSQLServer'
-							$WMIReport = (Get-WMIObject -namespace root\microsoft\sqlserver\ReportServer -Class __NAMESPACE -ComputerName $ComputerName) | ? {$_.Name -EQ 'RS_MSSQLServer' -OR $_.Name -EQ 'RS_SSRS'} 
-                            if ($WMIReport.Name -eq 'RS_SSRS')
-                            {   # SSRS 2017+
-                                $SQLService.InstanceName = 'SSRS'
-                            }
-							$WMIReportVersion = (Get-WMIObject -Namespace "root\microsoft\sqlserver\ReportServer\$($WMIReport.Name)" -Class __NAMESPACE -ComputerName $ComputerName) 
-							$SQLService.Build =((Get-WMIObject -Namespace "root\microsoft\sqlserver\ReportServer\$($WMIReport.Name)\$($WMIReportVersion.Name)" -Class MSReportServer_Instance -ComputerName $ComputerName) | ? {$_.InstanceName -EQ $SQLService.InstanceName}).Version
-							$AddService = $true
+                $SQLService.Type = 'SSRS'
+                $SQLService.InstanceName = 'MSSQLServer'
+                $WMIReport = (Get-WMIObject -namespace root\microsoft\sqlserver\ReportServer -Class __NAMESPACE -ComputerName $ComputerName) | ? {$_.Name -EQ 'RS_MSSQLServer' -OR $_.Name -EQ 'RS_SSRS'} 
+                if ($WMIReport.Name -eq 'RS_SSRS')
+                {   # SSRS 2017+
+                    $SQLService.InstanceName = 'SSRS'
+                }
+                if ($WMIReport)
+                {
+                    $WMIReportVersion = (Get-WMIObject -Namespace "root\microsoft\sqlserver\ReportServer\$($WMIReport.Name)" -Class __NAMESPACE -ComputerName $ComputerName)
+                    $SQLService.Build =((Get-WMIObject -Namespace "root\microsoft\sqlserver\ReportServer\$($WMIReport.Name)\$($WMIReportVersion.Name)" -Class MSReportServer_Instance -ComputerName $ComputerName) | ? {$_.InstanceName -EQ "$($SQLService.InstanceName)"}).Version
+                }
+                else
+                {
+                    $SQLService.Build = '9.0.0.0'
+                }
+                $AddService = $true
 			}
 			# SSRS || Named Instance || Only for SQL Server 2016 and older.
 			ElseIf (($Service.Name -LIke 'SQLServerReport*') -or ($Service.Name -LIke 'ReportServer*'))
 			{
-							$SQLService.Type = 'SSRS'
-							$SQLService.InstanceName = $($Service.Name).Substring(13)
-							$WMIReport = (Get-WMIObject -namespace root\microsoft\sqlserver\ReportServer -Class __NAMESPACE -ComputerName $ComputerName) | ? {$_.Name -EQ "RS_$($SQLService.InstanceName)"}
-							$WMIReportVersion = (Get-WMIObject -Namespace "root\microsoft\sqlserver\ReportServer\$($WMIReport.Name)" -Class __NAMESPACE -ComputerName $ComputerName)
-							$SQLService.Build =((Get-WMIObject -Namespace "root\microsoft\sqlserver\ReportServer\$($WMIReport.Name)\$($WMIReportVersion.Name)" -Class MSReportServer_Instance -ComputerName $ComputerName) | ? {$_.InstanceName -EQ "$($SQLService.InstanceName)"}).Version
-							$AddService = $true
+                $SQLService.Type = 'SSRS'
+                $SQLService.InstanceName = $($Service.Name).Substring(13)
+                $WMIReport = (Get-WMIObject -namespace root\microsoft\sqlserver\ReportServer -Class __NAMESPACE -ComputerName $ComputerName) | ? {$_.Name -EQ "RS_$($SQLService.InstanceName)"}
+                if ($WMIReport)
+                {
+                    $WMIReportVersion = (Get-WMIObject -Namespace "root\microsoft\sqlserver\ReportServer\$($WMIReport.Name)" -Class __NAMESPACE -ComputerName $ComputerName)
+                    $SQLService.Build =((Get-WMIObject -Namespace "root\microsoft\sqlserver\ReportServer\$($WMIReport.Name)\$($WMIReportVersion.Name)" -Class MSReportServer_Instance -ComputerName $ComputerName) | ? {$_.InstanceName -EQ "$($SQLService.InstanceName)"}).Version
+                }
+                else
+                {
+                    $SQLService.Build = '9.0.0.0'
+                }
+                $AddService = $true
 			}
 			# SSIS || Single Instance Application
 			ElseIf ($Service.Name -LIke 'MsDts*')
