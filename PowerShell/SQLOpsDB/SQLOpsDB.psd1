@@ -92,6 +92,8 @@
         '.\Modules\Get-SQLOpSQLJobs.psm1';
         '.\Modules\Update-SQLOpSQLJobStats.psm1';
         '.\Modules\Get-SQLOpSQLJobStats.psm1';
+        # CMS Modules
+        '.\Modules\Get-CMSServerInstance.psm1';
     #'.\Modules\Add-Database.psm1';
     '.\Modules\Add-Server.psm1';
     '.\Modules\Add-SQLCluster.psm1';
@@ -113,7 +115,6 @@
     '.\Modules\Update-AG.psm1';
     '.\Modules\Set-CMSGroups.psm1';
     #'.\Modules\Update-CMSGroups.psm1'; #Does not exist.
-    '.\Modules\Get-CMSServers.psm1';
     '.\Modules\Aggregate-CMDBMonthlyData.psm1';
     '.\Modules\Truncate-CMDBData.psm1';
     '.\Modules\Create-CMDBMonthlyTrend.psm1';

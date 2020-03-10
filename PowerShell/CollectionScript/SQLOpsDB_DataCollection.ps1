@@ -31,13 +31,13 @@ try
 
     # Get list of SQL Server Instances from Central Management Server (CMS).
     # Enable or disable which CMS groups are monitored via Set-CMSGroup commandlet.
-    $SQLServers = Get-CMSServers #-ServerName contoso.com
+    $SQLServers = Get-CMSServerInstance #-ServerInstance ContosoSQL
     $TotalServers = ($SQLServers | Measure-Object).Count
     $ServersRunningCount = 0
 }
 catch
 {
-    Write-StatusUpdate -Message "Failed to get list of servers from CMS Server (unhandled exception)." -WriteToDB
+    Write-StatusUpdate -Message "Failed to get list of sql instances from CMS Server (unhandled exception)." -WriteToDB
     Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
     return
 }
@@ -47,16 +47,16 @@ catch
 ForEach ($SQLServerRC in $SQLServers)
 {
 
-    $SQLServer = $SQLServerRC.name
-    $SQLServerFQDN = $SQLServerRC.server_name
+    # For backwards compatibility.  Eventually will be removed as all modules should be able to handle FQDN.
+    $ComputerName_NoDomain = $($SQLServerRC.ComputerName).Substring(0,$($SQLServerRC.ComputerName).IndexOf('.'))
+
     $ServersRunningCount++
-    Write-StatusUpdate -Message "Processing SQL Instance [$SQLServerFQDN] ($ServersRunningCount/$TotalServers) ..." -WriteToDB
+    Write-StatusUpdate -Message "Processing SQL Instance [$($SQLServerRC.ServerInstance)] ($ServersRunningCount/$TotalServers) ..." -WriteToDB
 
     # Initialize all the variables for current Instance
     [Array] $ServerList = $null
     $IsClustered = 0
     $IsPhysical = 1
-    $SQLInstanceName = 'MSSQLServer'
     $ServerType = 'Stand Alone'
     $EnvironmentType = 'Prod'
     $ServerInstanceIsMonitored = $true
@@ -73,55 +73,6 @@ ForEach ($SQLServerRC in $SQLServers)
     $SchemaPrefix = 'sys'
     $FQDN = $Global:Default_DomainName
 
-    # Before we start processing the SQL Instance, we need to parse out the VCO/Server Name and Instance Name.
-    # The connection will still happen with SERVER.FQDN\INSTANCE,PORT or VCO.FQDN\INSTANCE,PORT.
-    $SQLServer = $SQLServer.ToLower()
-    $SQLServerFQDN = $SQLServerFQDN.ToLower()
-
-    if ($SQLServer.IndexOf(',') -gt -1)
-    {
-        # User has included the port number in display name.  Strip out the port number.
-        #
-        # Raise a warning in logs to correct CMS configuration.
-
-        Write-StatusUpdate -Message "Display Name in CMS misconfigured for [$($TokenizedSQLInstanceName[0])], port number should not be included." -WriteToDB
-        $SQLServer = $SQLServer.Substring(0,$SQLServer.IndexOf(','))
-    }
-
-    $TokenizedSQLInstanceName = $($SQLServer.Split(',')).Split('\')
-    $TokenizedSQLInstanceNameFQDN = $($SQLServerFQDN.Split(',')).Split('\')
-
-    # Check to make sure server name and server name FQDN follow standards set in CMS.
-    if ($TokenizedSQLInstanceName[0].IndexOf('.') -gt -1)
-    {
-        # User has fully qualified the server name also.  Strip away the domain information.
-        #
-        # Raise a warning in logs to correct CMS configuration.
-
-        Write-StatusUpdate -Message "Display Name in CMS misconfigured for [$($TokenizedSQLInstanceName[0])], domain name should not be included." -WriteToDB
-        $TokenizedSQLInstanceName[0] = $TokenizedSQLInstanceName[0].Substring(0,$TokenizedSQLInstanceName[0].IndexOf('.'))
-        
-    }
-
-    if ($TokenizedSQLInstanceNameFQDN[0].IndexOf('.') -eq -1)
-    {
-        # User is missing fully qualified domain name for server name.  
-        #
-        # Raise a warning in logs to correct CMS configuration.
-
-        Write-StatusUpdate -Message "Server Name in CMS misconfigured for [$($TokenizedSQLInstanceNameFQDN[0])], domain name should be included." -WriteToDB
-        $TokenizedSQLInstanceNameFQDN[0] = [String]::Concat($TokenizedSQLInstanceNameFQDN[0],'.',$FQDN)
-    }
-
-    $ServerVNOName = $TokenizedSQLInstanceName[0]
-    $ServerVNONameFQDN = $TokenizedSQLInstanceNameFQDN[0]
-
-    # If the tokenized array count is two, it means non-default instance name is supplied.
-    if ($TokenizedSQLInstanceName.Count -eq 2)
-    {
-        $SQLInstanceName = $TokenizedSQLInstanceName[1]
-    }
-
     # Check to confirm Extended Properties table exists; as script heavily relies on this table.
     # Also check if Extended Properties are defined for key settings; as it leads to confusion if they are missing.
     try
@@ -134,7 +85,7 @@ ForEach ($SQLServerRC in $SQLServers)
         $TSQL = "SELECT id AS TblId FROM sysobjects WHERE name = 'extended_properties'"
         Write-StatusUpdate -Message $TSQL -IsTSQL
 
-        $Results = Invoke-SQLCMD -ServerInstance $SQLServerFQDN  `
+        $Results = Invoke-SQLCMD -ServerInstance $SQLServerRC.ServerInstanceConnectionString  `
                                     -Database 'master' `
                                     -Query $TSQL -ErrorAction Stop
 
@@ -148,7 +99,7 @@ ForEach ($SQLServerRC in $SQLServers)
         }
         else
         {
-            Write-StatusUpdate -Message "Missing extended properties table in [$SQLServerFQDN]." -WriteToDB
+            Write-StatusUpdate -Message "Missing extended properties table in [$($SQLServerRC.ServerInstance)]." -WriteToDB
             $SQLInstanceAccessible = $false
         }
 
@@ -159,13 +110,13 @@ ForEach ($SQLServerRC in $SQLServers)
             Write-StatusUpdate -Message $TSQL -IsTSQL
 
             # Find if the SQL Server a clustered instance (only applicable to FCI running under WFCS)
-            $Results = Invoke-SQLCMD -ServerInstance $SQLServerFQDN  `
+            $Results = Invoke-SQLCMD -ServerInstance $SQLServerRC.ServerInstanceConnectionString  `
                                         -Database 'master' `
                                         -Query $TSQL -ErrorAction Stop
 
             if ($Results.RwCnt -ne 3)
             {
-                Write-StatusUpdate -Message "Missing one or more of the key extended properties (EnvironmentType,MachineType,ServerType) in [$SQLServerFQDN]." -WriteToDB
+                Write-StatusUpdate -Message "Missing one or more of the key extended properties (EnvironmentType,MachineType,ServerType) in [$($SQLServerRC.ServerInstance)]." -WriteToDB
                 $SQLInstanceAccessible = $false
             }
             else
@@ -178,7 +129,7 @@ ForEach ($SQLServerRC in $SQLServers)
                 $SQLInstanceAccessible = $true -and $SQLInstanceAccessible
 
                 # Find if the SQL Server a clustered instance (only applicable to FCI running under WFCS)
-                $Results = Invoke-SQLCMD -ServerInstance $SQLServerFQDN  `
+                $Results = Invoke-SQLCMD -ServerInstance $SQLServerRC.ServerInstanceConnectionString  `
                                             -Database 'master' `
                                             -Query $TSQL -ErrorAction Stop
             }
@@ -186,7 +137,7 @@ ForEach ($SQLServerRC in $SQLServers)
     }
     catch [System.Data.SqlClient.SqlException]
     {
-        Write-StatusUpdate -Message "Cannot reach SQL Server instance [$SQLServerFQDN]." -WriteToDB
+        Write-StatusUpdate -Message "Cannot reach SQL Server instance [$($SQLServerRC.ServerInstance)]." -WriteToDB
         $SQLInstanceAccessible = $false
     }
     catch
@@ -310,7 +261,7 @@ ForEach ($SQLServerRC in $SQLServers)
         $TSQL = "SELECT value FROM $SchemaPrefix.extended_properties WHERE name = 'ServerType'"
         Write-StatusUpdate -Message $TSQL -IsTSQL
 
-        $Results = Invoke-SQLCMD -ServerInstance $SQLServerFQDN `
+        $Results = Invoke-SQLCMD -ServerInstance $SQLServerRC.ServerInstanceConnectionString `
                                     -Database 'master' `
                                     -Query $TSQL -ErrorAction Stop
 
@@ -321,7 +272,7 @@ ForEach ($SQLServerRC in $SQLServers)
         $TSQL = "SELECT value FROM $SchemaPrefix.extended_properties WHERE name = 'EnvironmentType'"
         Write-StatusUpdate -Message $TSQL -IsTSQL
 
-        $Results = Invoke-SQLCMD -ServerInstance $SQLServerFQDN `
+        $Results = Invoke-SQLCMD -ServerInstance $SQLServerRC.ServerInstanceConnectionString `
                                     -Database 'master' `
                                     -Query $TSQL -ErrorAction Stop
 
@@ -333,7 +284,7 @@ ForEach ($SQLServerRC in $SQLServers)
         $TSQL = "SELECT value FROM $SchemaPrefix.extended_properties WHERE name = 'MachineType'"
         Write-StatusUpdate -Message $TSQL -IsTSQL
 
-        $Results = Invoke-SQLCMD -ServerInstance $SQLServerFQDN `
+        $Results = Invoke-SQLCMD -ServerInstance $SQLServerRC.ServerInstanceConnectionString `
                                     -Database 'master' `
                                     -Query $TSQL -ErrorAction Stop
 
@@ -372,25 +323,25 @@ ForEach ($SQLServerRC in $SQLServers)
             {
                 Write-StatusUpdate -Message $TSQL -IsTSQL
 
-                $DBFolderList = Invoke-SQLCMD -ServerInstance $SQLServerFQDN `
+                $DBFolderList = Invoke-SQLCMD -ServerInstance $SQLServerRC.ServerInstanceConnectionString `
                                                 -Database 'master' `
                                                 -Query $TSQL -ErrorAction Stop
 
                 $TSQL = "SELECT DISTINCT LOWER(SUBSTRING(physical_device_name,1,LEN(physical_device_name)-CHARINDEX('\',REVERSE(physical_device_name)))) AS FolderName FROM msdb.dbo.backupmediafamily"
                 Write-StatusUpdate -Message $TSQL -IsTSQL
 
-                $BackupFolderList = Invoke-SQLCMD -ServerInstance $SQLServerFQDN  `
+                $BackupFolderList = Invoke-SQLCMD -ServerInstance $SQLServerRC.ServerInstanceConnectionString  `
                                                     -Database 'master' `
                                                     -Query $TSQL -ErrorAction Stop
             }
 
             # Unlike Standalone Instances where the Physical Name is calculated, for FCI the node names must be supplied by DBA team.
-            # If this information is blank, the servers list will be blank therefore no action against the $SQLServer will be taken.
+            # If this information is blank, the servers list will be blank therefore no action will be taken.
 
             $TSQL = "SELECT value FROM $SchemaPrefix.extended_properties WHERE name = 'ActiveNode'"
             Write-StatusUpdate -Message $TSQL -IsTSQL
 
-            $Results = Invoke-SQLCMD -ServerInstance $SQLServerFQDN  -Database 'master' -Query $TSQL -ErrorAction Stop
+            $Results = Invoke-SQLCMD -ServerInstance $SQLServerRC.ServerInstanceConnectionString  -Database 'master' -Query $TSQL -ErrorAction Stop
 
             if ($Results)
             {
@@ -401,7 +352,7 @@ ForEach ($SQLServerRC in $SQLServers)
                 $TSQL = "SELECT value FROM $SchemaPrefix.extended_properties WHERE name LIKE 'PassiveNode%'"
                 Write-StatusUpdate -Message $TSQL -IsTSQL
 
-                $PassiveNodes = Invoke-SQLCMD -ServerInstance $SQLServerFQDN  -Database 'master' -Query $TSQL -ErrorAction Stop
+                $PassiveNodes = Invoke-SQLCMD -ServerInstance $SQLServerRC.ServerInstanceConnectionString  -Database 'master' -Query $TSQL -ErrorAction Stop
 
                 if ($Results)
                 {
@@ -413,19 +364,19 @@ ForEach ($SQLServerRC in $SQLServers)
                 }
                 else
                 {
-                    Write-StatusUpdate -Message "Extended properties PassiveNode* missing for [$SQLServerFQDN]." -WriteToDB
+                    Write-StatusUpdate -Message "Extended properties PassiveNode* missing for [$($SQLServerRC.ServerInstance)]." -WriteToDB
                 }
             }
             else
             {
-                Write-StatusUpdate -Message "Extended properties ActiveNode missing for [$SQLServerFQDN]." -WriteToDB
+                Write-StatusUpdate -Message "Extended properties ActiveNode missing for [$($SQLServerRC.ServerInstance)]." -WriteToDB
             }
 
         }
         else
         {
-            $ServerList += ,($ServerVNOName,1)
-            Write-StatusUpdate -Message "Found Server: $ServerVNOName"
+            $ServerList += ,($ComputerName_NoDomain,1)
+            Write-StatusUpdate -Message "Found Server: $ComputerName_NoDomain"
         }
 
         #region Phase 1: Server, Cluster, and Volume Process
@@ -447,7 +398,7 @@ ForEach ($SQLServerRC in $SQLServers)
             {
                 try
                 {
-                    $Processors = Get-WmiObject -Class Win32_Processor -ComputerName $ServerVNONameFQDN
+                    $Processors = Get-WmiObject -Class Win32_Processor -ComputerName $ServerName
 
                     ForEach ($Processor IN $Processors)
                     {
@@ -458,22 +409,22 @@ ForEach ($SQLServerRC in $SQLServers)
                 }
                 catch [System.Runtime.InteropServices.COMException]
                 {
-                    Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerVNONameFQDN]; server not found." -WriteToDB
+                    Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName]; server not found." -WriteToDB
                     $IsServerAccessible = $false
                 }
                 catch [System.UnauthorizedAccessException]
                 {
-                    Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerVNONameFQDN]; access denied." -WriteToDB
+                    Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName]; access denied." -WriteToDB
                     $IsWMIAccessible = $false
                 }
                 catch [System.Management.ManagementException]
                 {
-                    Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerVNONameFQDN]; unknown exception." -WriteToDB
+                    Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName]; unknown exception." -WriteToDB
                     $IsWMIAccessible = $false
                 }
                 catch
                 {
-                    Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$SQLServerFQDN] (unhandled exception)." -WriteToDB
+                    Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName] (unhandled exception)." -WriteToDB
                     Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
                     $IsServerAccessible = $false
                 }
@@ -540,25 +491,25 @@ ForEach ($SQLServerRC in $SQLServers)
                 if ((($IsClustered -eq 1) -or ($ServerType -eq 'Microsoft Clustering') -or ($ServerType -eq 'Veritas Clustering')) -and ($ServerIsMonitored))
                 {
                     Write-StatusUpdate -Message "Current instance is a Clustered Instance."
-                    $Results = Get-SQLCluster $ServerVNOName
+                    $Results = Get-SQLCluster $ComputerName_NoDomain
 
                     Switch ($Results)
                     {
                         $Global:Error_ObjectsNotFound
                         {
                             Write-StatusUpdate -Message "New Cluster"
-                            $InnerResults = Add-SQLCluster $ServerVNOName
+                            $InnerResults = Add-SQLCluster $ComputerName_NoDomain
                             Switch ($InnerResults)
                             {
                                 $Global:Error_Duplicate
                                 {
                                     $ClusterIsMonitored = $false
-                                    Write-StatusUpdate -Message "Failed to Add-SQLCluster, duplicate value found [$ServerVNOName]." -WriteToDB
+                                    Write-StatusUpdate -Message "Failed to Add-SQLCluster, duplicate value found [$ComputerName_NoDomain]." -WriteToDB
                                 }
                                 $Global:Error_FailedToComplete
                                 {
                                     $ClusterIsMonitored = $false
-                                    Write-StatusUpdate -Message "Failed to Add-SQLCluster [$ServerVNOName]."
+                                    Write-StatusUpdate -Message "Failed to Add-SQLCluster [$ComputerName_NoDomain]."
                                 }
                                 default
                                 {
@@ -571,7 +522,7 @@ ForEach ($SQLServerRC in $SQLServers)
                         $Global:Error_FailedToComplete
                         {
                             $ClusterIsMonitored = $false
-                            Write-StatusUpdate -Message "Failed to Get-SQLCluster [$ServerVNOName]."
+                            Write-StatusUpdate -Message "Failed to Get-SQLCluster [$ComputerName_NoDomain]."
                             break;
                         }
                         default
@@ -586,31 +537,31 @@ ForEach ($SQLServerRC in $SQLServers)
                     {
                         Write-StatusUpdate -Message "Cluster is monitored; updating node information."
                         $ProcessTheNode = $true
-                        $Results = Get-SQLClusterNode $ServerVNOName $ServerName
+                        $Results = Get-SQLClusterNode $ComputerName_NoDomain $ServerName
 
                         Switch ($Results)
                         {
                             $Global:Error_ObjectsNotFound
                             {
                                 Write-StatusUpdate -Message "New Cluster Node"
-                                $InnerResults = Add-SQLClusterNode $ServerVNOName $ServerName $ServerIsActiveNode
+                                $InnerResults = Add-SQLClusterNode $ComputerName_NoDomain $ServerName $ServerIsActiveNode
 
                                 Switch ($InnerResults)
                                 {
                                     $Global:Error_Duplicate
                                     {
                                         $ProcessTheNode = $false
-                                        Write-StatusUpdate -Message "Failed to Add-SQLClusterNode, duplicate object. [$ServerVNOName\$ServerName]." -WriteToDB
+                                        Write-StatusUpdate -Message "Failed to Add-SQLClusterNode, duplicate object. [$ComputerName_NoDomain\$ServerName]." -WriteToDB
                                     }
                                     $Global:Error_ObjectsNotFound
                                     {
                                         $ProcessTheNode = $false
-                                        Write-StatusUpdate -Message "Failed to Add-SQLClusterNode, missing the server or cluster object [$ServerVNOName\$ServerName]." -WriteToDB
+                                        Write-StatusUpdate -Message "Failed to Add-SQLClusterNode, missing the server or cluster object [$ComputerName_NoDomain\$ServerName]." -WriteToDB
                                     }
                                     $Global:Error_FailedToComplete
                                     {
                                         $ProcessTheNode = $false
-                                        Write-StatusUpdate -Message "Failed to Add-SQLClusterNode [$ServerVNOName\$ServerName]."
+                                        Write-StatusUpdate -Message "Failed to Add-SQLClusterNode [$ComputerName_NoDomain\$ServerName]."
                                     }
                                 }
                                 break;
@@ -618,25 +569,25 @@ ForEach ($SQLServerRC in $SQLServers)
                             $Global:Error_FailedToComplete
                             {
                                 $ProcessTheNode = $false
-                                Write-StatusUpdate -Message "Failed to Get-SQLClusterNode [$ServerVNOName\$ServerName]."
+                                Write-StatusUpdate -Message "Failed to Get-SQLClusterNode [$ComputerName_NoDomain\$ServerName]."
                                 break;
                             }
                         }
 
                         if ($ProcessTheNode)
                         {
-                            $Results = Update-SQLCluster $ServerVNOName
+                            $Results = Update-SQLCluster $ComputerName_NoDomain
 
                             if ($Results -eq $Global:Error_FailedToComplete)
                             {
-                                    Write-StatusUpdate -Message "Failed to update SQL CMDB Cluster's info for [$ServerVNOName]."
+                                    Write-StatusUpdate -Message "Failed to update SQL CMDB Cluster's info for [$ComputerName_NoDomain]."
                             }
 
-                            $Results = Update-SQLClusterNode $ServerVNOName $ServerName
+                            $Results = Update-SQLClusterNode $ComputerName_NoDomain $ServerName
 
                             if ($Results -eq $Global:Error_FailedToComplete)
                             {
-                                    Write-StatusUpdate -Message "Failed to update SQL CMDB Cluster Node's info for [$ServerVNOName\$ServerName]."
+                                    Write-StatusUpdate -Message "Failed to update SQL CMDB Cluster Node's info for [$ComputerName_NoDomain\$ServerName]."
                             }
 
                             # Current solution does not support Windows 2000 disk space report.
@@ -646,11 +597,11 @@ ForEach ($SQLServerRC in $SQLServers)
 
                                 if ($IsWMIAccessible)
                                 {
-                                    $Results = Update-DiskVolumes $ServerName $FQDN $ServerVNOName $DBFolderList $BackupFolderList
+                                    $Results = Update-DiskVolumes $ServerName $FQDN $ComputerName_NoDomain $DBFolderList $BackupFolderList
 
                                     if ($Results -eq $Global:Error_FailedToComplete)
                                     {
-                                        Write-StatusUpdate -Message "Failed to update the volume space details for [$ServerVNONameFQDN]."
+                                        Write-StatusUpdate -Message "Failed to update the volume space details for [$($SQLServerRC.ComputerName)]."
                                     }
                                 }
                             }
@@ -671,7 +622,7 @@ ForEach ($SQLServerRC in $SQLServers)
 
                             if ($Results -eq $Global:Error_FailedToComplete)
                             {
-                                Write-StatusUpdate -Message "Failed to update the volume space details for [$ServerName.$FQDN]." -WriteToDB
+                                Write-StatusUpdate -Message "Failed to update the volume space details for [$($SQLServerRC.ComputerName)]." -WriteToDB
                             }
                         }
                     }
@@ -685,7 +636,7 @@ ForEach ($SQLServerRC in $SQLServers)
 
             if ($DCS_DiscoverSQLServices)
             {
-                $SQLServices = Get-SISQLService -ComputerName $ServerVNONameFQDN
+                $SQLServices = Get-SISQLService -ComputerName $ServerName
 
                 if ($SQLServices)
                 {
@@ -693,11 +644,11 @@ ForEach ($SQLServerRC in $SQLServers)
 
                     if ($Results -eq $Global:Error_FailedToComplete)
                     {
-                        Write-StatusUpdate -Message "Failed to update SQL Services Detail for [$ServerVNONameFQDN]" -WriteToDB
+                        Write-StatusUpdate -Message "Failed to update SQL Services Detail for [$ServerName]" -WriteToDB
                     }
                 }
                 else {
-                    Write-StatusUpdate -Message "Failed to collect SQL Services Detail for [$ServerVNONameFQDN]" -WriteToDB
+                    Write-StatusUpdate -Message "Failed to collect SQL Services Detail for [$ServerName]" -WriteToDB
                 }
             }
 
@@ -705,20 +656,20 @@ ForEach ($SQLServerRC in $SQLServers)
         #endregion
 
         # Phase 2: SQL Instances, Availability Groups, and Databases Process
-        $Results = Get-SqlOpSQLInstance -ServerInstance $SQLServerFQDN -Internal
+        $Results = Get-SqlOpSQLInstance -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
 
         switch ($Results)
         {
             $Global:Error_ObjectsNotFound
             {
                 Write-StatusUpdate -Message "New Instance."
-                $InnerResults = Add-SQLInstance $ServerVNOName $SQLInstanceName $SQLVersion $SQLServer_Build $SQLEdition $ServerType $EnvironmentType
+                $InnerResults = Add-SQLInstance $ComputerName_NoDomain $SQLServerRC.SQLInstanceName $SQLVersion $SQLServer_Build $SQLEdition $ServerType $EnvironmentType
 
                 switch ($InnerResults)
                 {
                     $Global:Error_Duplicate
                     {
-                        Write-StatusUpdate -Message "Failed to Add-SQLInstance, duplicate object for [$ServerVNOName\$SQLInstanceName]." -WriteToDB
+                        Write-StatusUpdate -Message "Failed to Add-SQLInstance, duplicate object for [$($SQLServerRC.ServerInstance)]." -WriteToDB
                         break;
                     }
                     $Global:Error_FailedToComplete
@@ -728,7 +679,7 @@ ForEach ($SQLServerRC in $SQLServers)
                     }
                     default
                     {
-                        $InnerResults = Get-SqlOpSQLInstance -ServerInstance $SQLServerFQDN -Internal
+                        $InnerResults = Get-SqlOpSQLInstance -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
                         $ServerInstanceIsMonitored = $InnerResults.IsMonitored
                         $SQLInstanceID = $InnerResults.SQLInstanceID
                         break;
@@ -786,7 +737,7 @@ ForEach ($SQLServerRC in $SQLServers)
                                 FROM CTE"
 
                     Write-StatusUpdate -Message $TSQL -IsTSQL                    
-                    $Results = Invoke-SQLCMD -ServerInstance $SQLServerFQDN  `
+                    $Results = Invoke-SQLCMD -ServerInstance $SQLServerRC.ServerInstanceConnectionString  `
                                                 -Database 'master' `
                                                 -Query $TSQL -ErrorAction Stop
 
@@ -853,12 +804,12 @@ ForEach ($SQLServerRC in $SQLServers)
             }
             catch [System.Data.SqlClient.SqlException]
             {
-                Write-StatusUpdate -Message "Cannot reach SQL Server instance [$SQLServerFQDN]." -WriteToDB
+                Write-StatusUpdate -Message "Cannot reach SQL Server instance [$($SQLServerRC.ServerInstance)]." -WriteToDB
                 $SQLInstanceAccessible = $false
             }
             catch
             {
-                Write-StatusUpdate -Message "Failed to talk to SQL Instance (unhandled expection)." -WriteToDB
+                Write-StatusUpdate -Message "Failed to talk to SQL Instance (unhandled expectation)." -WriteToDB
                 Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
                 $SQLInstanceAccessible = $false
             }
@@ -933,7 +884,7 @@ ForEach ($SQLServerRC in $SQLServers)
                             GROUP BY AGGuid, DatabaseName, DatabaseState, FileType"
                 }
                 Write-StatusUpdate -Message $TSQL -IsTSQL                    
-                $Results = Invoke-SQLCMD -ServerInstance $SQLServerFQDN  `
+                $Results = Invoke-SQLCMD -ServerInstance $SQLServerRC.ServerInstanceConnectionString  `
                                             -Database 'master' `
                                             -Query $TSQL -ErrorAction Stop
 
@@ -942,12 +893,13 @@ ForEach ($SQLServerRC in $SQLServers)
 
                     $TSQL = "Truncate Table Staging.DatabaseSizeDetails"
                     Write-StatusUpdate -Message $TSQL -IsTSQL                    
-                    Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                    -Database $Global:SQLCMDB_DatabaseName `
+                    Invoke-SQLCMD -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
                                     -Query $TSQL -ErrorAction Stop
 
                     Write-StatusUpdate -Message "Writing database details to staging table" -IsTSQL                    
-                    Write-DataTable -ServerInstance $Global:SQLCMDB_SQLServerName -Database $Global:SQLCMDB_DatabaseName -Data $Results -Table "Staging.DatabaseSizeDetails"
+                    Write-DataTable -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database -Data $Results -Table "Staging.DatabaseSizeDetails"
 
                     # Update database catalog
                     $TSQL = "WITH CTE AS
@@ -963,8 +915,8 @@ ForEach ($SQLServerRC in $SQLServers)
                                 INSERT (SQLInstanceID, DatabaseName, DatabaseState, IsMonitored, DiscoveryOn, LastUpdated) VALUES (Source.SQLInstanceID, Source.DatabaseName, Source.DatabaseState, 1, GetDate(), GetDate());"
 
                     Write-StatusUpdate -Message $TSQL -IsTSQL                    
-                    $Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                                -Database $Global:SQLCMDB_DatabaseName `
+                    $Results = Invoke-SQLCMD -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                                -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
                                                 -Query $TSQL -ErrorAction Stop
 
                     IF ($SQLServer_Major -ne 8)
@@ -986,8 +938,8 @@ ForEach ($SQLServerRC in $SQLServers)
                                 INSERT (DatabaseID, FileType, DateCaptured, FileSize_mb) VALUES (Source.DatabaseID, Source.FileType, GetDate(), Source.FileSize_mb);"
 
                         Write-StatusUpdate -Message $TSQL -IsTSQL                    
-                        $Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                                    -Database $Global:SQLCMDB_DatabaseName `
+                        $Results = Invoke-SQLCMD -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
                                                     -Query $TSQL -ErrorAction Stop
                     }
 
@@ -1014,22 +966,22 @@ ForEach ($SQLServerRC in $SQLServers)
                                     INSERT (AGInstanceID,DatabaseID) VALUES (Source.AGInstanceID, Source.DatabaseID);"
 
                         Write-StatusUpdate -Message $TSQL -IsTSQL                    
-                        $Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                                    -Database $Global:SQLCMDB_DatabaseName `
+                        $Results = Invoke-SQLCMD -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
                                                     -Query $TSQL -ErrorAction Stop
                     }
 
                 }
                 else
                 {
-                    Write-StatusUpdate -Message "No user databases found on [$SQLServerFQDN]." -WriteToDB
+                    Write-StatusUpdate -Message "No user databases found on [$($SQLServerRC.ServerInstance)]." -WriteToDB
                     $SQLInstanceAccessible = $false
                 }
 
             }
             catch [System.Data.SqlClient.SqlException]
             {
-                Write-StatusUpdate -Message "Cannot reach SQL Server instance [$SQLServerFQDN]." -WriteToDB
+                Write-StatusUpdate -Message "Cannot reach SQL Server instance [$($SQLServerRC.ServerInstance)]." -WriteToDB
                 $SQLInstanceAccessible = $false
             }
             catch
@@ -1040,10 +992,10 @@ ForEach ($SQLServerRC in $SQLServers)
             }
 
             # Update the Database Space Information
-            $Results = Update-SQLInstance $ServerVNOName $SQLInstanceName $SQLVersion $SQLServer_Build $SQLEdition $ServerType $EnvironmentType
+            $Results = Update-SQLInstance $ComputerName_NoDomain $SQLServerRC.SQLInstanceName $SQLVersion $SQLServer_Build $SQLEdition $ServerType $EnvironmentType
             if ($Results -eq $Global:Error_FailedToComplete)
             {
-                Write-StatusUpdate -Message "Failed to Update-SQLInstance for [$ServerVNOName\$SQLInstanceName]."
+                Write-StatusUpdate -Message "Failed to Update-SQLInstance for [$($SQLServerRC.ServerInstance)]."
             }
 
             if ($DCS_ErrorLogs)
@@ -1057,7 +1009,7 @@ ForEach ($SQLServerRC in $SQLServers)
                     if ($DCS_ThrottleErrorLogCollection)
                     {
 
-                        $LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerFQDN
+                        $LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString
                         $Last30Hours = (Get-Date).AddHours(-30)
                         $StartDataCollectionTime = [DateTime]$LastDataCollection.LastDateTimeCaptured
 
@@ -1065,7 +1017,7 @@ ForEach ($SQLServerRC in $SQLServers)
 
                         if ($Last30Hours -ge $StartDataCollectionTime)
                         {
-                            Write-StatusUpdate -Message "Skipping Error Logs for [$SQLServerFQDN].  Skipped from '$StartDataCollectionTime' to '$Last30Hours'." -WriteToDB
+                            Write-StatusUpdate -Message "Skipping Error Logs for [$($SQLServerRC.ServerInstance)].  Skipped from '$StartDataCollectionTime' to '$Last30Hours'." -WriteToDB
                             $StartDataCollectionTime = $Last30Hours
                         }
 
@@ -1076,12 +1028,12 @@ ForEach ($SQLServerRC in $SQLServers)
                             # Cycle through error log one hour at a time.
 
                             $OneHourPlus = $StartDataCollectionTime.AddHours(1)
-                            $ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerFQDN -After $StartDataCollectionTime -Before $OneHourPlus -Internal
+                            $ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -After $StartDataCollectionTime -Before $OneHourPlus -Internal
                             if ($ErrorLogs)
                             {
-                                Update-SQLOpSQLErrorLog -ServerInstance $SQLServerFQDN -Data $ErrorLogs | Out-Null
+                                Update-SQLOpSQLErrorLog -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $ErrorLogs | Out-Null
                             }
-                            Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerFQDN -DateTime $OneHourPlus | Out-Null 
+                            Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString -DateTime $OneHourPlus | Out-Null 
 
                             $StartDataCollectionTime = $OneHourPlus
                             if ($StartDataCollectionTime.AddHours(1) -ge (Get-Date))
@@ -1094,23 +1046,23 @@ ForEach ($SQLServerRC in $SQLServers)
 
                         if ($ThrottleTriggered)
                         {
-                            Write-StatusUpdate -Message "Throttle Setting Triggered. Error logs for [$SQLServerFQDN] did not finish.  Collection finished to [$StartDataCollectionTime]." -WriteToDB
+                            Write-StatusUpdate -Message "Throttle Setting Triggered. Error logs for [$($SQLServerRC.ServerInstance)] did not finish.  Collection finished to [$StartDataCollectionTime]." -WriteToDB
                         }
                     }
                     else
                     {
-                        $LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerFQDN
-                        $ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerFQDN -After $LastDataCollection.LastDateTimeCaptured -Internal
+                        $LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString
+                        $ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -After $LastDataCollection.LastDateTimeCaptured -Internal
                         if ($ErrorLogs)
                         {
-                            Update-SQLOpSQLErrorLog -ServerInstance $SQLServerFQDN -Data $ErrorLogs | Out-Null
+                            Update-SQLOpSQLErrorLog -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $ErrorLogs | Out-Null
                         }
-                        Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerFQDN | Out-Null   
+                        Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString | Out-Null   
                     }
                 }
                 else
                 {
-                    Write-StatusUpdate -Message "Skipping Error Logs for [$SQLServerFQDN].  SQL Server 2000 not supported." -WriteToDB
+                    Write-StatusUpdate -Message "Skipping Error Logs for [$($SQLServerRC.ServerInstance)].  SQL Server 2000 not supported." -WriteToDB
                 }
             }
 
@@ -1122,17 +1074,17 @@ ForEach ($SQLServerRC in $SQLServers)
                     # Get SQL Instance Error Logs.  Get the last collect date, then get only errors since last collection.
                     # record the errors in SQLOpsDB.  Then update all collection date time.
 
-                    $LastDataCollection = Get-SQLOpSQLJobStats -ServerInstance $SQLServerFQDN
-                    $SQLJobs = Get-SISQLJobs -ServerInstance $SQLServerFQDN -After $LastDataCollection.LastDateTimeCaptured -Internal
+                    $LastDataCollection = Get-SQLOpSQLJobStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString
+                    $SQLJobs = Get-SISQLJobs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -After $LastDataCollection.LastDateTimeCaptured -Internal
                     if ($SQLJobs)
                     {
-                        Update-SQLOpSQLJobs -ServerInstance $SQLServerFQDN -Data $SQLJobs | Out-Null
+                        Update-SQLOpSQLJobs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $SQLJobs | Out-Null
                     }
-                    Update-SQLOpSQLJobStats -ServerInstance $SQLServerFQDN | Out-Null   
+                    Update-SQLOpSQLJobStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString | Out-Null   
                 }
                 else
                 {
-                    Write-StatusUpdate -Message "Skipping SQL Job collection for [$SQLServerFQDN].  SQL Server 2000 not supported." -WriteToDB
+                    Write-StatusUpdate -Message "Skipping SQL Job collection for [$($SQLServerRC.ServerInstance)].  SQL Server 2000 not supported." -WriteToDB
                 }
             }
                 
@@ -1185,11 +1137,12 @@ Write-StatusUpdate -Message "Phase 3: Aggregation for Disk Space & Database Spac
     #Phase 3.4: Clean Up Expired Data
     Write-StatusUpdate -Message "Phase 3.4: Clean Up Expired Data"
 
-    Delete-CMDBData -Type Databases
-    Delete-CMDBData -Type DiskVolumes
-    Delete-CMDBData -Type SQLInstances
-    Delete-CMDBData -Type SQLClusters
-    Delete-CMDBData -Type Servers
+    # Disabled 20200310 -- Multiple bugs --
+    #Delete-CMDBData -Type Databases
+    #Delete-CMDBData -Type DiskVolumes
+    #Delete-CMDBData -Type SQLInstances
+    #Delete-CMDBData -Type SQLClusters
+    #Delete-CMDBData -Type Servers
 
     #Phase 3.5: Clean Up CMDB Log Data
     Write-StatusUpdate -Message "Phase 3.5: Clean Up CMDB Log Data"
