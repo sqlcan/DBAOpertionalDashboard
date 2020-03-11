@@ -41,6 +41,12 @@ catch
     Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
     return
 }
+
+if (($SQLServers -ne $Global:Error_FailedToComplete) -or ($SQLServers -ne $Global:Error_ObjectsNotFound))
+{
+    Write-Error "No SQL Server instances found with criteria supplied. Collection failed."
+    return
+}
 #endregion
 
 #region Loop through all the SQL Instances collected from Central Management Servers (CMS).

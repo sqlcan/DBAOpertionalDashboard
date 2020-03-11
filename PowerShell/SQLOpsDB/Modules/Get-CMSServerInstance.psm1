@@ -44,6 +44,8 @@ Date       Version Comments
                    Moved the validation code from collection script to here.
                    Updated to work with New Global Variables and JSON settings file.
                    Added functionality to filter sql instance list by group name.
+2020.03.11 2.00.01 Fixed a minor bug with when no objects are returned, return
+                    appropriate error message.
 #> 
 function Get-CMSServerInstance
 {
@@ -101,7 +103,7 @@ function Get-CMSServerInstance
         # If no result sets are returned return an error; unless return the appropriate result set.
         if (!($Results))
         {
-            Write-Output $Global:Error_FailedToComplete
+            Write-Output $Global:Error_ObjectsNotFound
         }
         else
         {
