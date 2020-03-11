@@ -52,6 +52,7 @@ Date       Version Comments
 2020.02.05 0.00.09 Fixed bug, which Write-Output.  Using this command-let caused 
                    all messages to queue up.  My intension was to write to screen,
                    therefore changed it to Write-Host.
+2020.03.11 0.00.10 Expose the process ID of the thread writing to the database.
 #>
 
 function Write-StatusUpdate
@@ -68,8 +69,8 @@ function Write-StatusUpdate
     )
 
     $ModuleName = 'Write-StatusUpdate'
-    $ModuleVersion = '0.08'
-    $ModuleLastUpdated = 'February 4, 2020'
+    $ModuleVersion = '0.10'
+    $ModuleLastUpdated = 'March 11, 2020'
 
     if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
     {
@@ -102,9 +103,16 @@ function Write-StatusUpdate
         {
             $Message = $Message.Replace("'","''")
 
+            $ProcessID = $pid
+
+            if ([String]::IsNullOrEmpty($ProcessID))
+            {
+                $ProcessID = -1
+            }
+
             $TSQL = "
-            INSERT INTO dbo.Logs (DateTimeCaptured, Description)
-                VALUES (GetDate(), '$Message')"
+            INSERT INTO dbo.Logs (DateTimeCaptured, ProcessID, Description)
+                VALUES (GetDate(),$ProcessID, '$Message')"
 
             Invoke-SQLCMD -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
                             -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `

@@ -1,0 +1,28 @@
+USE [SQLOpsDB]
+GO
+
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Logs](
+	[LogID] [bigint] IDENTITY(1,1) NOT NULL,
+	[DateTimeCaptured] [datetime] NOT NULL,
+	[ProcessID] [int] NOT NULL,
+	[Description] [varchar](512) NULL,
+ CONSTRAINT [PK_Logs] PRIMARY KEY CLUSTERED 
+(
+	[LogID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 90) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Logs] ADD  CONSTRAINT [DF_Logs_DateTimeCaptured]  DEFAULT (getdate()) FOR [DateTimeCaptured]
+GO
+
+ALTER TABLE [dbo].[Logs] ADD  CONSTRAINT [DF_Logs_ProcessID]  DEFAULT ((-1)) FOR [ProcessID]
+GO
+
+

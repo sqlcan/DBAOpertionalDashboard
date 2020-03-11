@@ -32,7 +32,7 @@ under the CMS folder 2019\Prod.
 .NOTES
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
-2016.12.13 0.01    Initial Version.
+2016.12.13 0.01    Inital Version.
 2020.03.10 2.00.00 Removed the Include Group Name parameters, it will always be returned
                     user can choose to what they want with the information.
                    Introduced new class ServerInstance to collect all information before
@@ -43,9 +43,8 @@ Date       Version Comments
                    Moved the tokenization code from collection script to here.
                    Moved the validation code from collection script to here.
                    Updated to work with New Global Variables and JSON settings file.
-                   Added functionality to filter sql instance list by group name.
-2020.03.11 2.00.01 Fixed a minor bug with when no objects are returned, return
-                    appropriate error message.
+                   Added functionlaity to filter sql instnace list by group name.
+2020.03.11 2.00.01 Output to SQL Logs what group of servers are being processed.
 #> 
 function Get-CMSServerInstance
 {
@@ -62,8 +61,8 @@ function Get-CMSServerInstance
     }
 
     $ModuleName = 'Get-CMSServerInstance'
-    $ModuleVersion = '2.00.00'
-    $ModuleLastUpdated = 'March 10, 2020'
+    $ModuleVersion = '2.00.01'
+    $ModuleLastUpdated = 'March 11, 2020'
 
     # Define the class to collect all the information to export to user.
     Class cServerInstance {
@@ -83,14 +82,17 @@ function Get-CMSServerInstance
         if ([String]::IsNullOrEmpty($ServerInstance) -and [String]::IsNullOrEmpty($GroupName))
         {
             $TSQL = "EXEC CMS.GetServerInstanceList"
+            Write-StatusUpdate -Message "Returning all sql instances." -WriteToDB
         }
         elseif (![String]::IsNullOrEmpty($ServerInstance) -and [String]::IsNullOrEmpty($GroupName))
         {
             $TSQL = "EXEC CMS.GetServerInstanceList @ServerName='$ServerInstance'"
+            Write-StatusUpdate -Message "Single server request for [$ServerInstance]." -WriteToDB
         }
         else
         {
             $TSQL = "EXEC CMS.GetServerInstanceList @GroupName='$GroupName'"
+            Write-StatusUpdate -Message "Returning sql instances for [$GroupName] Group." -WriteToDB
         }
 
         
@@ -100,10 +102,10 @@ function Get-CMSServerInstance
                                     -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
                                     -Query $TSQL
         
-        # If no result sets are returned return an error; unless return the appropriate result set.
+        # If no result sets are returned return an error; unless return the appropriate resultset.
         if (!($Results))
         {
-            Write-Output $Global:Error_ObjectsNotFound
+            Write-Output $Global:Error_FailedToComplete
         }
         else
         {
