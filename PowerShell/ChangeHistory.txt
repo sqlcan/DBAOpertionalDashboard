@@ -34,6 +34,8 @@ Date		Version		Author		Comments
 2020.03.05  3.00.09.0017    Mohit K. Gupta  Created new module to scan for error logs, Get-SQLErrorLogs.
 2020.03.06  3.00.09.0018    Mohit K. Gupta  Exposed SQL Services current status.
             3.00.10.0018    Mohit K. Gupta  Added five new modules for getting & managing SQL Jobs and history.
+2020.03.10  3.00.11.0000    Mohit K. Gupta  New command-let to get CMS Server list Get-CMSServerInstance.
+2020.03.11  3.00.12.0000    Mohit K. Gupta  New command-let to get extended properties details from sever.
 
 
 DBServerAndDBSpaceMonitoring.ps1 Version History
@@ -64,3 +66,7 @@ Date		Version		Author		Comments
 2020.03.06  V1.16       Mohit K. Gupta  Exposed additional logging when Error Logs are throttled.
             V1.17       Mohit K. Gupta  Collect and save SQL Jobs and their execution history.
             V1.17.03    Mohit K. Gupta  Minor mistakes in command-let names.
+2020.03.10  V1.18       Mohit K. Gupta  Major update introduced to use new Get-SQLOpServerInstance.
+2020.03.11  V1.19.01    Mohit K. Gupta  Removed for for Extended Properties to new command let Get-SIExtendedProperties.
+                                        Refactored code to skip current server in event of execution failure, instead of 
+                                         of using $SQLInstanceAccessible, I am using continue.

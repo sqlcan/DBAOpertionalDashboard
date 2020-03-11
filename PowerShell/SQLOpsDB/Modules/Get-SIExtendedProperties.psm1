@@ -11,9 +11,6 @@ single required property, ApplicationName.
 .PARAMETER ServerInstance
 Server instance from which to capture the jobs and their execution history..
 
-.PARAMETER Object
-Server or Database?
-
 .PARAMETER Database
 If collecting from user database, then what is the name?
 
@@ -38,9 +35,7 @@ function Get-SIExtendedProperties
     [CmdletBinding()] 
     param( 
     [Parameter(Position=0, Mandatory=$true)] [string]$ServerInstance,
-    [Parameter(Position=1, Mandatory=$true)]
-    [ValidateSet('Server','Database')] [string]$Object,
-    [Parameter(Position=2, Mandatory=$false)] [String]$Database
+    [Parameter(Position=2, Mandatory=$false)] [String]$Database='master'
     )
 
     if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
@@ -56,11 +51,6 @@ function Get-SIExtendedProperties
     try
     {
         Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
-
-        if ([String]::IsNullOrEmpty($Database))
-        {
-            $Database = 'master'
-        }
 
         $TSQL = "SELECT id AS TblId FROM sysobjects WHERE name = 'extended_properties'"
         Write-StatusUpdate -Message $TSQL -IsTSQL
@@ -124,7 +114,18 @@ function Get-SIExtendedProperties
             return
         }
 
-        Write-Output $Results
+        # Return an hash table as it will make it easier to access the key value pairs.
+        $HashTable = @{}
+
+        ForEach ($Row in $Results)
+        {
+            if (($Row.PropertyName -in ('EnvironmentType','ServerType','MachineType','ActiveNode','ApplicationName')) -or ($Row.name -like 'PassiveNode*'))
+            {
+                $HashTable.Add($($Row.PropertyName), $($Row.Value))
+            }
+        }
+
+        Write-Output $HashTable
     }
     catch
     {
