@@ -92,6 +92,8 @@
         '.\Modules\Get-SQLOpSQLJobs.psm1';
         '.\Modules\Update-SQLOpSQLJobStats.psm1';
         '.\Modules\Get-SQLOpSQLJobStats.psm1';
+        # Extended Propties
+        '.\Modules\Get-SIExtendedProperties.psm1';
         # CMS Modules
         '.\Modules\Get-CMSServerInstance.psm1';
     #'.\Modules\Add-Database.psm1';
