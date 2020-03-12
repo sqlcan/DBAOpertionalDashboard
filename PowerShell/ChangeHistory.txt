@@ -36,6 +36,7 @@ Date		Version		Author		Comments
             3.00.10.0018    Mohit K. Gupta  Added five new modules for getting & managing SQL Jobs and history.
 2020.03.10  3.00.11.0000    Mohit K. Gupta  New command-let to get CMS Server list Get-CMSServerInstance.
 2020.03.11  3.00.12.0000    Mohit K. Gupta  New command-let to get extended properties details from sever.
+2020.03.12  3.00.13.0000    Mohit K. Gupta  New command-let to get Operating System name from WMI.
 
 
 DBServerAndDBSpaceMonitoring.ps1 Version History
@@ -67,6 +68,7 @@ Date		Version		Author		Comments
             V1.17       Mohit K. Gupta  Collect and save SQL Jobs and their execution history.
             V1.17.03    Mohit K. Gupta  Minor mistakes in command-let names.
 2020.03.10  V1.18       Mohit K. Gupta  Major update introduced to use new Get-SQLOpServerInstance.
-2020.03.11  V1.19.01    Mohit K. Gupta  Removed for for Extended Properties to new command let Get-SIExtendedProperties.
+2020.03.11  V1.19.01    Mohit K. Gupta  Removed code for Extended Properties to new command let Get-SIExtendedProperties.
                                         Refactored code to skip current server in event of execution failure, instead of 
                                          of using $SQLInstanceAccessible, I am using continue.
+2020.03.12  V1.20       Mohit K. Gupta  Removed code for operating system to new command let.

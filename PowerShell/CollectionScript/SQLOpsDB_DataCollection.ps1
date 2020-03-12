@@ -174,44 +174,12 @@ ForEach ($SQLServerRC in $SQLServers)
             $SQLVersion += ' 2019'
         }
     }
+    Write-StatusUpdate -Message "SQL Server Version: [$SQLVersion]."    
 
-    if ($SQLServerVersion -like '*Windows NT 5.0*')
-    {
-        $OperatingSystem = "Windows Server 2000"
-    }
-    elseif ($SQLServerVersion -like '*Windows NT 5.2*')
-    {
-        $OperatingSystem = "Windows Server 2003"
-    }
-    elseif ($SQLServerVersion -like '*Windows NT 6.0*')
-    {
-        $OperatingSystem = "Windows Server 2008"
-    }
-    elseif ($SQLServerVersion -like '*Windows NT 6.1*')
-    {
-        $OperatingSystem = "Windows Server 2008 R2"
-    }
-    elseif ($SQLServerVersion -like '*Windows NT 6.2*')
-    {
-        $OperatingSystem = "Windows Server 2012"
-    }
-    elseif ($SQLServerVersion -like '*Windows NT 6.3*')
-    {
-        $OperatingSystem = "Windows Server 2012 R2"
-    }
-    elseif ($SQLServerVersion -like '*Windows Server 2016*')
-    {
-        $OperatingSystem = "Windows Server 2016"
-    }
-    elseif ($SQLServerVersion -like '*Windows Server 2019*')
-    {
-        $OperatingSystem = "Windows Server 2019"
-    }
-
-    Write-StatusUpdate -Message "SQL Server Version: [$SQLVersion]."
+    $OperatingSystem = Get-SIOperatingSystem -ComputerName $SQLServerRC.ComputerName
     Write-StatusUpdate -Message "   Windows Version: [$OperatingSystem]."
 
-    # Collected Extended Properties Details
+    #region Collected Extended Properties Details
     $ServerType = $ExtendedProperties["ServerType"]
     Write-StatusUpdate -Message "Server Type: $ServerType"
 
@@ -229,6 +197,7 @@ ForEach ($SQLServerRC in $SQLServers)
     }
 
     Write-StatusUpdate -Message "Is Physical: $IsPhysical"
+    #endregion
 
     # Build a server list to check and the file paths to determine the volumes to check for space.
     # Only volumes we care to monitor are those which have SQL Server related files (i.e. backups, data, and t-logs)

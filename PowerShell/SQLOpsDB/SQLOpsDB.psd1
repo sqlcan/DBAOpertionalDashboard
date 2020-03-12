@@ -18,7 +18,7 @@
     ModuleToProcess = ''
 
     # Version number of this module.
-    ModuleVersion = '3.00.10.0018'
+    ModuleVersion = '3.00.13.0000'
 
     # ID used to uniquely identify this module
     GUID = '4baba076-b43c-40a3-a483-16eed455f676'
@@ -92,8 +92,10 @@
         '.\Modules\Get-SQLOpSQLJobs.psm1';
         '.\Modules\Update-SQLOpSQLJobStats.psm1';
         '.\Modules\Get-SQLOpSQLJobStats.psm1';
-        # Extended Propties
+        # Extended Properties Modules
         '.\Modules\Get-SIExtendedProperties.psm1';
+        # Server Modules
+        '.\Modules\Get-SIOperatingSystem.psm1';
         # CMS Modules
         '.\Modules\Get-CMSServerInstance.psm1';
     #'.\Modules\Add-Database.psm1';
