@@ -18,7 +18,7 @@
     ModuleToProcess = ''
 
     # Version number of this module.
-    ModuleVersion = '3.00.16.0000'
+    ModuleVersion = '3.00.17.0000'
 
     # ID used to uniquely identify this module
     GUID = '4baba076-b43c-40a3-a483-16eed455f676'
@@ -74,15 +74,9 @@
     '.\Modules\Initialize-SQLOpsDB.psm1';
     '.\Modules\Write-StatusUpdate.psm1';
     '.\Modules\GlobalSettings.psm1';
-    # Command Lets to interact with SQL Ops DB.
-        # SQL Instance
-        '.\Modules\Get-SQLOpSQLInstance.psm1';
-        '.\Modules\Get-SISQLProperties.psm1';
-        '.\Modules\Get-SQLOpOperatingSystem.psm1'
-        '.\Modules\Add-SQLOpOperatingSystem.psm1'
-        # SQL Service
-        '.\Modules\Get-SQLService.psm1';
-        '.\Modules\Update-SQLService.psm1';
+    # SQL Instance
+    '.\Modules\Get-SQLOpSQLInstance.psm1';
+    '.\Modules\Get-SISQLProperties.psm1';
         # SQL Error Log Modules
         '.\Modules\Get-SQLErrorLogs.psm1';
         '.\Modules\Update-SQLOpSQLErrorLog.psm1';
@@ -97,13 +91,19 @@
         '.\Modules\Get-SQLOpSQLJobStats.psm1';
         # Extended Properties Modules
         '.\Modules\Get-SIExtendedProperties.psm1';
-        # Server Modules
-        '.\Modules\Get-SIOperatingSystem.psm1';
-        '.\Modules\Get-SQLOpServer.psm1';
-        # CMS Modules
-        '.\Modules\Get-CMSServerInstance.psm1';
-    #'.\Modules\Add-Database.psm1';
-    '.\Modules\Add-Server.psm1';
+    # Server Modules
+    '.\Modules\Get-SIOperatingSystem.psm1';
+    '.\Modules\Get-SQLOpServer.psm1';
+    '.\Modules\Get-SQLOpOperatingSystem.psm1';
+    '.\Modules\Add-SQLOpOperatingSystem.psm1';
+    '.\Modules\Add-SQLOpServer.psm1';
+    '.\Modules\Update-SQLOpServer.psm1';
+        # SQL Service
+        '.\Modules\Get-SQLService.psm1';
+        '.\Modules\Update-SQLService.psm1';
+    # CMS Modules
+    '.\Modules\Get-CMSServerInstance.psm1';
+    #'.\Modules\Add-Database.psm1';    
     '.\Modules\Add-SQLCluster.psm1';
     '.\Modules\Add-SQLClusterNode.psm1';
     '.\Modules\Add-SQLInstance.psm1';
@@ -111,7 +111,6 @@
     '.\Modules\Get-SQLCluster.psm1';
     '.\Modules\Get-SQLClusterNode.psm1';
     '.\Modules\Update-Database.psm1';
-    '.\Modules\Update-Server.psm1';
     '.\Modules\Update-SQLCluster.psm1';
     '.\Modules\Update-SQLClusterNode.psm1';
     '.\Modules\Update-SQLInstance.psm1';

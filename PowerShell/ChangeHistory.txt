@@ -40,6 +40,7 @@ Date		Version		Author		Comments
             3.00.14.0000    Mohit K. Gupta  New command-let to get sql properties.
             3.00.15.0000    Mohit K. Gupta  New command-lets for managing Operating System table.
             3.00.16.0000    Mohit K. Gupta  Updated command-let for Add-Server to Add-SQLOpServer.
+            3.00.17.0000    Mohit K. Gupta  Updated command-let for Update-Server to Update-SQLOpServer.
 
 DBServerAndDBSpaceMonitoring.ps1 Version History
 ------------------------------------------------
@@ -76,3 +77,4 @@ Date		Version		Author		Comments
 2020.03.12  V1.20       Mohit K. Gupta  Removed code for operating system to new command let.
             V1.21       Mohit K. Gupta  Moved code for SQL properties to new command let.
             V1.22       Mohit K. Gupta  Updated reference to Add-SQLOpServer.
+            V1.23       Mohit K. Gupta  Updated reference to Update-SQLOpServer.

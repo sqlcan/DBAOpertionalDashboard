@@ -267,6 +267,7 @@ ForEach ($SQLServerRC in $SQLServers)
             {
                 Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName]; server not found." -WriteToDB
                 $IsServerAccessible = $false
+                continue;
             }
             catch [System.UnauthorizedAccessException]
             {
@@ -283,6 +284,7 @@ ForEach ($SQLServerRC in $SQLServers)
                 Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName] (unhandled exception)." -WriteToDB
                 Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
                 $IsServerAccessible = $false
+                continue;
             }
         }
 
@@ -307,6 +309,7 @@ ForEach ($SQLServerRC in $SQLServers)
                         {
                             $ServerIsMonitored = $false
                             Write-StatusUpdate -Message "... ... Failed to add server, review logs."
+                            continue;
                         }
                         default
                         {
@@ -319,7 +322,7 @@ ForEach ($SQLServerRC in $SQLServers)
                 {
                     $ServerIsMonitored = $false
                     Write-StatusUpdate -Message "... Failed to get server, review logs."
-                    break;
+                    continue;
                 }
                 default
                 {
@@ -327,12 +330,14 @@ ForEach ($SQLServerRC in $SQLServers)
                     $ServerIsMonitored = $Results.IsMonitored
                     if ($ServerIsMonitored)
                     {
-                        $InnerResults = Update-Server $ServerName $OperatingSystem $ProcessorName $NumberOfCores $NumberOfLogicalCores $IsPhysical
+                        $InnerResults = Update-SQLOpServer -ComputerName $ServerName -OperatingSystem $OperatingSystem -ProcessorName $ProcessorName `
+                                                           -NumberOfCores $NumberOfCores - NumberOfLogicalCores $NumberOfLogicalCores -IsPhysical $IsPhysical
 
                         if ($InnerResults -eq $Global:Error_FailedToComplete)
                         {
                             $ServerIsMonitored = $false
                             Write-StatusUpdate -Message "Failed to Update-Server [$ServerName]."
+                            continue;
                         }
                     }
                     break;
