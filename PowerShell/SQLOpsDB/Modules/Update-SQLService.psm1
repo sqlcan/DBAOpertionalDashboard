@@ -27,6 +27,7 @@ Date       Version  Comments
 ---------- -------- ------------------------------------------------------------------
 2020.02.05 00.00.01 Initial Version
 2020.03.06 00.00.02 Saved the services current status.
+2020.03.12 00.00.03 Updated reference to Get-SQLOpServer vs Get-Server.
 #>
 function Update-SQLService
 {
@@ -43,15 +44,15 @@ function Update-SQLService
     }
     
     $ModuleName = 'Update-SQLService'
-    $ModuleVersion = '0.02'
-    $ModuleLastUpdated = 'March 6, 2020'
+    $ModuleVersion = '00.00.03'
+    $ModuleLastUpdated = 'March 12, 2020'
 
     try
     {
         Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
         # Validate server exists.
-        $Server = Get-Server -ServerName $ComputerName
+        $Server = Get-SQLOpServer -ServerName $ComputerName
 
         IF ($Server -eq $Global:Error_ObjectsNotFound)
         {

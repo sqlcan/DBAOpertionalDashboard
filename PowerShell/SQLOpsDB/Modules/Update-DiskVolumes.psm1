@@ -45,6 +45,7 @@ Date       Version Comments
                    exiting execution even when Servers/Cluster objects existed.
            0.05    Update error reporting to include the fail server information
                    in the context.
+2020.03.12 0.06    Updated to to use Get-SQLOpServer vs Get-Server.
 #>
 
 function Update-DiskVolumes
@@ -69,7 +70,7 @@ function Update-DiskVolumes
     $SQLClusterID = 0
     $IsServerAccessible = $true
 
-    $Results = Get-Server $ServerName
+    $Results = Get-SQLOpServer $ServerName -Internal
 
     if (($Results -ne $Global:Error_FailedToComplete) -and ($Results -ne $Global:Error_ObjectsNotFound))
     {

@@ -291,7 +291,7 @@ ForEach ($SQLServerRC in $SQLServers)
         if ($IsServerAccessible)
         {
             # Find the server, if it exists update it; if not add it.
-            $Results = Get-Server $ServerName
+            $Results = Get-SQLOpServer $ServerName
 
             switch ($Results)
             {
