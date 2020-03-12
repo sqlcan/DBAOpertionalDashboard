@@ -45,6 +45,7 @@ Date       Version Comments
                    Updated for JSON parameters.
                    Updated function name.
                    Added alias for computer name.
+           2.00.01 Fixed a bug with how server name was being checked. 
 #>
 
 function Add-SQLOpServer
@@ -69,7 +70,7 @@ function Add-SQLOpServer
     }
     
     $ModuleName = 'Add-SQLOpServer'
-    $ModuleVersion = '2.00.00'
+    $ModuleVersion = '2.00.01'
     $ModuleLastUpdated = 'March 12, 2020'
 
     try
@@ -83,7 +84,7 @@ function Add-SQLOpServer
             Write-Output $Global:Error_FailedToComplete
             return
         }
-        elseif ($ServerObj.Count -eq 1)
+        elseif (!($ServerObj -eq $Global:Error_ObjectsNotFound))
         {
             Write-Output $Global:Error_Duplicate
             return
