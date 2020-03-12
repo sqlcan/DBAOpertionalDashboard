@@ -37,7 +37,7 @@ Date		Version		Author		Comments
 2020.03.10  3.00.11.0000    Mohit K. Gupta  New command-let to get CMS Server list Get-CMSServerInstance.
 2020.03.11  3.00.12.0000    Mohit K. Gupta  New command-let to get extended properties details from sever.
 2020.03.12  3.00.13.0000    Mohit K. Gupta  New command-let to get Operating System name from WMI.
-
+            3.00.13.0000    Mohit K. Gupta  New command-let to get sql properties.
 
 DBServerAndDBSpaceMonitoring.ps1 Version History
 ------------------------------------------------
@@ -72,3 +72,4 @@ Date		Version		Author		Comments
                                         Refactored code to skip current server in event of execution failure, instead of 
                                          of using $SQLInstanceAccessible, I am using continue.
 2020.03.12  V1.20       Mohit K. Gupta  Removed code for operating system to new command let.
+            V1.21       Mohit K. Gupta  Moved code for SQL properties to new command let.

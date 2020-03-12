@@ -91,90 +91,22 @@ ForEach ($SQLServerRC in $SQLServers)
         continue;
     }
 
-    try
-    {
-        Write-StatusUpdate -Message "Getting instance details IsClustered, @@VERSION, Edition, ProductionVersion."
-        $TSQL = "SELECT SERVERPROPERTY('IsClustered') AS IsClustered, @@VERSION AS SQLServerVersion, SERVERPROPERTY('Edition') AS SQLEdition, SERVERPROPERTY('ProductVersion') AS SQLBuild"
-        Write-StatusUpdate -Message $TSQL -IsTSQL
+    #region Get SQL Properties
+    Write-StatusUpdate -Message "Getting instance properties."
+    $SQLProperties = Get-SISQLProperties -ServerInstance $SQLServerRC.ServerInstanceConnectionString
 
-        # Find if the SQL Server a clustered instance (only applicable to FCI running under WFCS)
-        $Results = Invoke-SQLCMD -ServerInstance $SQLServerRC.ServerInstanceConnectionString  `
-                                    -Database 'master' `
-                                    -Query $TSQL -ErrorAction Stop
-    }
-    catch [System.Data.SqlClient.SqlException]
+    if ($SQLProperties -eq $Global:Error_FailedToComplete)
     {
-        Write-StatusUpdate -Message "Cannot reach SQL Server instance [$($SQLServerRC.ServerInstance)]." -WriteToDB
-        continue;
-    }
-    catch
-    {
-        Write-StatusUpdate -Message "Failed to connect to SQL Instance (unhandled exception)." -WriteToDB
-        Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
+        $SQLInstanceAccessible = $false
         continue;
     }
 
-    $IsClustered = $Results.IsClustered
-    $SQLServerVersion = $Results.SQLServerVersion
-    $SQLBuildString = $Results.SQLBuild
-    $SQLEdition = $Results.SQLEdition
-
-    #Build the SQL Server Version and Windows Version Details
-    $TokenizedSQLBuild = $SQLBuildString.Split('.')
-
-    [int]$SQLServer_Major = $TokenizedSQLBuild[0]
-    [int]$SQLServer_Minor = $TokenizedSQLBuild[1]
-    [int]$SQLServer_Build = $TokenizedSQLBuild[2]
-
-    $SQLVersion = 'Microsoft SQL Server'
-
-    switch ($SQLServer_Major)
-    {
-        8
-        {
-            $SQLVersion += ' 2000'
-            break;
-        }
-        9
-        {
-            $SQLVersion += ' 2005'
-            break;
-        }
-        10
-        {
-            $SQLVersion += ' 2008'
-            switch ($SQLServer_Minor)
-            {
-                {$_ -ge 50}
-                {
-                    $SQLVersion += ' R2'
-                }
-            }
-            break;
-        }
-        11
-        {
-            $SQLVersion += ' 2012'
-            break;
-        }
-        12
-        {
-            $SQLVersion += ' 2014'
-        }
-        13
-        {
-            $SQLVersion += ' 2016'
-        }
-        14
-        {
-            $SQLVersion += ' 2017'
-        }
-        15
-        {
-            $SQLVersion += ' 2019'
-        }
-    }
-    Write-StatusUpdate -Message "SQL Server Version: [$SQLVersion]."    
+    $IsClustered = $SQLProperties['IsClustered']
+    $SQLEdition = $SQLProperties['SQLEdition']
+    $SQLServer_Build = $SQLProperties['SQLEdition']
+    $SQLVersion = $SQLProperties['SQLVersion']
+    Write-StatusUpdate -Message "SQL Server Version: [$SQLVersion]."
+    #endregion
 
     $OperatingSystem = Get-SIOperatingSystem -ComputerName $SQLServerRC.ComputerName
     Write-StatusUpdate -Message "   Windows Version: [$OperatingSystem]."

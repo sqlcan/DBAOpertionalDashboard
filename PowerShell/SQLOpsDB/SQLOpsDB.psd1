@@ -77,6 +77,7 @@
     # Command Lets to interact with SQL Ops DB.
         # SQL Instance
         '.\Modules\Get-SQLOpSQLInstance.psm1';
+        '.\Modules\Get-SISQLProperties.psm1';
         # SQL Service
         '.\Modules\Get-SQLService.psm1';
         '.\Modules\Update-SQLService.psm1';
