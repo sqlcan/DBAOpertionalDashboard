@@ -31,15 +31,20 @@ Date       Version Comments
                    Updated for JSON parameters.
                    Updated function name.
                    Added alias for parameter ComputerName.
+           2.00.01 Exposed Operating system details.
+           2.00.02 Added ability to return full server list.
 #>
 
 function Get-SQLOpServer
 { 
-    [CmdletBinding()] 
-    param( 
+    [CmdletBinding(DefaultParameterSetName='List')] 
+    param(
+    [Alias('List','All')]
+    [Parameter(ParameterSetName='List', Mandatory=$false)] [switch] $ListAvailable, 
     [Alias('ServerName','Computer','Server')]
-    [Parameter(Position=0, Mandatory=$true)] [string]$ComputerName,
-    [Parameter(Mandatory=$false, DontShow)] [Switch]$Internal
+    [Parameter(ParameterSetName='ComputerName', Position=0, Mandatory=$true)]
+    [Parameter(ParameterSetName='Internal', Position=0, Mandatory=$true)] [string]$ComputerName,
+    [Parameter(ParameterSetName='Internal', Mandatory=$true, DontShow)] [Switch]$Internal
     )
 
     if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
@@ -49,27 +54,37 @@ function Get-SQLOpServer
     }
     
     $ModuleName = 'Get-SQLOpServer'
-    $ModuleVersion = '2.00.00'
+    $ModuleVersion = '2.00.01'
     $ModuleLastUpdated = 'March 12, 2020'
+
+    if (($PSCmdlet.ParameterSetName -eq 'List') -and (!($PSBoundParameters.ListAvailable)))
+    {
+        $ListAvailable = $true
+    }
 
     try
     {
-        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
-
-        $CompObj = Split-Parts -ComputerName $ComputerName
+        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"        
 
         if ($Internal)
         {
-            $TSQL = "SELECT ServerID, ServerName AS ComputerName, ProcessorName,
+            $TSQL = "SELECT S.ServerID, ServerName AS ComputerName, OS.OperatingSystemName, ProcessorName,
                             NumberOfCores, NumberOfLogicalCores, IsMonitored, DiscoveryOn, LastUpdated
-                       FROM dbo.Servers WHERE ServerName = '$($CompObj.ComputerName)'"
+                       FROM dbo.Servers S
+                       JOIN dbo.OperatingSystems OS ON S.OperatingSystemID = OS.OperatingSystemID "
         }
         else {
-            $TSQL = "SELECT ServerName AS ComputerName, ProcessorName,
+            $TSQL = "SELECT ServerName AS ComputerName, OS.OperatingSystemName, ProcessorName,
                             NumberOfCores, NumberOfLogicalCores, IsMonitored, DiscoveryOn, LastUpdated
-                       FROM dbo.Servers WHERE ServerName = '$($CompObj.ComputerName)'"
+                       FROM dbo.Servers S
+                       JOIN dbo.OperatingSystems OS ON S.OperatingSystemID = OS.OperatingSystemID "
         }
-            
+        
+        if (!($ListAvailable))
+        {
+            $CompObj = Split-Parts -ComputerName $ComputerName
+            $TSQL += "WHERE ServerName = '$($CompObj.ComputerName)'"
+        }
         Write-StatusUpdate -Message $TSQL -IsTSQL
 
         $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
