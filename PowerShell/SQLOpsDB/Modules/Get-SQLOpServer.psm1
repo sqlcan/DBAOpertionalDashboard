@@ -30,12 +30,14 @@ Date       Version Comments
                    Updated to handle FQDN.
                    Updated for JSON parameters.
                    Updated function name.
+                   Added alias for parameter ComputerName.
 #>
 
 function Get-SQLOpServer
 { 
     [CmdletBinding()] 
     param( 
+    [Alias('ServerName','Computer','Server')]
     [Parameter(Position=0, Mandatory=$true)] [string]$ComputerName,
     [Parameter(Mandatory=$false, DontShow)] [Switch]$Internal
     )
@@ -88,7 +90,7 @@ function Get-SQLOpServer
     {
         if ($($_.Exception.Message) -like '*Could not open a connection to SQL Server*')
         {
-            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Cannot connect to $ServerInstance." -WriteToDB
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Cannot connect to SQLOpsDB." -WriteToDB
         }
         else
         {
