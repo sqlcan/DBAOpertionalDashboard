@@ -1,12 +1,15 @@
 ﻿<#
 .SYNOPSIS
-Get-SQLOpServer
+Get-SQLOpOperatingSystem
 
 .DESCRIPTION 
-Get-SQLOpServer returns details about server from SQLOpDB.
+Get-SQLOpOperatingSystem returns details about operating systems registered in SQLOpsDB.
 
-.PARAMETER ComputerName
-Computer for which information is required.
+.PARAMETER ListAvailable
+Provide list of all operating systems registered in SQLOpsDB.
+
+.PARAMETER OperatingSystem
+Get details about an operating system.
 
 .PARAMETER Internal
 If the internal ID parameter is required for additional work.
@@ -18,33 +21,24 @@ None
 Server Details
 
 .EXAMPLE
-Get-SQLOpServer -ComputerName ContosSQL
-
+Get-SQLOpOperatingSystem -OperatingSystem "Windows Server 2008"
 
 .NOTES
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
-2015.08.10 1.00.00 Initial Version
-2020.03.12 2.00.00 Rewrite to match new standards.
-                   Updated parameter name, added additional parameters.
-                   Updated to handle FQDN.
-                   Updated for JSON parameters.
-                   Updated function name.
-                   Added alias for parameter ComputerName.
-           2.00.01 Exposed Operating system details.
-           2.00.02 Added ability to return full server list.
+2020.03.12 0.00.01 Initial Version
 #>
 
-function Get-SQLOpServer
+function Get-SQLOpOperatingSystem
 { 
     [CmdletBinding(DefaultParameterSetName='List')] 
-    param(
-    [Alias('List','All')]
-    [Parameter(ParameterSetName='List', Mandatory=$false)] [switch] $ListAvailable, 
-    [Alias('ServerName','Computer','Server')]
-    [Parameter(ParameterSetName='ComputerName', Position=0, Mandatory=$true)]
-    [Parameter(ParameterSetName='Internal', Position=0, Mandatory=$true)] [string]$ComputerName,
-    [Parameter(ParameterSetName='Internal', Mandatory=$true, DontShow)] [Switch]$Internal
+    param( 
+        [Alias('List','All')]
+        [Parameter(ParameterSetName='List', Mandatory=$false)] [switch] $ListAvailable,
+        [Alias('OS','OSName','Name')]
+        [Parameter(ParameterSetName='OperatingSystem', Mandatory=$true)] [string]        
+        [Parameter(ParameterSetName='Internal', Mandatory=$true)] $OperatingSystem,
+        [Parameter(ParameterSetName='Internal', Mandatory=$true, DontShow)] [Switch]$Internal
     )
 
     if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
@@ -53,38 +47,34 @@ function Get-SQLOpServer
         return
     }
     
-    $ModuleName = 'Get-SQLOpServer'
-    $ModuleVersion = '2.00.01'
-    $ModuleLastUpdated = 'March 12, 2020'
-
     if (($PSCmdlet.ParameterSetName -eq 'List') -and (!($PSBoundParameters.ListAvailable)))
     {
         $ListAvailable = $true
     }
 
+    $ModuleName = 'Get-SQLOpOperatingSystem'
+    $ModuleVersion = '0.00.01'
+    $ModuleLastUpdated = 'March 12, 2020'
+
     try
     {
-        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"        
+        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
         if ($Internal)
         {
-            $TSQL = "SELECT S.ServerID, ServerName AS ComputerName, OS.OperatingSystemName, ProcessorName,
-                            NumberOfCores, NumberOfLogicalCores, IsMonitored, DiscoveryOn, LastUpdated
-                       FROM dbo.Servers S
-                       JOIN dbo.OperatingSystems OS ON S.OperatingSystemID = OS.OperatingSystemID "
+            $TSQL = "SELECT OperatingSystemID, OperatingSystemName
+                       FROM dbo.OperatingSystems "
         }
         else {
-            $TSQL = "SELECT ServerName AS ComputerName, OS.OperatingSystemName, ProcessorName,
-                            NumberOfCores, NumberOfLogicalCores, IsMonitored, DiscoveryOn, LastUpdated
-                       FROM dbo.Servers S
-                       JOIN dbo.OperatingSystems OS ON S.OperatingSystemID = OS.OperatingSystemID "
+            $TSQL = "SELECT OperatingSystemName
+                       FROM dbo.OperatingSystems "
         }
-        
+
         if (!($ListAvailable))
         {
-            $CompObj = Split-Parts -ComputerName $ComputerName
-            $TSQL += "WHERE ServerName = '$($CompObj.ComputerName)'"
+            $TSQL += "WHERE OperatingSystemName = '$OperatingSystem'"
         }
+            
         Write-StatusUpdate -Message $TSQL -IsTSQL
 
         $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `

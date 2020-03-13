@@ -267,6 +267,7 @@ ForEach ($SQLServerRC in $SQLServers)
             {
                 Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName]; server not found." -WriteToDB
                 $IsServerAccessible = $false
+                continue;
             }
             catch [System.UnauthorizedAccessException]
             {
@@ -283,6 +284,7 @@ ForEach ($SQLServerRC in $SQLServers)
                 Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName] (unhandled exception)." -WriteToDB
                 Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
                 $IsServerAccessible = $false
+                continue;
             }
         }
 
@@ -290,27 +292,24 @@ ForEach ($SQLServerRC in $SQLServers)
         # execution log; only attempt server related updates if initial WMI was successful.
         if ($IsServerAccessible)
         {
+            Write-StatusUpdate -Message "Check if server exists."
             # Find the server, if it exists update it; if not add it.
-            $Results = Get-SQLOpServer $ServerName
+            $Results = Get-SQLOpServer -ComputerName $ServerName
 
             switch ($Results)
             {
                 $Global:Error_ObjectsNotFound
                 {
-                    Write-StatusUpdate -Message "New server, adding to database."
-                    $InnerResults = Add-Server $ServerName $OperatingSystem $ProcessorName $NumberOfCores $NumberOfLogicalCores $IsPhysical
+                    Write-StatusUpdate -Message "... New server, adding to database."
+                    $InnerResults = Add-SQLOpServer -ComputerName $ServerName -OperatingSystem $OperatingSystem -ProcessorName $ProcessorName `
+                                                    -NumberOfCores $NumberOfCores - NumberOfLogicalCores $NumberOfLogicalCores -IsPhysical $IsPhysical
                     Switch ($InnerResults)
                     {
-                        $Global:Error_Duplicate
-                        {   # This should not happen in code line.  However, it is being handled if a manual entry is made between initial
-                            # detection of missing server to adding the new server.
-                            $ServerIsMonitored = $false
-                            Write-StatusUpdate -Message "Failed to Add-Server, duplicate value found [$ServerName]." -WriteToDB
-                        }
                         $Global:Error_FailedToComplete
                         {
                             $ServerIsMonitored = $false
-                            Write-StatusUpdate -Message "Failed to Add-Server [$ServerName]."
+                            Write-StatusUpdate -Message "... ... Failed to add server, review logs."
+                            continue;
                         }
                         default
                         {
@@ -322,21 +321,23 @@ ForEach ($SQLServerRC in $SQLServers)
                 $Global:Error_FailedToComplete
                 {
                     $ServerIsMonitored = $false
-                    Write-StatusUpdate -Message "Failed to Get-Server [$ServerName]."
-                    break;
+                    Write-StatusUpdate -Message "... Failed to get server, review logs."
+                    continue;
                 }
                 default
                 {
-                    Write-StatusUpdate -Message "Existing server."
+                    Write-StatusUpdate -Message "... Server found."
                     $ServerIsMonitored = $Results.IsMonitored
                     if ($ServerIsMonitored)
                     {
-                        $InnerResults = Update-Server $ServerName $OperatingSystem $ProcessorName $NumberOfCores $NumberOfLogicalCores $IsPhysical
+                        $InnerResults = Update-SQLOpServer -ComputerName $ServerName -OperatingSystem $OperatingSystem -ProcessorName $ProcessorName `
+                                                           -NumberOfCores $NumberOfCores - NumberOfLogicalCores $NumberOfLogicalCores -IsPhysical $IsPhysical
 
                         if ($InnerResults -eq $Global:Error_FailedToComplete)
                         {
                             $ServerIsMonitored = $false
                             Write-StatusUpdate -Message "Failed to Update-Server [$ServerName]."
+                            continue;
                         }
                     }
                     break;

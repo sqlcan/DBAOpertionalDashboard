@@ -24,6 +24,7 @@ Return the current operating system name.
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2020.03.12 0.00.01 Initial Version
+           0.00.02 Updated to strip out verbose Windows caption detail from WMI call.
 #>
 function Get-SIOperatingSystem
 {
@@ -54,7 +55,17 @@ function Get-SIOperatingSystem
 
         if ($OSDetails)
         {
-            $OperatingSystem = $OSDetails.Caption
+            if ($OSDetails.Caption -match '(?<OSversion>(\d{4}\sR2|\d{4}|\d{1,2}))')
+            {
+                if ([int]$Matches['OSversion'] -le 10)
+                {
+                    $OperatingSystem = "Windows $($Matches['OSversion'])"
+                }
+                else
+                {
+                    $OperatingSystem = "Windows Server $($Matches['OSversion'])"
+                }
+            }            
         }
     }
     catch [System.Runtime.InteropServices.COMException]
