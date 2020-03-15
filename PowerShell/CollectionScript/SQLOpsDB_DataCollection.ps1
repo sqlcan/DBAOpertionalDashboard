@@ -130,39 +130,18 @@ ForEach ($SQLServerRC in $SQLServers)
     #endregion
 
     # Build a server list to check and the file paths to determine the volumes to check for space.
-    # Only volumes we care to monitor are those which have SQL Server related files (i.e. backups, data, and t-logs)
-
-    Write-StatusUpdate -Message "Building server list for the instance:"
+    # Only volumes we care to monitor are those which have SQL Server related files (i.e. backups, data, and t-logs)    
 
     if (($IsClustered -eq 1) -or ($ServerType -eq 'Microsoft Clustering') -or ($ServerType -eq 'Veritas Clustering'))
-    {
+    {   
+        Write-StatusUpdate -Message "Building server list for the FCI instance."
 
         # If this SQL Server is a clustered instance we need to do additional investigative queries.  TO collect information for
         # for data and file locations.  This will help calculate which volumes belong to instance where instance stacking is being used.
 
-        if ($SQLVersion -eq 'Microsoft SQL Server 2000')
-        {
-            $TSQL = "SELECT DISTINCT LOWER(SUBSTRING(filename,1,LEN(filename)-CHARINDEX('\',LTRIM(REVERSE(filename))))) AS FolderName FROM sysfiles"
-        }
-        else
-        {
-            $TSQL = "SELECT DISTINCT LOWER(SUBSTRING(physical_name,1,LEN(physical_name)-CHARINDEX('\',REVERSE(physical_name)))) AS FolderName FROM sys.master_files"
-        }
-
         if ($OperatingSystem -ne "Windows Server 2000")
         {
-            Write-StatusUpdate -Message $TSQL -IsTSQL
-
-            $DBFolderList = Invoke-SQLCMD -ServerInstance $SQLServerRC.ServerInstanceConnectionString `
-                                            -Database 'master' `
-                                            -Query $TSQL -ErrorAction Stop
-
-            $TSQL = "SELECT DISTINCT LOWER(SUBSTRING(physical_device_name,1,LEN(physical_device_name)-CHARINDEX('\',REVERSE(physical_device_name)))) AS FolderName FROM msdb.dbo.backupmediafamily"
-            Write-StatusUpdate -Message $TSQL -IsTSQL
-
-            $BackupFolderList = Invoke-SQLCMD -ServerInstance $SQLServerRC.ServerInstanceConnectionString  `
-                                                -Database 'master' `
-                                                -Query $TSQL -ErrorAction Stop
+            $SQLInstanceFolderList = Get-SISQLVolumeDetails -ServerInstance $SQLServerRC.ServerInstanceConnectionString
         }
 
         # Unlike Standalone Instances where the Physical Name is calculated, for FCI the node names must be supplied by DBA team.
@@ -449,7 +428,7 @@ ForEach ($SQLServerRC in $SQLServers)
 
                             if ($IsWMIAccessible)
                             {
-                                $Results = Update-DiskVolumes $ServerName $FQDN $ComputerName_NoDomain $DBFolderList $BackupFolderList
+                                $Results = Update-DiskVolumes $ServerName $FQDN $ComputerName_NoDomain $SQLInstanceFolderList
 
                                 if ($Results -eq $Global:Error_FailedToComplete)
                                 {

@@ -91,6 +91,8 @@
         '.\Modules\Get-SQLOpSQLJobStats.psm1';
         # Extended Properties Modules
         '.\Modules\Get-SIExtendedProperties.psm1';
+        # Data, Log, and Backup Paths
+        '.\Modules\Get-SISQLVolumeDetails.psm1';
     # Server Modules
     '.\Modules\Get-SIOperatingSystem.psm1';
     '.\Modules\Get-SQLOpServer.psm1';

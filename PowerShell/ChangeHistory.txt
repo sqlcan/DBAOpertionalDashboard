@@ -43,6 +43,8 @@ Date		Version		Author		Comments
             3.00.17.0000    Mohit K. Gupta  Updated command-let for Update-Server to Update-SQLOpServer.
             3.00.17.0002    Mohit K. Gupta  Multiple bug fixes for new Add-SQLOpServer and Update-SQLOpServer.
 2020.03.14  3.00.18.0000    Mohit K. Gupta  Updated command-let for Add-SQLCluster to Add-SQLOpSQLCluster.
+            3.00.19.0000    Mohit K. Gupta  New module Get-SISQLVolumeDetails to get data folder, log folder, and backup folder
+                                            paths.
 
 DBServerAndDBSpaceMonitoring.ps1 Version History
 ------------------------------------------------
@@ -82,3 +84,4 @@ Date		Version		Author		Comments
             V1.23       Mohit K. Gupta  Updated reference to Update-SQLOpServer.
 2020.03.14  V1.24       Mohit K. Gupta  Updated reference to Add-SQLOpSQLCluster.
             V1.24.01    Mohit K. Gupta  Refactored some of the code.
+            V1.25       Mohit K. Gupta  Update code to use Get-SISQLVolumeDetails.
