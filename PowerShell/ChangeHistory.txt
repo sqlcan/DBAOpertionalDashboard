@@ -49,6 +49,7 @@ Date		Version		Author		Comments
 2020.03.15  3.00.21.0000    Mohit K. Gupta  Updated command-let for Get-SQLCluster to Get-SQLOpSQLCluster.    
             3.00.22.0000    Mohit K. Gupta  Updated command-let for Get-SQLClusterNode to Get-SQLOpSQLClusterNode.
             3.00.23.0000    Mohit K. Gupta  Updated command-let for Add-SQLClusterNode to Add-SQLOpSQLClusterNode.
+            3.00.24.0000    Mohit K. Gupta  Updated command-let for Update-SQLCluster to Update-SQLOpSQLCluster.
 
 DBServerAndDBSpaceMonitoring.ps1 Version History
 ------------------------------------------------
@@ -91,6 +92,7 @@ Date		Version		Author		Comments
             V1.25       Mohit K. Gupta  Update code to use Get-SISQLVolumeDetails.
             V1.26       Mohit K. Gupta  Removed all collection for SQL 2000 / Windows 2003.
             V1.27       Mohit K. Gupta  Updated code to use Get-SIProcessor.
-            V1.28       Mohit K. Gupta  Updated reference to Get-SQLOpSQLCluster.
+2020.03.15  V1.28       Mohit K. Gupta  Updated reference to Get-SQLOpSQLCluster.
             V1.29       Mohit K. Gupta  Updated reference to Get-SQLOpSQLClusterNode.
             V1.30       Mohit K. Gupta  Updated reference to Add-SQLOpSQLClusterNode.
+            V1.31       Mohit K. Gupta  Updated reference to Update-SQLOpSQLCluster.

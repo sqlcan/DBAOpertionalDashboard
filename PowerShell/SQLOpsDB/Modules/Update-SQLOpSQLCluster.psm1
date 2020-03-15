@@ -1,9 +1,9 @@
 ﻿<#
 .SYNOPSIS
-Add-SQLOpSQLCluster
+Update-SQLOpSQLCluster
 
 .DESCRIPTION 
-Add-SQLOpSQLCluster returns details about sql cluster from SQLOpDB.
+Update-SQLOpSQLCluster update details about sql cluster from SQLOpDB.
 
 .PARAMETER Name
 SQL Cluster name for which information is required.  This is is the network name
@@ -13,10 +13,10 @@ for FCI.
 None
 
 .OUTPUTS
-Status of success (0) or failure (-1) or duplicate object (-2).
+Status of success (0) or failure (-1) or object not found (-3).
 
 .EXAMPLE
-Add-SQLOpSQLCluster -ComputerName ContosSQL
+Update-SQLOpSQLCluster -ClusterName ContosSQL
 
 
 .NOTES
@@ -30,10 +30,9 @@ Date       Version Comments
                    Updated function name.
                    Added alias for parameter ComputerName.
                    Added ability to return full server list.
-2020.03.15 2.00.01 Missed IsTSQL output tag.
 #>
 
-function Add-SQLOpSQLCluster
+function Update-SQLOpSQLCluster
 {
 
     [CmdletBinding()] 
@@ -48,32 +47,28 @@ function Add-SQLOpSQLCluster
         return
     }
     
-    $ModuleName = 'Add-SQLOpSQLCluster'
-    $ModuleVersion = '2.00.01'
-    $ModuleLastUpdated = 'March 15, 2020'
+    $ModuleName = 'Update-SQLOpSQLCluster'
+    $ModuleVersion = '2.00.00'
+    $ModuleLastUpdated = 'March 14, 2020'
 
     try
     {
         Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
-        # Check and validate the server does not exist already.
-        $ClusterObj = Get-SQLOpSQLCluster -ClusterName $Name
+        $ClusObj = Get-SQLOpSQLCluster -Name $Name -Internal
 
-        if ($ClusterObj -eq $Global:Error_FailedToComplete)
+        if ($ClusObj -eq $Global:Error_FailedToComplete)
         {
             Write-Output $Global:Error_FailedToComplete
             return
         }
-        elseif ($ClusterObj -ne $Global:Error_ObjectsNotFound)
-        {    
-            Write-Output $Global:Error_Duplicate
+        elseif ($ClusObj -eq $Global:Error_ObjectsNotFound)
+        {
+            Write-Output $Global:Error_ObjectsNotFound
             return
         }
 
-        $ComputerObj = Split-Parts -ComputerName $Name
-
-
-        $TSQL = "INSERT INTO dbo.SQLClusters (SQLClusterName) VALUES ('$($ComputerObj.ComputerName)')"
+        $TSQL = "UPDATE dbo.SQLClusters SET LastUpdated = CAST(GETDATE() AS DATE) WHERE SQLClusterID = $($ClusObj.SQLClusterID)"
         Write-StatusUpdate -Message $TSQL -IsTSQL
 
         Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `

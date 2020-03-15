@@ -368,7 +368,7 @@ ForEach ($SQLServerRC in $SQLServers)
 
                     if ($ProcessTheNode)
                     {
-                        $Results = Update-SQLCluster $SQLServerRC.ComputerName
+                        $Results = Update-SQLOpSQLCluster $SQLServerRC.ComputerName
 
                         if ($Results -eq $Global:Error_FailedToComplete)
                         {
