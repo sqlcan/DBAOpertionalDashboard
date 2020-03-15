@@ -101,10 +101,11 @@
         # SQL Service
         '.\Modules\Get-SQLService.psm1';
         '.\Modules\Update-SQLService.psm1';
+        # SQL Cluster Modules
+        '.\Modules\Add-SQLOpSQLCluster.psm1';
     # CMS Modules
     '.\Modules\Get-CMSServerInstance.psm1';
-    #'.\Modules\Add-Database.psm1';    
-    '.\Modules\Add-SQLCluster.psm1';
+    #'.\Modules\Add-Database.psm1';        
     '.\Modules\Add-SQLClusterNode.psm1';
     '.\Modules\Add-SQLInstance.psm1';
     #'.\Modules\Get-Database.psm1';

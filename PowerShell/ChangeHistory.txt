@@ -42,6 +42,7 @@ Date		Version		Author		Comments
             3.00.16.0000    Mohit K. Gupta  Updated command-let for Add-Server to Add-SQLOpServer.
             3.00.17.0000    Mohit K. Gupta  Updated command-let for Update-Server to Update-SQLOpServer.
             3.00.17.0002    Mohit K. Gupta  Multiple bug fixes for new Add-SQLOpServer and Update-SQLOpServer.
+2020.03.14  3.00.18.0000    Mohit K. Gupta  Updated command-let for Add-SQLCluster to Add-SQLOpSQLCluster.
 
 DBServerAndDBSpaceMonitoring.ps1 Version History
 ------------------------------------------------
@@ -79,3 +80,5 @@ Date		Version		Author		Comments
             V1.21       Mohit K. Gupta  Moved code for SQL properties to new command let.
             V1.22       Mohit K. Gupta  Updated reference to Add-SQLOpServer.
             V1.23       Mohit K. Gupta  Updated reference to Update-SQLOpServer.
+2020.03.14  V1.24       Mohit K. Gupta  Updated reference to Add-SQLOpSQLCluster.
+            V1.24.01    Mohit K. Gupta  Refactored some of the code.

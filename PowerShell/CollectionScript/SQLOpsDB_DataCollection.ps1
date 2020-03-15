@@ -82,6 +82,7 @@ ForEach ($SQLServerRC in $SQLServers)
     # Check to confirm Extended Properties table exists; as script heavily relies on this table.
     # Also check if Extended Properties are defined for key settings; as it leads to confusion if they are missing.
 
+    #region Step #1: Extended Properties
     $ExtendedProperties = Get-SIExtendedProperties -ServerInstance $SQLServerRC.ServerInstanceConnectionString
     $SQLInstanceAccessible = $true
 
@@ -90,6 +91,23 @@ ForEach ($SQLServerRC in $SQLServers)
         $SQLInstanceAccessible = $false
         continue;
     }
+    $ServerType = $ExtendedProperties["ServerType"]
+    Write-StatusUpdate -Message "Server Type: $ServerType"
+
+    $EnvironmentType = $ExtendedProperties["EnvironmentType"]
+    Write-StatusUpdate -Message "Environment: $EnvironmentType"
+
+    $MachineType = $ExtendedProperties["MachineType"]    
+    if ($MachineType -eq 'Physical')
+    {
+        $IsPhysical = 1
+    }
+    else
+    {
+        $IsPhysical = 0
+    }
+    Write-StatusUpdate -Message "Is Physical: $IsPhysical"
+    #endregion
 
     #region Get SQL Properties
     Write-StatusUpdate -Message "Getting instance properties."
@@ -106,29 +124,9 @@ ForEach ($SQLServerRC in $SQLServers)
     $SQLServer_Build = $SQLProperties['SQLEdition']
     $SQLVersion = $SQLProperties['SQLVersion']
     Write-StatusUpdate -Message "SQL Server Version: [$SQLVersion]."
-    #endregion
 
     $OperatingSystem = Get-SIOperatingSystem -ComputerName $SQLServerRC.ComputerName
     Write-StatusUpdate -Message "   Windows Version: [$OperatingSystem]."
-
-    #region Collected Extended Properties Details
-    $ServerType = $ExtendedProperties["ServerType"]
-    Write-StatusUpdate -Message "Server Type: $ServerType"
-
-    $EnvironmentType = $ExtendedProperties["EnvironmentType"]
-    Write-StatusUpdate -Message "Environment: $EnvironmentType"
-
-    $MachineType = $ExtendedProperties["MachineType"]
-    if ($MachineType -eq 'Physical')
-    {
-        $IsPhysical = 1
-    }
-    else
-    {
-        $IsPhysical = 0
-    }
-
-    Write-StatusUpdate -Message "Is Physical: $IsPhysical"
     #endregion
 
     # Build a server list to check and the file paths to determine the volumes to check for space.
@@ -348,6 +346,8 @@ ForEach ($SQLServerRC in $SQLServers)
             if ((($IsClustered -eq 1) -or ($ServerType -eq 'Microsoft Clustering') -or ($ServerType -eq 'Veritas Clustering')) -and ($ServerIsMonitored))
             {
                 Write-StatusUpdate -Message "Current instance is a Clustered Instance."
+                # We have to use server name from CMS to build proper mapping between FCI Network name
+                # and nodes.
                 $Results = Get-SQLCluster $ComputerName_NoDomain
 
                 Switch ($Results)
@@ -355,18 +355,13 @@ ForEach ($SQLServerRC in $SQLServers)
                     $Global:Error_ObjectsNotFound
                     {
                         Write-StatusUpdate -Message "New Cluster"
-                        $InnerResults = Add-SQLCluster $ComputerName_NoDomain
+                        $InnerResults = Add-SQLOpSQLCluster $SQLServerRC.ComputerName
                         Switch ($InnerResults)
                         {
-                            $Global:Error_Duplicate
-                            {
-                                $ClusterIsMonitored = $false
-                                Write-StatusUpdate -Message "Failed to Add-SQLCluster, duplicate value found [$ComputerName_NoDomain]." -WriteToDB
-                            }
                             $Global:Error_FailedToComplete
                             {
                                 $ClusterIsMonitored = $false
-                                Write-StatusUpdate -Message "Failed to Add-SQLCluster [$ComputerName_NoDomain]."
+                                Write-StatusUpdate -Message "Failed to Add-SQLCluster [$($SQLServerRC.ComputerName)]."
                             }
                             default
                             {

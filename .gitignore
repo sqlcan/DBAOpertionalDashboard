@@ -1,2 +1,4 @@
 
 PowerShell/SQLOpsDB/Modules/GlobalSettings.psm1
+PowerShell/SQLOpsDB/Config/SQLOpsDB.json
+PowerShell/SQLOpsDB/Modules/GlobalSettings.psm1
