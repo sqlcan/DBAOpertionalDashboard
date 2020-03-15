@@ -1,4 +1,6 @@
-﻿function Add-Database
+﻿# Updated 2020.03.15 Referenced to Get-SQLOpSQLCluster.
+
+function Add-Database
 {
     [CmdletBinding()] 
     param( 
@@ -38,7 +40,7 @@
 
     $ClusteredInstanceCount = $Results.SvrCnt
 
-    if (($ClusteredInstanceCount -eq 0) -and (Get-SQLCluster $ServerVNOName))
+    if (($ClusteredInstanceCount -eq 0) -and (Get-SQLOpSQLCluster $ServerVNOName))
     { # This is a cluster and the instance defination does not exist.
 
         $TSQL = "SELECT SQLClusterID

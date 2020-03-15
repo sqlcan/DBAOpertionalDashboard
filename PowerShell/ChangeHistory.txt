@@ -45,7 +45,8 @@ Date		Version		Author		Comments
 2020.03.14  3.00.18.0000    Mohit K. Gupta  Updated command-let for Add-SQLCluster to Add-SQLOpSQLCluster.
             3.00.19.0000    Mohit K. Gupta  New module Get-SISQLVolumeDetails to get data folder, log folder, and backup folder
                                             paths.
-            3.00.20.0000    Mohit K. Gupta  New module Get-SIProcessor.    
+            3.00.20.0000    Mohit K. Gupta  New module Get-SIProcessor.
+2020.03.15  3.00.21.0000    Mohit K. Gupta  Updated command-let for Get-SQLCluster to Get-SQLOpSQLCluster.    
 
 DBServerAndDBSpaceMonitoring.ps1 Version History
 ------------------------------------------------
@@ -88,3 +89,4 @@ Date		Version		Author		Comments
             V1.25       Mohit K. Gupta  Update code to use Get-SISQLVolumeDetails.
             V1.26       Mohit K. Gupta  Removed all collection for SQL 2000 / Windows 2003.
             V1.27       Mohit K. Gupta  Updated code to use Get-SIProcessor.
+            V1.28       Mohit K. Gupta  Updated reference to Get-SQLOpSQLCluster.

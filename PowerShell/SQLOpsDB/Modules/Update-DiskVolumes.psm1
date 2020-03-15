@@ -46,6 +46,7 @@ Date       Version Comments
            0.05    Update error reporting to include the fail server information
                    in the context.
 2020.03.12 0.06    Updated to to use Get-SQLOpServer vs Get-Server.
+2020.03.15 0.00.07 Updated to use Get-SQLOpSQLCluster.
 #>
 
 function Update-DiskVolumes
@@ -61,8 +62,8 @@ function Update-DiskVolumes
     )
 
     $ModuleName = 'Update-DiskVolumes'
-    $ModuleVersion = '0.05'
-    $ModuleLastUpdated = 'February 23, 2017'
+    $ModuleVersion = '0.00.07'
+    $ModuleLastUpdated = 'March 15, 2020'
 
     Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)" 
 
@@ -83,7 +84,7 @@ function Update-DiskVolumes
 
     if ($SQLClusterName)
     {
-        $Results = Get-SQLCluster $SQLClusterName
+        $Results = Get-SQLOpSQLCluster $SQLClusterName
 
         if (($Results -ne $Global:Error_FailedToComplete) -and ($Results -ne $Global:Error_ObjectsNotFound))
         {

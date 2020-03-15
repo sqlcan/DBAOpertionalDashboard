@@ -1,4 +1,6 @@
-﻿function Update-Database
+﻿# Updated -- 2020-03-15 Reference to Get-SQLOpSQLCluster
+
+function Update-Database
 {
     [CmdletBinding()] 
     param( 
@@ -8,7 +10,7 @@
 
     Write-StatusUpdate "Update-Database" $OUTPUT_LEVEL_ONE
 
-    if (Get-SQLCluster $ServerVNOName)
+    if (Get-SQLOpSQLCluster $ServerVNOName)
     { # This is a cluster
                 
         $TSQL = "UPDATE SI

@@ -45,6 +45,7 @@ Date       Version Comments
                    find server or cluster name, instance addition fails with
                    appropriate recorded in error log.
            0.03    Updated code/documentation to fit new command let template.
+2020.03.15 0.00.04 Updated reference to Get-SQLOpSQLCluster.
 #>
 
 function Add-SQLInstance
@@ -61,8 +62,8 @@ function Add-SQLInstance
     )
 
     $ModuleName = 'Add-SQLInstance'
-    $ModuleVersion = '0.03'
-    $ModuleLastUpdated = 'February 21, 2017'
+    $ModuleVersion = '0.00.04'
+    $ModuleLastUpdated = 'March 15, 2020'
 
     try
     {
@@ -120,7 +121,7 @@ function Add-SQLInstance
             $SQLVersionID = 1
         }
 
-        $Results = Get-SQLCluster $ServerVNOName
+        $Results = Get-SQLOpSQLCluster $ServerVNOName
 
         if (($ClusteredInstanceCount -eq 0) -and ($Results -ne $Global:Error_ObjectsNotFound))
         { # This is a cluster and the instance defination does not exist.

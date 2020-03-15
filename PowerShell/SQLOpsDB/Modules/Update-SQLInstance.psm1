@@ -1,4 +1,5 @@
-﻿function Update-SQLInstance
+﻿# Updated 2020.03.15 to use Get-SQLOpSQLCluster
+function Update-SQLInstance
 {
     [CmdletBinding()] 
     param( 
@@ -36,7 +37,7 @@
             $SQLVersionID = 1
         }
 
-        $ClusterDetails = (Get-SQLCluster $ServerVNOName)
+        $ClusterDetails = (Get-SQLOpSQLCluster $ServerVNOName)
 
         if (($ClusterDetails -ne $Global:Error_ObjectsNotFound) -and ($ClusterDetails -ne $Global:Error_FailedToComplete))
         { # This is a cluster

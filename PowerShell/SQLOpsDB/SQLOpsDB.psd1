@@ -106,13 +106,13 @@
         '.\Modules\Update-SQLService.psm1';
         # SQL Cluster Modules
         '.\Modules\Add-SQLOpSQLCluster.psm1';
+        '.\Modules\Get-SQLOpSQLCluster.psm1';
     # CMS Modules
     '.\Modules\Get-CMSServerInstance.psm1';
     #'.\Modules\Add-Database.psm1';        
     '.\Modules\Add-SQLClusterNode.psm1';
     '.\Modules\Add-SQLInstance.psm1';
-    #'.\Modules\Get-Database.psm1';
-    '.\Modules\Get-SQLCluster.psm1';
+    #'.\Modules\Get-Database.psm1';    
     '.\Modules\Get-SQLClusterNode.psm1';
     '.\Modules\Update-Database.psm1';
     '.\Modules\Update-SQLCluster.psm1';

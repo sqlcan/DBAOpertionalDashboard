@@ -293,7 +293,7 @@ ForEach ($SQLServerRC in $SQLServers)
                 Write-StatusUpdate -Message "Current instance is a Clustered Instance."
                 # We have to use server name from CMS to build proper mapping between FCI Network name
                 # and nodes.
-                $Results = Get-SQLCluster $ComputerName_NoDomain
+                $Results = Get-SQLOpSQLCluster $SQLServerRC.ComputerName
 
                 Switch ($Results)
                 {
@@ -306,11 +306,11 @@ ForEach ($SQLServerRC in $SQLServers)
                             $Global:Error_FailedToComplete
                             {
                                 $ClusterIsMonitored = $false
-                                Write-StatusUpdate -Message "Failed to Add-SQLCluster [$($SQLServerRC.ComputerName)]."
+                                Write-StatusUpdate -Message "Failed to add new FCI network name [$($SQLServerRC.ComputerName)]."
                             }
                             default
                             {
-                                Write-StatusUpdate -Message "Existing Cluster"
+                                Write-StatusUpdate -Message "Existing FCI network name."
                                 $ClusterIsMonitored = $true
                             }
                         }
@@ -319,7 +319,7 @@ ForEach ($SQLServerRC in $SQLServers)
                     $Global:Error_FailedToComplete
                     {
                         $ClusterIsMonitored = $false
-                        Write-StatusUpdate -Message "Failed to Get-SQLCluster [$ComputerName_NoDomain]."
+                        Write-StatusUpdate -Message "Failed to get cluster details for [$ComputerName_NoDomain]."
                         break;
                     }
                     default
