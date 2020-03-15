@@ -129,6 +129,12 @@ ForEach ($SQLServerRC in $SQLServers)
     Write-StatusUpdate -Message "   Windows Version: [$OperatingSystem]."
     #endregion
 
+    if (($OperatingSystem -eq 'Windows Server 2000') -or ($SQLVersion -eq 'Microsoft SQL Server 2000'))
+    {
+        Write-StatusUpdate -Message "Both Windows Server 2000 and Server 2000 are no longer supported." -WriteToDB
+        continue;
+    }
+
     # Build a server list to check and the file paths to determine the volumes to check for space.
     # Only volumes we care to monitor are those which have SQL Server related files (i.e. backups, data, and t-logs)    
 
@@ -139,10 +145,7 @@ ForEach ($SQLServerRC in $SQLServers)
         # If this SQL Server is a clustered instance we need to do additional investigative queries.  TO collect information for
         # for data and file locations.  This will help calculate which volumes belong to instance where instance stacking is being used.
 
-        if ($OperatingSystem -ne "Windows Server 2000")
-        {
-            $SQLInstanceFolderList = Get-SISQLVolumeDetails -ServerInstance $SQLServerRC.ServerInstanceConnectionString
-        }
+        $SQLInstanceFolderList = Get-SISQLVolumeDetails -ServerInstance $SQLServerRC.ServerInstanceConnectionString
 
         # Unlike Standalone Instances where the Physical Name is calculated, for FCI the node names must be supplied by DBA team.
         # If this information is blank, the servers list will be blank therefore no action will be taken.
@@ -227,42 +230,39 @@ ForEach ($SQLServerRC in $SQLServers)
 
         Write-StatusUpdate -Message "Processing Server [$ServerName]."
 
-        if ($OperatingSystem -ne 'Windows Server 2000')
+        try
         {
-            try
-            {
-                $Processors = Get-WmiObject -Class Win32_Processor -ComputerName $ServerName
+            $Processors = Get-WmiObject -Class Win32_Processor -ComputerName $ServerName
 
-                ForEach ($Processor IN $Processors)
-                {
-                    $ProcessorName = $Processor.Name
-                    $NumberOfCores += $Processor.NumberOfCores
-                    $NumberOfLogicalCores += $Processor.NumberOfLogicalProcessors
-                }
-            }
-            catch [System.Runtime.InteropServices.COMException]
+            ForEach ($Processor IN $Processors)
             {
-                Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName]; server not found." -WriteToDB
-                $IsServerAccessible = $false
-                continue;
+                $ProcessorName = $Processor.Name
+                $NumberOfCores += $Processor.NumberOfCores
+                $NumberOfLogicalCores += $Processor.NumberOfLogicalProcessors
             }
-            catch [System.UnauthorizedAccessException]
-            {
-                Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName]; access denied." -WriteToDB
-                $IsWMIAccessible = $false
-            }
-            catch [System.Management.ManagementException]
-            {
-                Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName]; unknown exception." -WriteToDB
-                $IsWMIAccessible = $false
-            }
-            catch
-            {
-                Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName] (unhandled exception)." -WriteToDB
-                Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
-                $IsServerAccessible = $false
-                continue;
-            }
+        }
+        catch [System.Runtime.InteropServices.COMException]
+        {
+            Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName]; server not found." -WriteToDB
+            $IsServerAccessible = $false
+            continue;
+        }
+        catch [System.UnauthorizedAccessException]
+        {
+            Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName]; access denied." -WriteToDB
+            $IsWMIAccessible = $false
+        }
+        catch [System.Management.ManagementException]
+        {
+            Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName]; unknown exception." -WriteToDB
+            $IsWMIAccessible = $false
+        }
+        catch
+        {
+            Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName] (unhandled exception)." -WriteToDB
+            Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
+            $IsServerAccessible = $false
+            continue;
         }
 
         # If WMI called for processor failed; chances are the volume call failed also.  To minimize the error reporting in
@@ -421,19 +421,15 @@ ForEach ($SQLServerRC in $SQLServers)
                                 Write-StatusUpdate -Message "Failed to update SQL CMDB Cluster Node's info for [$ComputerName_NoDomain\$ServerName]."
                         }
 
-                        # Current solution does not support Windows 2000 disk space report.
-                        if ($OperatingSystem -ne "Windows Server 2000")
+                        Write-StatusUpdate -Message "Windows 2003+ Updating Disk Volume Information"
+
+                        if ($IsWMIAccessible)
                         {
-                            Write-StatusUpdate -Message "Windows 2003+ Updating Disk Volume Information"
+                            $Results = Update-DiskVolumes $ServerName $FQDN $ComputerName_NoDomain $SQLInstanceFolderList
 
-                            if ($IsWMIAccessible)
+                            if ($Results -eq $Global:Error_FailedToComplete)
                             {
-                                $Results = Update-DiskVolumes $ServerName $FQDN $ComputerName_NoDomain $SQLInstanceFolderList
-
-                                if ($Results -eq $Global:Error_FailedToComplete)
-                                {
-                                    Write-StatusUpdate -Message "Failed to update the volume space details for [$($SQLServerRC.ComputerName)]."
-                                }
+                                Write-StatusUpdate -Message "Failed to update the volume space details for [$($SQLServerRC.ComputerName)]."
                             }
                         }
                     }
@@ -443,7 +439,7 @@ ForEach ($SQLServerRC in $SQLServers)
             }
             else
             {
-                if (($ServerIsMonitored) -and ($OperatingSystem -ne "Windows Server 2000"))
+                if (($ServerIsMonitored))
                 {
                     Write-StatusUpdate -Message "Stand alone instance; Windows 2003+ Updating Disk Volume Information"
 
@@ -649,27 +645,7 @@ ForEach ($SQLServerRC in $SQLServers)
         {
             Write-StatusUpdate -Message "Getting list of databases"
 
-            if ($SQLServer_Major -eq 8)
-            {
-                $TSQL = " SELECT   $SQLInstanceID AS InstanceID
-                                    , CAST('00000000-0000-0000-0000-000000000000' AS uniqueidentifier) AS AGGuid
-                                    , name AS DatabaseName
-                                    , CASE
-                                        WHEN ((status & 8 = 8) OR (status & 16 = 16) OR (status & 24 = 24)) and (status & 512 <> 512) THEN
-                                            'Online'
-                                        WHEN status & 512 = 512 THEN
-                                            'Offline'
-                                        WHEN status & 1024 = 1024 THEN
-                                            'Read Only'
-                                        ELSE
-                                            'Unknown'
-                                    END AS DatabaseState
-                                    , '----' AS FileType
-                                    , 0 AS FileSize_mb                                        
-                            FROM sysdatabases
-                            WHERE dbid NOT IN (1,3,4)"
-            }
-            elseif (($SQLServer_Major -ge 9) -and ($SQLServer_Major -le 10))
+            if (($SQLServer_Major -ge 9) -and ($SQLServer_Major -le 10))
             {
                 $TSQL = "   WITH DBDetails
                                 AS (SELECT   DB_NAME(D.database_id) AS DatabaseName
@@ -831,92 +807,76 @@ ForEach ($SQLServerRC in $SQLServers)
 
         if ($DCS_ErrorLogs)
         {
-            # Cannot collect error logs from SQL 2000.  Get-SQLErrorLog is not backwards compatible.
-            if ($SQLServer_Major -ne 8)
+            # Get SQL Instance Error Logs.  Get the last collect date, then get only errors since last collection.
+            # record the errors in SQLOpsDB.  Then update all collection date time.
+
+            if ($DCS_ThrottleErrorLogCollection)
             {
-                # Get SQL Instance Error Logs.  Get the last collect date, then get only errors since last collection.
-                # record the errors in SQLOpsDB.  Then update all collection date time.
 
-                if ($DCS_ThrottleErrorLogCollection)
+                $LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString
+                $Last30Hours = (Get-Date).AddHours(-30)
+                $StartDataCollectionTime = [DateTime]$LastDataCollection.LastDateTimeCaptured
+
+                $StartProcessTime = Get-Date
+
+                if ($Last30Hours -ge $StartDataCollectionTime)
                 {
-
-                    $LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString
-                    $Last30Hours = (Get-Date).AddHours(-30)
-                    $StartDataCollectionTime = [DateTime]$LastDataCollection.LastDateTimeCaptured
-
-                    $StartProcessTime = Get-Date
-
-                    if ($Last30Hours -ge $StartDataCollectionTime)
-                    {
-                        Write-StatusUpdate -Message "Skipping Error Logs for [$($SQLServerRC.ServerInstance)].  Skipped from '$StartDataCollectionTime' to '$Last30Hours'." -WriteToDB
-                        $StartDataCollectionTime = $Last30Hours
-                    }
-
-                    $ThrottleTriggered = $true
-
-                    While (($EndProcessTime - $StartProcessTime).Seconds -le $DCS_ThrottleLimit * 60)
-                    {
-                        # Cycle through error log one hour at a time.
-
-                        $OneHourPlus = $StartDataCollectionTime.AddHours(1)
-                        $ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -After $StartDataCollectionTime -Before $OneHourPlus -Internal
-                        if ($ErrorLogs)
-                        {
-                            Update-SQLOpSQLErrorLog -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $ErrorLogs | Out-Null
-                        }
-                        Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString -DateTime $OneHourPlus | Out-Null 
-
-                        $StartDataCollectionTime = $OneHourPlus
-                        if ($StartDataCollectionTime.AddHours(1) -ge (Get-Date))
-                        {
-                            $ThrottleTriggered = $false
-                            break
-                        }
-                        $EndProcessTime = Get-Date
-                    }
-
-                    if ($ThrottleTriggered)
-                    {
-                        Write-StatusUpdate -Message "Throttle Setting Triggered. Error logs for [$($SQLServerRC.ServerInstance)] did not finish.  Collection finished to [$StartDataCollectionTime]." -WriteToDB
-                    }
+                    Write-StatusUpdate -Message "Skipping Error Logs for [$($SQLServerRC.ServerInstance)].  Skipped from '$StartDataCollectionTime' to '$Last30Hours'." -WriteToDB
+                    $StartDataCollectionTime = $Last30Hours
                 }
-                else
+
+                $ThrottleTriggered = $true
+
+                While (($EndProcessTime - $StartProcessTime).Seconds -le $DCS_ThrottleLimit * 60)
                 {
-                    $LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString
-                    $ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -After $LastDataCollection.LastDateTimeCaptured -Internal
+                    # Cycle through error log one hour at a time.
+
+                    $OneHourPlus = $StartDataCollectionTime.AddHours(1)
+                    $ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -After $StartDataCollectionTime -Before $OneHourPlus -Internal
                     if ($ErrorLogs)
                     {
                         Update-SQLOpSQLErrorLog -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $ErrorLogs | Out-Null
                     }
-                    Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString | Out-Null   
+                    Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString -DateTime $OneHourPlus | Out-Null 
+
+                    $StartDataCollectionTime = $OneHourPlus
+                    if ($StartDataCollectionTime.AddHours(1) -ge (Get-Date))
+                    {
+                        $ThrottleTriggered = $false
+                        break
+                    }
+                    $EndProcessTime = Get-Date
+                }
+
+                if ($ThrottleTriggered)
+                {
+                    Write-StatusUpdate -Message "Throttle Setting Triggered. Error logs for [$($SQLServerRC.ServerInstance)] did not finish.  Collection finished to [$StartDataCollectionTime]." -WriteToDB
                 }
             }
             else
             {
-                Write-StatusUpdate -Message "Skipping Error Logs for [$($SQLServerRC.ServerInstance)].  SQL Server 2000 not supported." -WriteToDB
+                $LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString
+                $ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -After $LastDataCollection.LastDateTimeCaptured -Internal
+                if ($ErrorLogs)
+                {
+                    Update-SQLOpSQLErrorLog -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $ErrorLogs | Out-Null
+                }
+                Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString | Out-Null   
             }
         }
 
         if ($DCS_SQLJobs)
         {
-            # Cannot collect job stats from SQL 2000.  I don't have a SQL 2000 server.
-            if ($SQLServer_Major -ne 8)
-            {
-                # Get SQL Instance Error Logs.  Get the last collect date, then get only errors since last collection.
-                # record the errors in SQLOpsDB.  Then update all collection date time.
+            # Get SQL Instance Error Logs.  Get the last collect date, then get only errors since last collection.
+            # record the errors in SQLOpsDB.  Then update all collection date time.
 
-                $LastDataCollection = Get-SQLOpSQLJobStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString
-                $SQLJobs = Get-SISQLJobs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -After $LastDataCollection.LastDateTimeCaptured -Internal
-                if ($SQLJobs)
-                {
-                    Update-SQLOpSQLJobs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $SQLJobs | Out-Null
-                }
-                Update-SQLOpSQLJobStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString | Out-Null   
-            }
-            else
+            $LastDataCollection = Get-SQLOpSQLJobStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString
+            $SQLJobs = Get-SISQLJobs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -After $LastDataCollection.LastDateTimeCaptured -Internal
+            if ($SQLJobs)
             {
-                Write-StatusUpdate -Message "Skipping SQL Job collection for [$($SQLServerRC.ServerInstance)].  SQL Server 2000 not supported." -WriteToDB
+                Update-SQLOpSQLJobs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $SQLJobs | Out-Null
             }
+            Update-SQLOpSQLJobStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString | Out-Null   
         }
             
     }

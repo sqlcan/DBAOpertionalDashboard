@@ -85,3 +85,4 @@ Date		Version		Author		Comments
 2020.03.14  V1.24       Mohit K. Gupta  Updated reference to Add-SQLOpSQLCluster.
             V1.24.01    Mohit K. Gupta  Refactored some of the code.
             V1.25       Mohit K. Gupta  Update code to use Get-SISQLVolumeDetails.
+            V1.26       Mohit K. Gupta  Removed all collection for SQL 2000 / Windows 2003.
