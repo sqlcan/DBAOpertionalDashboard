@@ -341,7 +341,7 @@ ForEach ($SQLServerRC in $SQLServers)
                         $Global:Error_ObjectsNotFound
                         {
                             Write-StatusUpdate -Message "New Cluster Node"
-                            $InnerResults = Add-SQLClusterNode $SQLServerRC.ComputerName $ServerName $ServerIsActiveNode
+                            $InnerResults = Add-SQLOpSQLClusterNode $SQLServerRC.ComputerName $ServerName $ServerIsActiveNode
 
                             Switch ($InnerResults)
                             {
