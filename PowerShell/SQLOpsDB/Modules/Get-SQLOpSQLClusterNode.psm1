@@ -9,15 +9,23 @@ Get-SQLOpSQLCluster returns details about sql cluster from SQLOpDB.
 SQL Cluster name for which information is required.  This is is the network name
 for FCI.
 
+.PARAMETER NodeName
+Node name that is part of the FCI cluster.
+
+.PARAMETER ListAvailable
+Provide full SQLOpDB output.
+
+.PARAMETER Internal
+Return internal ID value if needed.
+
 .INPUTS
 None
 
 .OUTPUTS
-Status of success (0) or failure (-1) or duplicate object (-2).
+Full list or failure (-1) or no objects found (-3).
 
 .EXAMPLE
-Get-SQLOpSQLCluster -ComputerName ContosSQL
-
+Get-SQLOpSQLClusterNode -Name ContosSQLClus -NodeName -ContosoSQL
 
 .NOTES
 Date       Version Comments
@@ -30,10 +38,8 @@ Date       Version Comments
                    Updated function name.
                    Added alias for parameter ComputerName.
                    Added ability to return full server list.
-           2.00.01 Removed alias reference to computer name, as it is used in server
-                    objects.
 #>
-function Get-SQLOpSQLCluster
+function Get-SQLOpSQLClusterNode
 {
 
     [CmdletBinding(DefaultParameterSetName='List')] 
@@ -41,8 +47,11 @@ function Get-SQLOpSQLCluster
     [Alias('List','All')]
     [Parameter(ParameterSetName='List', Mandatory=$false)] [switch] $ListAvailable, 
     [Alias('ClusterName')]
+    [Parameter(ParameterSetName='NodeName', Position=0, Mandatory=$true)]
     [Parameter(ParameterSetName='Name', Position=0, Mandatory=$true)] [string]$Name,
-    [Parameter(ParameterSetName='Name', Position=1, Mandatory=$false, DontShow)] [Switch]$Internal
+    [Alias('ServerName','Computer','Server',"ComputerName")]
+    [Parameter(ParameterSetName='NodeName', Position=1, Mandatory=$true)] [string] $NodeName,
+    [Parameter(ParameterSetName='NodeName', Position=2, Mandatory=$false, DontShow)] [Switch]$Internal
     )
 
     if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
@@ -51,8 +60,8 @@ function Get-SQLOpSQLCluster
         return
     }
     
-    $ModuleName = 'Get-SQLOpSQLCluster'
-    $ModuleVersion = '2.00.01'
+    $ModuleName = 'Get-SQLOpSQLClusterNode'
+    $ModuleVersion = '2.00.00'
     $ModuleLastUpdated = 'March 15, 2020'
 
     if (($PSCmdlet.ParameterSetName -eq 'List') -and (!($PSBoundParameters.ListAvailable)))
@@ -66,20 +75,35 @@ function Get-SQLOpSQLCluster
 
         if ($Internal)
         {
-            $TSQL = "SELECT SQLClusterID, SQLClusterName, IsMonitored, DiscoveryOn, LastUpdated
-                    FROM dbo.SQLClusters "
+            $TSQL = "SELECT CN.SQLClusterNodeID, SC.SQLClusterName, S.ServerName AS SQLClusterNodeName, CN.IsActiveNode, CN.DiscoveryOn, CN.LastUpdated
+                   FROM dbo.SQLClusters SC
+                   JOIN dbo.SQLClusterNodes CN
+                     ON SC.SQLClusterID = CN.SQLClusterID
+                   JOIN dbo.Servers S
+                     ON S.ServerID = CN.SQLNodeID "
         }
-        else
-        {
-            $TSQL = "SELECT SQLClusterName, IsMonitored, DiscoveryOn, LastUpdated
-                    FROM dbo.SQLClusters "
+        else {
+            $TSQL = "SELECT SC.SQLClusterName, S.ServerName AS SQLClusterNodeName, CN.IsActiveNode, CN.DiscoveryOn, CN.LastUpdated
+                   FROM dbo.SQLClusters SC
+                   JOIN dbo.SQLClusterNodes CN
+                     ON SC.SQLClusterID = CN.SQLClusterID
+                   JOIN dbo.Servers S
+                     ON S.ServerID = CN.SQLNodeID "
         }
 
         if (!($ListAvailable))
         {
-            $CompObj = Split-Parts -ComputerName $Name
-            $TSQL += "WHERE SQLClusterName = '$($CompObj.ComputerName)'"
+            $ClusObj = Split-Parts -ComputerName $Name
+            $TSQL += "WHERE SC.SQLClusterName = '$($ClusObj.ComputerName)' "
+
+            if (!([String]::IsNullOrEmpty($NodeName)))
+            {
+                $ClusNodeObj = Split-Parts -ComputerName $NodeName
+                $TSQL += "AND S.ServerName = '$($ClusNodeObj.ComputerName)'"
+            }
         }
+
+        Write-StatusUpdate -Message $TSQL -IsTSQL
 
         $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
                                  -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `

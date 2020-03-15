@@ -334,31 +334,26 @@ ForEach ($SQLServerRC in $SQLServers)
                 {
                     Write-StatusUpdate -Message "Cluster is monitored; updating node information."
                     $ProcessTheNode = $true
-                    $Results = Get-SQLClusterNode $ComputerName_NoDomain $ServerName
+                    $Results = Get-SQLOpQLClusterNode $SQLServerRC.ComputerName $ServerName
 
                     Switch ($Results)
                     {
                         $Global:Error_ObjectsNotFound
                         {
                             Write-StatusUpdate -Message "New Cluster Node"
-                            $InnerResults = Add-SQLClusterNode $ComputerName_NoDomain $ServerName $ServerIsActiveNode
+                            $InnerResults = Add-SQLClusterNode $SQLServerRC.ComputerName $ServerName $ServerIsActiveNode
 
                             Switch ($InnerResults)
                             {
-                                $Global:Error_Duplicate
-                                {
-                                    $ProcessTheNode = $false
-                                    Write-StatusUpdate -Message "Failed to Add-SQLClusterNode, duplicate object. [$ComputerName_NoDomain\$ServerName]." -WriteToDB
-                                }
                                 $Global:Error_ObjectsNotFound
                                 {
                                     $ProcessTheNode = $false
-                                    Write-StatusUpdate -Message "Failed to Add-SQLClusterNode, missing the server or cluster object [$ComputerName_NoDomain\$ServerName]." -WriteToDB
+                                    Write-StatusUpdate -Message "Failed to add missing the server or cluster object [$($SQLServerRC.ComputerName)\$ServerName]." -WriteToDB
                                 }
                                 $Global:Error_FailedToComplete
                                 {
                                     $ProcessTheNode = $false
-                                    Write-StatusUpdate -Message "Failed to Add-SQLClusterNode [$ComputerName_NoDomain\$ServerName]."
+                                    Write-StatusUpdate -Message "Failed to add node to cluster [$($SQLServerRC.ComputerName)\$ServerName]."
                                 }
                             }
                             break;
@@ -366,25 +361,25 @@ ForEach ($SQLServerRC in $SQLServers)
                         $Global:Error_FailedToComplete
                         {
                             $ProcessTheNode = $false
-                            Write-StatusUpdate -Message "Failed to Get-SQLClusterNode [$ComputerName_NoDomain\$ServerName]."
+                            Write-StatusUpdate -Message "Failed to get cluster node details for [$($SQLServerRC.ComputerName)\$ServerName]."
                             break;
                         }
                     }
 
                     if ($ProcessTheNode)
                     {
-                        $Results = Update-SQLCluster $ComputerName_NoDomain
+                        $Results = Update-SQLCluster $SQLServerRC.ComputerName
 
                         if ($Results -eq $Global:Error_FailedToComplete)
                         {
-                                Write-StatusUpdate -Message "Failed to update SQL CMDB Cluster's info for [$ComputerName_NoDomain]."
+                                Write-StatusUpdate -Message "Failed to update cluster's info for [$($SQLServerRC.ComputerName)]."
                         }
 
-                        $Results = Update-SQLClusterNode $ComputerName_NoDomain $ServerName
+                        $Results = Update-SQLClusterNode $SQLServerRC.ComputerName $ServerName
 
                         if ($Results -eq $Global:Error_FailedToComplete)
                         {
-                                Write-StatusUpdate -Message "Failed to update SQL CMDB Cluster Node's info for [$ComputerName_NoDomain\$ServerName]."
+                                Write-StatusUpdate -Message "Failed to update cluster node's info for [$($SQLServerRC.ComputerName)\$ServerName]."
                         }
 
                         Write-StatusUpdate -Message "Windows 2003+ Updating Disk Volume Information"
