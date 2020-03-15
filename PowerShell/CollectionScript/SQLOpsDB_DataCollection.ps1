@@ -222,48 +222,11 @@ ForEach ($SQLServerRC in $SQLServers)
         $ServerIsActiveNode = $Server[1]
         $ClusterIsMonitored = $true
         $ServerIsMonitored = $true
-        $NumberOfLogicalCores = 0
-        $NumberOfCores = 0
-        $ProcessorName = 'Unknown'
         $IsServerAccessible = $true
         $IsWMIAccessible = $true
 
         Write-StatusUpdate -Message "Processing Server [$ServerName]."
-
-        try
-        {
-            $Processors = Get-WmiObject -Class Win32_Processor -ComputerName $ServerName
-
-            ForEach ($Processor IN $Processors)
-            {
-                $ProcessorName = $Processor.Name
-                $NumberOfCores += $Processor.NumberOfCores
-                $NumberOfLogicalCores += $Processor.NumberOfLogicalProcessors
-            }
-        }
-        catch [System.Runtime.InteropServices.COMException]
-        {
-            Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName]; server not found." -WriteToDB
-            $IsServerAccessible = $false
-            continue;
-        }
-        catch [System.UnauthorizedAccessException]
-        {
-            Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName]; access denied." -WriteToDB
-            $IsWMIAccessible = $false
-        }
-        catch [System.Management.ManagementException]
-        {
-            Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName]; unknown exception." -WriteToDB
-            $IsWMIAccessible = $false
-        }
-        catch
-        {
-            Write-StatusUpdate -Message "WMI Call Failed [Process Information] for [$ServerName] (unhandled exception)." -WriteToDB
-            Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
-            $IsServerAccessible = $false
-            continue;
-        }
+        $ProcessorObj = Get-SIProcessor -ComputerName $ServerName
 
         # If WMI called for processor failed; chances are the volume call failed also.  To minimize the error reporting in
         # execution log; only attempt server related updates if initial WMI was successful.
@@ -277,9 +240,11 @@ ForEach ($SQLServerRC in $SQLServers)
             {
                 $Global:Error_ObjectsNotFound
                 {
+
                     Write-StatusUpdate -Message "... New server, adding to database."
-                    $InnerResults = Add-SQLOpServer -ComputerName $ServerName -OperatingSystem $OperatingSystem -ProcessorName $ProcessorName `
-                                                    -NumberOfCores $NumberOfCores - NumberOfLogicalCores $NumberOfLogicalCores -IsPhysical $IsPhysical
+                    $InnerResults = Add-SQLOpServer -ComputerName $ServerName -OperatingSystem $OperatingSystem -ProcessorName $ProcessorObj.Name `
+                                                    -NumberOfCores $ProcessorObj.NumberOfCores -NumberOfLogicalCores $ProcessorObj.NumberOfLogicalProcessors `
+                                                    -IsPhysical $IsPhysical
                     Switch ($InnerResults)
                     {
                         $Global:Error_FailedToComplete
@@ -307,8 +272,9 @@ ForEach ($SQLServerRC in $SQLServers)
                     $ServerIsMonitored = $Results.IsMonitored
                     if ($ServerIsMonitored)
                     {
-                        $InnerResults = Update-SQLOpServer -ComputerName $ServerName -OperatingSystem $OperatingSystem -ProcessorName $ProcessorName `
-                                                           -NumberOfCores $NumberOfCores - NumberOfLogicalCores $NumberOfLogicalCores -IsPhysical $IsPhysical
+                        $InnerResults = Update-SQLOpServer -ComputerName $ServerName -OperatingSystem $OperatingSystem -ProcessorName $ProcessorObj.Name `
+                                                           -NumberOfCores $ProcessorObj.NumberOfCores -NumberOfLogicalCores $ProcessorObj.NumberOfLogicalProcessors `
+                                                           -IsPhysical $IsPhysical
 
                         if ($InnerResults -eq $Global:Error_FailedToComplete)
                         {

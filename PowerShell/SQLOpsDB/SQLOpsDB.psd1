@@ -95,6 +95,7 @@
         '.\Modules\Get-SISQLVolumeDetails.psm1';
     # Server Modules
     '.\Modules\Get-SIOperatingSystem.psm1';
+    '.\Modules\Get-SIProcessor.psm1';
     '.\Modules\Get-SQLOpServer.psm1';
     '.\Modules\Get-SQLOpOperatingSystem.psm1';
     '.\Modules\Add-SQLOpOperatingSystem.psm1';
