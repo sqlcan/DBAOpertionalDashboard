@@ -293,14 +293,14 @@ ForEach ($SQLServerRC in $SQLServers)
                 Write-StatusUpdate -Message "Current instance is a Clustered Instance."
                 # We have to use server name from CMS to build proper mapping between FCI Network name
                 # and nodes.
-                $Results = Get-SQLOpSQLCluster $SQLServerRC.ComputerName
+                $Results = Get-SQLOpSQLCluster -Name $SQLServerRC.ComputerName
 
                 Switch ($Results)
                 {
                     $Global:Error_ObjectsNotFound
                     {
                         Write-StatusUpdate -Message "New Cluster"
-                        $InnerResults = Add-SQLOpSQLCluster $SQLServerRC.ComputerName
+                        $InnerResults = Add-SQLOpSQLCluster -Name $SQLServerRC.ComputerName
                         Switch ($InnerResults)
                         {
                             $Global:Error_FailedToComplete
@@ -334,14 +334,14 @@ ForEach ($SQLServerRC in $SQLServers)
                 {
                     Write-StatusUpdate -Message "Cluster is monitored; updating node information."
                     $ProcessTheNode = $true
-                    $Results = Get-SQLOpQLClusterNode $SQLServerRC.ComputerName $ServerName
+                    $Results = Get-SQLOpQLClusterNode -Name $SQLServerRC.ComputerName -NodeName $ServerName
 
                     Switch ($Results)
                     {
                         $Global:Error_ObjectsNotFound
                         {
                             Write-StatusUpdate -Message "New Cluster Node"
-                            $InnerResults = Add-SQLOpSQLClusterNode $SQLServerRC.ComputerName $ServerName $ServerIsActiveNode
+                            $InnerResults = Add-SQLOpSQLClusterNode -Name $SQLServerRC.ComputerName -NodeName $ServerName -IsActive $ServerIsActiveNode
 
                             Switch ($InnerResults)
                             {
@@ -368,14 +368,14 @@ ForEach ($SQLServerRC in $SQLServers)
 
                     if ($ProcessTheNode)
                     {
-                        $Results = Update-SQLOpSQLCluster $SQLServerRC.ComputerName
+                        $Results = Update-SQLOpSQLCluster -Name $SQLServerRC.ComputerName
 
                         if ($Results -eq $Global:Error_FailedToComplete)
                         {
                                 Write-StatusUpdate -Message "Failed to update cluster's info for [$($SQLServerRC.ComputerName)]."
                         }
 
-                        $Results = Update-SQLClusterNode $SQLServerRC.ComputerName $ServerName
+                        $Results = Update-SQLOpSQLClusterNode -Name $SQLServerRC.ComputerName -NodeName $ServerName -IsActive $ServerIsActiveNode
 
                         if ($Results -eq $Global:Error_FailedToComplete)
                         {
