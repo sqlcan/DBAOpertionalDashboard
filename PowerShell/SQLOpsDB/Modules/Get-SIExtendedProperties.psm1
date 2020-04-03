@@ -29,6 +29,8 @@ Get all the extended properties.
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2020.03.11 0.00.01 Initial Version
+2020.04.03 0.00.02 Error with property name for Extended Properties.  Causing
+                    PassiveNode extended property was being skipped.
 #>
 function Get-SIExtendedProperties
 {
@@ -45,8 +47,8 @@ function Get-SIExtendedProperties
     }
     
     $ModuleName = 'Get-SIExtendedProperties'
-    $ModuleVersion = '0.00.01'
-    $ModuleLastUpdated = 'March 11, 2020'
+    $ModuleVersion = '0.00.02'
+    $ModuleLastUpdated = 'April 3, 2020'
 
     try
     {
@@ -119,7 +121,7 @@ function Get-SIExtendedProperties
 
         ForEach ($Row in $Results)
         {
-            if (($Row.PropertyName -in ('EnvironmentType','ServerType','MachineType','ActiveNode','ApplicationName')) -or ($Row.name -like 'PassiveNode*'))
+            if (($Row.PropertyName -in ('EnvironmentType','ServerType','MachineType','ActiveNode','ApplicationName')) -or ($Row.PropertyName -like 'PassiveNode*'))
             {
                 $HashTable.Add($($Row.PropertyName), $($Row.Value))
             }
