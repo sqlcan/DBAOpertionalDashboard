@@ -386,7 +386,7 @@ ForEach ($SQLServerRC in $SQLServers)
 
                         if ($IsWMIAccessible)
                         {
-                            $Results = Update-DiskVolumes $ServerName $FQDN $ComputerName_NoDomain $SQLInstanceFolderList
+                            $Results = Update-DiskVolumes -ComputerName $ServerName -ClusterName $SQLServerRC.ComputerName -FolderList $SQLInstanceFolderList
 
                             if ($Results -eq $Global:Error_FailedToComplete)
                             {
@@ -406,7 +406,7 @@ ForEach ($SQLServerRC in $SQLServers)
 
                     if ($IsWMIAccessible)
                     {
-                        $Results = Update-DiskVolumes $ServerName $FQDN
+                        $Results = Update-DiskVolumes -ComputerName $ServerName
 
                         if ($Results -eq $Global:Error_FailedToComplete)
                         {
