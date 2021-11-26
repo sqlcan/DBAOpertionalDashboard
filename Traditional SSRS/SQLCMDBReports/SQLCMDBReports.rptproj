@@ -1,121 +1,72 @@
 <?xml version="1.0" encoding="Windows-1252"?>
-<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ToolsVersion="2.0">
-  <State>$base64$PFNvdXJjZUNvbnRyb2xJbmZvIHhtbG5zOnhzZD0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHhtbG5zOnhzaT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEtaW5zdGFuY2UiIHhtbG5zOmRkbDI9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDAzL2VuZ2luZS8yIiB4bWxuczpkZGwyXzI9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDAzL2VuZ2luZS8yLzIiIHhtbG5zOmRkbDEwMF8xMDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDA4L2VuZ2luZS8xMDAvMTAwIiB4bWxuczpkZGwyMDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDEwL2VuZ2luZS8yMDAiIHhtbG5zOmRkbDIwMF8yMDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDEwL2VuZ2luZS8yMDAvMjAwIiB4bWxuczpkZGwzMDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDExL2VuZ2luZS8zMDAiIHhtbG5zOmRkbDMwMF8zMDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDExL2VuZ2luZS8zMDAvMzAwIiB4bWxuczpkd2Q9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vRGF0YVdhcmVob3VzZS9EZXNpZ25lci8xLjAiPg0KICA8RW5hYmxlZD5mYWxzZTwvRW5hYmxlZD4NCiAgPFByb2plY3ROYW1lPjwvUHJvamVjdE5hbWU+DQogIDxBdXhQYXRoPjwvQXV4UGF0aD4NCiAgPExvY2FsUGF0aD48L0xvY2FsUGF0aD4NCiAgPFByb3ZpZGVyPjwvUHJvdmlkZXI+DQo8L1NvdXJjZUNvbnRyb2xJbmZvPg==</State>
-  <DataSources>
-    <ProjectItem>
-      <Name>dsEPM.rds</Name>
-      <FullPath>dsEPM.rds</FullPath>
-    </ProjectItem>
-    <ProjectItem>
-      <Name>dsMain.rds</Name>
-      <FullPath>dsMain.rds</FullPath>
-    </ProjectItem>
-  </DataSources>
-  <DataSets />
-  <Reports>
-    <ProjectItem>
-      <Name>SQLCMDB (EPM) Databases Missing Full-Diff Backup.rdl</Name>
-      <FullPath>SQLCMDB (EPM) Databases Missing Full-Diff Backup.rdl</FullPath>
-    </ProjectItem>
-    <ProjectItem>
-      <Name>SQLCMDB (EPM) Databases Missing T-Log Backup.rdl</Name>
-      <FullPath>SQLCMDB (EPM) Databases Missing T-Log Backup.rdl</FullPath>
-    </ProjectItem>
-    <ProjectItem>
-      <Name>SQLCMDB (EPM) Policy Details.rdl</Name>
-      <FullPath>SQLCMDB (EPM) Policy Details.rdl</FullPath>
-    </ProjectItem>
-    <ProjectItem>
-      <Name>SQLCMDB AHS Dashboard Trending.rdl</Name>
-      <FullPath>SQLCMDB AHS Dashboard Trending.rdl</FullPath>
-    </ProjectItem>
-    <ProjectItem>
-      <Name>SQLCMDB AHS Dashboard.rdl</Name>
-      <FullPath>SQLCMDB AHS Dashboard.rdl</FullPath>
-    </ProjectItem>
-    <ProjectItem>
-      <Name>SQLCMDB Data Collection Execution Log.rdl</Name>
-      <FullPath>SQLCMDB Data Collection Execution Log.rdl</FullPath>
-    </ProjectItem>
-    <ProjectItem>
-      <Name>SQLCMDB Database List by Version and Enviornment.rdl</Name>
-      <FullPath>SQLCMDB Database List by Version and Enviornment.rdl</FullPath>
-    </ProjectItem>
-    <ProjectItem>
-      <Name>SQLCMDB Database Space Details.rdl</Name>
-      <FullPath>SQLCMDB Database Space Details.rdl</FullPath>
-    </ProjectItem>
-    <ProjectItem>
-      <Name>SQLCMDB Database Space Overview.rdl</Name>
-      <FullPath>SQLCMDB Database Space Overview.rdl</FullPath>
-    </ProjectItem>
-    <ProjectItem>
-      <Name>SQLCMDB Disk Space Detail.rdl</Name>
-      <FullPath>SQLCMDB Disk Space Detail.rdl</FullPath>
-    </ProjectItem>
-    <ProjectItem>
-      <Name>SQLCMDB Disk Space Overview.rdl</Name>
-      <FullPath>SQLCMDB Disk Space Overview.rdl</FullPath>
-    </ProjectItem>
-    <ProjectItem>
-      <Name>SQLCMDB Expired Objects.rdl</Name>
-      <FullPath>SQLCMDB Expired Objects.rdl</FullPath>
-    </ProjectItem>
-    <ProjectItem>
-      <Name>SQLCMDB Instance Breakdown by Support Date.rdl</Name>
-      <FullPath>SQLCMDB Instance Breakdown by Support Date.rdl</FullPath>
-    </ProjectItem>
-    <ProjectItem>
-      <Name>SQLCMDB Inventory Dump by Sever by Instance by Databases.rdl</Name>
-      <FullPath>SQLCMDB Inventory Dump by Sever by Instance by Databases.rdl</FullPath>
-    </ProjectItem>
-    <ProjectItem>
-      <Name>SQLCMDB SQL Instances Summary.rdl</Name>
-      <FullPath>SQLCMDB SQL Instances Summary.rdl</FullPath>
-    </ProjectItem>
-    <ProjectItem>
-      <Name>SQLCMDB Expired Objects Dashboard.rdl</Name>
-      <FullPath>SQLCMDB Expired Objects Dashboard.rdl</FullPath>
-    </ProjectItem>
-  </Reports>
-  <Configurations>
-    <Configuration>
-      <Name>Debug</Name>
-      <Platform>Win32</Platform>
-      <Options>
-        <OutputPath>bin\Debug</OutputPath>
-        <ErrorLevel>4</ErrorLevel>
-        <TargetServerVersion>SSRS2008R2</TargetServerVersion>
-        <TargetServerURL>http://wssqltools01t/ReportServer_CMS/</TargetServerURL>
-        <TargetFolder>SQLCMDBReports</TargetFolder>
-        <TargetDataSourceFolder>SQLCMDBReports/Data Sources</TargetDataSourceFolder>
-        <TargetDatasetFolder>SQLCMDBReports/Datasets</TargetDatasetFolder>
-        <TargetReportPartFolder>SQLCMDBReports/Report Parts</TargetReportPartFolder>
-      </Options>
-    </Configuration>
-    <Configuration>
-      <Name>DebugLocal</Name>
-      <Platform>Win32</Platform>
-      <Options>
-        <OutputPath>bin\DebugLocal</OutputPath>
-        <TargetServerVersion>SSRS2008R2</TargetServerVersion>
-        <TargetFolder>SQLCMDBReports</TargetFolder>
-        <TargetDataSourceFolder>Data Sources</TargetDataSourceFolder>
-        <TargetDatasetFolder>Datasets</TargetDatasetFolder>
-        <TargetReportPartFolder>Report Parts</TargetReportPartFolder>
-      </Options>
-    </Configuration>
-    <Configuration>
-      <Name>Release</Name>
-      <Platform>Win32</Platform>
-      <Options>
-        <OutputPath>bin\Release</OutputPath>
-        <TargetServerVersion>SSRS2008R2</TargetServerVersion>
-        <TargetFolder>SQLCMDBReports</TargetFolder>
-        <TargetDataSourceFolder>Data Sources</TargetDataSourceFolder>
-        <TargetDatasetFolder>Datasets</TargetDatasetFolder>
-        <TargetReportPartFolder>Report Parts</TargetReportPartFolder>
-      </Options>
-    </Configuration>
-  </Configurations>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <FullPath>Debug</FullPath>
+    <OutputPath>bin\Debug</OutputPath>
+    <ErrorLevel>4</ErrorLevel>
+    <OverwriteDatasets>False</OverwriteDatasets>
+    <OverwriteDataSources>False</OverwriteDataSources>
+    <TargetServerVersion>SSRS2008R2</TargetServerVersion>
+    <Platform>Win32</Platform>
+    <TargetReportFolder>SQLCMDBReports</TargetReportFolder>
+    <TargetDatasetFolder>SQLCMDBReports/Datasets</TargetDatasetFolder>
+    <TargetDatasourceFolder>SQLCMDBReports/Data Sources</TargetDatasourceFolder>
+    <TargetReportPartFolder>SQLCMDBReports/Report Parts</TargetReportPartFolder>
+    <TargetServerURL>http://wssqltools01t/ReportServer_CMS/</TargetServerURL>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'DebugLocal' ">
+    <FullPath>DebugLocal</FullPath>
+    <OutputPath>bin\DebugLocal</OutputPath>
+    <ErrorLevel>2</ErrorLevel>
+    <OverwriteDatasets>False</OverwriteDatasets>
+    <OverwriteDataSources>False</OverwriteDataSources>
+    <TargetServerVersion>SSRS2008R2</TargetServerVersion>
+    <Platform>Win32</Platform>
+    <TargetReportFolder>SQLCMDBReports</TargetReportFolder>
+    <TargetDatasetFolder>Datasets</TargetDatasetFolder>
+    <TargetDatasourceFolder>Data Sources</TargetDatasourceFolder>
+    <TargetReportPartFolder>Report Parts</TargetReportPartFolder>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <FullPath>Release</FullPath>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorLevel>2</ErrorLevel>
+    <OverwriteDatasets>False</OverwriteDatasets>
+    <OverwriteDataSources>False</OverwriteDataSources>
+    <TargetServerVersion>SSRS2008R2</TargetServerVersion>
+    <Platform>Win32</Platform>
+    <TargetReportFolder>SQLCMDBReports</TargetReportFolder>
+    <TargetDatasetFolder>Datasets</TargetDatasetFolder>
+    <TargetDatasourceFolder>Data Sources</TargetDatasourceFolder>
+    <TargetReportPartFolder>Report Parts</TargetReportPartFolder>
+  </PropertyGroup>
+  <PropertyGroup>
+    <State>$base64$PFNvdXJjZUNvbnRyb2xJbmZvIHhtbG5zOnhzZD0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHhtbG5zOnhzaT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEtaW5zdGFuY2UiIHhtbG5zOmRkbDI9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDAzL2VuZ2luZS8yIiB4bWxuczpkZGwyXzI9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDAzL2VuZ2luZS8yLzIiIHhtbG5zOmRkbDEwMF8xMDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDA4L2VuZ2luZS8xMDAvMTAwIiB4bWxuczpkZGwyMDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDEwL2VuZ2luZS8yMDAiIHhtbG5zOmRkbDIwMF8yMDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDEwL2VuZ2luZS8yMDAvMjAwIiB4bWxuczpkZGwzMDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDExL2VuZ2luZS8zMDAiIHhtbG5zOmRkbDMwMF8zMDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDExL2VuZ2luZS8zMDAvMzAwIiB4bWxuczpkZGw0MDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDEyL2VuZ2luZS80MDAiIHhtbG5zOmRkbDQwMF80MDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDEyL2VuZ2luZS80MDAvNDAwIiB4bWxuczpkZGw1MDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDEzL2VuZ2luZS81MDAiIHhtbG5zOmRkbDUwMF81MDA9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDEzL2VuZ2luZS81MDAvNTAwIiB4bWxuczpkd2Q9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vRGF0YVdhcmVob3VzZS9EZXNpZ25lci8xLjAiPg0KICA8RW5hYmxlZD5mYWxzZTwvRW5hYmxlZD4NCiAgPFByb2plY3ROYW1lPjwvUHJvamVjdE5hbWU+DQogIDxBdXhQYXRoPjwvQXV4UGF0aD4NCiAgPExvY2FsUGF0aD48L0xvY2FsUGF0aD4NCiAgPFByb3ZpZGVyPjwvUHJvdmlkZXI+DQo8L1NvdXJjZUNvbnRyb2xJbmZvPg==</State>
+    <DataSources>@(DataSource)</DataSources>
+    <DataSets>@(DataSet)</DataSets>
+    <Reports>@(Report)</Reports>
+  </PropertyGroup>
+  <ItemGroup>
+    <DataSource Include="dsEPM.rds" />
+    <DataSource Include="dsMain.rds" />
+  </ItemGroup>
+  <ItemGroup>
+    <Report Include="SQLCMDB (EPM) Databases Missing Full-Diff Backup.rdl" />
+    <Report Include="SQLCMDB (EPM) Databases Missing T-Log Backup.rdl" />
+    <Report Include="SQLCMDB (EPM) Policy Details.rdl" />
+    <Report Include="SQLCMDB AHS Dashboard Trending.rdl" />
+    <Report Include="SQLCMDB AHS Dashboard.rdl" />
+    <Report Include="SQLCMDB Data Collection Execution Log.rdl" />
+    <Report Include="SQLCMDB Database List by Version and Enviornment.rdl" />
+    <Report Include="SQLCMDB Database Space Details.rdl" />
+    <Report Include="SQLCMDB Database Space Overview.rdl" />
+    <Report Include="SQLCMDB Disk Space Detail.rdl" />
+    <Report Include="SQLCMDB Disk Space Overview.rdl" />
+    <Report Include="SQLCMDB Expired Objects Dashboard.rdl" />
+    <Report Include="SQLCMDB Expired Objects.rdl" />
+    <Report Include="SQLCMDB Instance Breakdown by Support Date.rdl" />
+    <Report Include="SQLCMDB Inventory Dump by Sever by Instance by Databases.rdl" />
+    <Report Include="SQLCMDB SQL Instances Summary.rdl" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Reporting Services\Microsoft.ReportingServices.MSBuilder.targets" />
 </Project>

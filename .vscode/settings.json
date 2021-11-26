@@ -11,5 +11,6 @@
         "varchar"
     ],
     "editor.detectIndentation": false,
-    "editor.insertSpaces": false
+	"editor.insertSpaces": false,
+	"powershell.codeFormatting.addWhitespaceAroundPipe": true
 }

@@ -57,7 +57,7 @@ function Get-SIOperatingSystem
         {
             if ($OSDetails.Caption -match '(?<OSversion>(\d{4}\sR2|\d{4}|\d{1,2}))')
             {
-                if ([int]$Matches['OSversion'] -le 10)
+                if ($Matches['OSversion'] -eq '10')
                 {
                     $OperatingSystem = "Windows $($Matches['OSversion'])"
                 }

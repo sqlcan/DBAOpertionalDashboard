@@ -121,7 +121,8 @@ ForEach ($SQLServerRC in $SQLServers)
 
     $IsClustered = $SQLProperties['IsClustered']
     $SQLEdition = $SQLProperties['SQLEdition']
-    $SQLServer_Build = $SQLProperties['SQLEdition']
+	$SQLServer_Build = $SQLProperties['SQLBuild_Build']
+	$SQLServer_Major = $SQLProperties['SQLBuild_Major']
     $SQLVersion = $SQLProperties['SQLVersion']
     Write-StatusUpdate -Message "SQL Server Version: [$SQLVersion]."
 
