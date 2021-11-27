@@ -6,7 +6,7 @@
 
 --   Script By: Mohit K. Gupta (mogupta@microsoft.com)
 --  Script Ver: 1.00
--- Last Tested: Nov. 3, 2020
+-- Last Tested: Nov. 26, 2021
 
 
 USE [SQLOpsDB]
@@ -32,6 +32,8 @@ BEGIN
 		[SQLInstanceType] [varchar](50) NOT NULL,
 		[SQLInstanceEnviornment] [varchar](25) NOT NULL,
 		[IsMonitored] [bit] NOT NULL,
+		ErrorLog_LastDateTimeCaptured DATETIME DEFAULT('1900-01-01 00:00:00'),
+		JobStats_LastDateTimeCaptured DATETIME DEFAULT('1900-01-01 00:00:00'),
 		[DiscoveryOn] [date] NOT NULL,
 		[LastUpdated] [date] NOT NULL,
 	 CONSTRAINT [PK_SQLInstances] PRIMARY KEY CLUSTERED 

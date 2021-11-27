@@ -8,6 +8,10 @@
 --  Script Ver: 1.00
 -- Last Tested: Nov. 3, 2020
 
+/*
+
+Single Column Moved to dbo.SQLInstances.
+
 USE [SQLOpsDB]
 GO
 
@@ -21,3 +25,4 @@ BEGIN
 	CREATE UNIQUE INDEX ui_SQLErrorLog_Stats_SQLInstanceID ON dbo.SQLErrorLog_Stats(SQLInstanceID)
 END
 GO
+*/

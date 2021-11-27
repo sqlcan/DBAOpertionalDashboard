@@ -1,3 +1,5 @@
+/* Not needed.  Change migrated to original table def. script.
+
 USE [SQLOpsDB]
 GO
 
@@ -51,3 +53,5 @@ ALTER TABLE dbo.Logs ADD CONSTRAINT
 
 GO
 COMMIT
+
+*/

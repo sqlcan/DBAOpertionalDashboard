@@ -8,6 +8,10 @@
 --  Script Ver: 1.00
 -- Last Tested: Nov. 3, 2020
 
+/*
+
+Removed.  Moved to dbo.SQLInstances.
+
 USE [SQLOpsDB]
 GO
 
@@ -32,4 +36,4 @@ BEGIN
 	ALTER TABLE [dbo].[SQLJobs_Stats] ADD  DEFAULT ('1900-01-01 00:00:00') FOR [LastDateTimeCaptured]
 END
 
-
+*/
