@@ -54,6 +54,8 @@ Date		Version		Author		Comments
 2021.11.26	3.00.26.0000	Mohit K. Gupta	Updated command-let for Get-CMSServerInstance to Get-SQLOpCMSServerInstance.
 			3.00.27.0000	Mohit K. Gupta	Added new command-let to get CMS Group List, Get-SQLOpCMSGRoups.
 2021.11.27	3.00.28.0000	Mohit K. Gupta	Updated command-let for Set-CMSGroups to CMS-SQLOpsCMSGroups.
+		    3.00.29.0000	Mohit K. Gupta	Added new settings for Error Log and SQL Agent Logs.
+			3.00.30.0000	Mohit K. Gupta  Added command-lets to manage SQLOps settings.
 
 DBServerAndDBSpaceMonitoring.ps1 Version History
 ------------------------------------------------

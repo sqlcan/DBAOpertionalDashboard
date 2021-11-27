@@ -31,6 +31,12 @@ $Global:SQLOpsDBInitialized = $false
 [Bool]$Global:RawData_CleanUp_Enabled = $true
 [Int]$Global:RawData_CleanUp_Retention_Days = 45                 # Number of Days before clean up; valid range 31 - 62 Days.
 
+[Bool]$Global:ErrorLog_CleanUp_Enabled = $true
+[Int]$Global:ErrorLog_CleanUp_Retention_Days = 45                # Number of Days before clean up; valid range 30 - 180 Days.
+
+[Bool]$Global:SQLAgent_Jobs_CleanUp_Enabled = $true
+[Int]$Global:SQLAgent_Jobs_CleanUp_Retention_Days = 180          # Number of Days before clean up; valid range 30 - 180 Days.
+
 [String]$Global:Default_DomainName = $null # Loaded from dbo.Setting.
 
 # Key Settings

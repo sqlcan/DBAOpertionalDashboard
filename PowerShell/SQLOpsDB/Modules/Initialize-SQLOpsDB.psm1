@@ -34,6 +34,7 @@ Date       Version Comments
                     to support debugging in future.
 2020.02.05 0.00.08 Fixed bugs with how string value for "0" was being translated to $true.
                    Fixed multiple configuration mis-spelling. Made sure they match the database.
+2021.11.27 0.00.10 Added two additional settings for Error Logs and SQL Agent Logs.
 #>
 function Initialize-SQLOpsDB
 {
@@ -41,8 +42,8 @@ function Initialize-SQLOpsDB
     param()
 
     $ModuleName = 'Initialize-SQLOpsDB'
-    $ModuleVersion = '0.08'
-    $ModuleLastUpdated = 'February 5, 2020'
+    $ModuleVersion = '0.00.10'
+    $ModuleLastUpdated = 'Nov. 27, 2021'
 
     # Only initialize module if it is first execution.
     if ($Global:SQLOpsDBInitialized)
@@ -90,7 +91,7 @@ function Initialize-SQLOpsDB
 
                 switch ($Setting.SettingName)
                 {
-                    "DebugModeEnabled" {$Global:DebugMode = [Bool]([Int]$Setting.SettingValue)}
+                    "DebugMode_Enabled" {$Global:DebugMode = [Bool]([Int]$Setting.SettingValue)}
                     "DebugMode_WriteToDB" {$Global:DebugMode_WriteToDB = [Bool]([Int]$Setting.SettingValue)}
                     "DebugMode_OutputTSQL" {$Global:DebugMode_OutputTSQL = [Bool]([Int]$Setting.SettingValue)}
                     "SQLOpsDB_Logs_Enabled" {$Global:SQLOpsDB_Log_Enabled = [Bool]([Int]$Setting.SettingValue)}
@@ -104,6 +105,11 @@ function Initialize-SQLOpsDB
                     "Aggregate_CleanUp_Enabled" {$Global:Aggregate_CleanUp_Enabled = [Bool]([Int]$Setting.SettingValue)}
                     "Aggregate_CleanUp_Retention_Months" {$Global:Aggregate_CleanUp_Retention_Months = [Int]$Setting.SettingValue}
                     "RawData_CleanUp_Enabled" {$Global:RawData_CleanUp_Enabled = [Bool]([Int]$Setting.SettingValue)}
+					"RawData_CleanUp_Retention_Days" {[Int]$Global:RawData_CleanUp_Retention_Days = [Int]$Setting.SettingValue}
+					"ErrorLog_CleanUp_Enabled" {[Bool]$Global:ErrorLog_CleanUp_Enabled = [Bool]([Int]$Setting.SettingValue)}
+					"ErrorLog_CleanUp_Retention_Days" {[Int]$Global:ErrorLog_CleanUp_Retention_Days = [Int]$Setting.SettingValue}
+					"SQLAgent_Jobs_CleanUp_Enabled" {[Bool]$Global:SQLAgent_Jobs_CleanUp_Enabled = [Bool]([Int]$Setting.SettingValue)}
+					"SQLAgent_Jobs_CleanUp_Retention_Days" {[Int]$Global:SQLAgent_Jobs_CleanUp_Retention_Days = [Int]$Setting.SettingValue}
                     "Default_DomainName" {$Global:Default_DomainName = [String]$Setting.SettingValue}
                 }
 
@@ -119,7 +125,7 @@ function Initialize-SQLOpsDB
 
         if (($Global:SQLOpsDB_Logs_CleanUp_Retention_Days -le 29) -or ($Global:SQLOpsDB_Logs_CleanUp_Retention_Days -ge 181))
         {
-            WWrite-StatusUpdate -Message "SQLOpsDB_Logs_CleanUp_Retention_Days threshold out of valid range (30 - 180) days. Defaulting to 30." -WriteToDB
+            Write-StatusUpdate -Message "SQLOpsDB_Logs_CleanUp_Retention_Days threshold out of valid range (30 - 180) days. Defaulting to 30." -WriteToDB
             $Global:SQLOpsDB_Logs_CleanUp_Retention_Days = 30
         }
         
@@ -146,6 +152,19 @@ function Initialize-SQLOpsDB
             Write-StatusUpdate -Message "RawData_CleanUp_Retention_Days threshold out of valid range (31 - 62) days. Defaulting to 31." -WriteToDB
             $Global:RawData_CleanUp_Retention_Days = 31
         }
+
+        if (($Global:ErrorLog_CleanUp_Retention_Days -le 29) -or ($Global:ErrorLog_CleanUp_Retention_Days -ge 181))
+        {
+            Write-StatusUpdate -Message "ErrorLog_CleanUp_Retention_Days threshold out of valid range (30 - 180) days. Defaulting to 45." -WriteToDB
+            $Global:ErrorLog_CleanUp_Retention_Days = 45
+        }
+
+        if (($Global:SQLAgent_Jobs_CleanUp_Retention_Days -le 29) -or ($Global:SQLAgent_Jobs_CleanUp_Retention_Days -ge 181))
+        {
+            Write-StatusUpdate -Message "SQLAgent_Jobs_CleanUp_Retention_Days threshold out of valid range (30 - 180) days. Defaulting to 180." -WriteToDB
+            $Global:SQLAgent_Jobs_CleanUp_Retention_Days = 180
+        }
+
     }
     catch
     {

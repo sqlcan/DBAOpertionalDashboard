@@ -74,6 +74,8 @@
     '.\Modules\Initialize-SQLOpsDB.psm1';
     '.\Modules\Write-StatusUpdate.psm1';
     '.\Modules\GlobalSettings.psm1';
+	'.\Modules\Get-SQLOpSettings.psm1';
+	'.\Modules\Set-SQLOpSettings.psm1';
     # SQL Instance
     '.\Modules\Get-SQLOpSQLInstance.psm1';
     '.\Modules\Get-SISQLProperties.psm1';
