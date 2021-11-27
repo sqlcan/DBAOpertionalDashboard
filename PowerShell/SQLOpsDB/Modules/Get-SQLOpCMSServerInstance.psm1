@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-Get-CMSServerInstance
+Get-SQLOpCMSServerInstance
 
 .DESCRIPTION 
 Returns a list of Server Instances from which data needs to be collected.
@@ -19,12 +19,12 @@ None
 Server Instance List
 
 .EXAMPLE
-Get-CMSServerInstance
+Get-SQLOpCMSServerInstance
 
 Return list of servers instances, instance names, connection string, and computer name.
 
 .EXAMPLE
-Get-CMSServerInstance -GroupName '2019\Prod'
+Get-SQLOpCMSServerInstance -GroupName '2019\Prod'
 
 Return list of servers instances, instance names, connection string, and computer name
 under the CMS folder 2019\Prod.
@@ -37,7 +37,7 @@ Date       Version Comments
                     user can choose to what they want with the information.
                    Introduced new class ServerInstance to collect all information before
                     reporting.
-                   Rename command-let to Get-CMSServerInstance.
+                   Rename command-let to GetSQLOpCMSServerInstance.
                    Standardized parameter from ServerName to ServerInstance.
                    Updated SQL Proc to standard name also CMS.GetCMSServerList.
                    Moved the tokenization code from collection script to here.
@@ -45,8 +45,9 @@ Date       Version Comments
                    Updated to work with New Global Variables and JSON settings file.
                    Added functionlaity to filter sql instnace list by group name.
 2020.03.11 2.00.01 Output to SQL Logs what group of servers are being processed.
+2021.11.26 2.00.02 Update Command Let name to align with new naming standard.
 #> 
-function Get-CMSServerInstance
+function Get-SQLOpCMSServerInstance
 {
     [CmdletBinding(DefaultParameterSetName='ServerInstance')] 
     param(     
@@ -60,9 +61,9 @@ function Get-CMSServerInstance
         return
     }
 
-    $ModuleName = 'Get-CMSServerInstance'
-    $ModuleVersion = '2.00.01'
-    $ModuleLastUpdated = 'March 11, 2020'
+    $ModuleName = 'Get-SQLOpCMSServerInstance'
+    $ModuleVersion = '2.00.02'
+    $ModuleLastUpdated = 'Nov. 26, 2021'
 
     # Define the class to collect all the information to export to user.
     Class cServerInstance {

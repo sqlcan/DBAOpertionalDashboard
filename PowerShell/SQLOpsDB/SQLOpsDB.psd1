@@ -113,7 +113,9 @@
 		'.\Modules\Update-SQLOpSQLCluster.psm1';
 		'.\Modules\Update-SQLOpSQLClusterNode.psm1';
     # CMS Modules
-    '.\Modules\Get-CMSServerInstance.psm1';
+	'.\Modules\Get-SQLOpCMSServerInstance.psm1';
+	'.\Modules\Get-SQLOpCMSGroups.psm1';	           
+	'.\Modules\Set-SQLOpCMSGroups.psm1';
     #'.\Modules\Add-Database.psm1';            
     '.\Modules\Add-SQLInstance.psm1';
     #'.\Modules\Get-Database.psm1';        
@@ -124,7 +126,6 @@
     '.\Modules\Get-AG.psm1';
     '.\Modules\Add-AG.psm1';
     '.\Modules\Update-AG.psm1';
-    '.\Modules\Set-CMSGroups.psm1';
     #'.\Modules\Update-CMSGroups.psm1'; #Does not exist.
     '.\Modules\Aggregate-CMDBMonthlyData.psm1';
     '.\Modules\Truncate-CMDBData.psm1';
