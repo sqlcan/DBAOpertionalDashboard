@@ -102,19 +102,23 @@ function Get-SIExtendedProperties
 
         $RowCount = $Results.Count
 
-        if (!(($RowCount -ge 4) -and ($Database -eq 'master')))
-        {
-            Write-StatusUpdate -Message "Failed to find one or more of the required extended properties on [$ServerInstance]." -WriteToDB
-            Write-Output $Global:Error_FailedToComplete
-            return
-        }
-        elseif (($RowCount -ne 1) -and ($Database -ne 'master'))
-        {
-            # Eventually this will be a required property, but for now add code to protect against if it is not supplied.
-            # Write-StatusUpdate -Message "Failed to find one or more of the required extended properties on [$ServerInstance]." -WriteToDB
-            Write-Output $Global:Error_ObjectsNotFound
-            return
-        }
+		if ($Database -eq 'master')
+		{
+			if (!($RowCount -ge 4))
+			{
+				Write-StatusUpdate -Message "Failed to find one or more of the required extended properties on [$ServerInstance]." -WriteToDB
+				Write-Output $Global:Error_FailedToComplete
+				return
+			}
+		}
+		else
+		{
+			if ($RowCount -eq 0)
+			{
+				# Application Name will not be a required property.  If possible, we would like to collect it to help 
+				# catalog databases.  Therefore is no rows are returned SQLOp will assume Unknown.
+			}
+		}
 
         # Return an hash table as it will make it easier to access the key value pairs.
         $HashTable = @{}

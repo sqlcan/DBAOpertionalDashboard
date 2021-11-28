@@ -56,6 +56,7 @@ Date		Version		Author		Comments
 2021.11.27	3.00.28.0000	Mohit K. Gupta	Updated command-let for Set-CMSGroups to CMS-SQLOpsCMSGroups.
 		    3.00.29.0000	Mohit K. Gupta	Added new settings for Error Log and SQL Agent Logs.
 			3.00.30.0000	Mohit K. Gupta  Added command-lets to manage SQLOps settings.
+2021.11.28 	3.00.31.0000	Mohit K. Gupta	Extended properties management added.
 
 DBServerAndDBSpaceMonitoring.ps1 Version History
 ------------------------------------------------
