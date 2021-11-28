@@ -45,8 +45,19 @@ Date       Version Comments
 		   0.00.09 Spelling fixes.
 		   0.00.10 Updated parameter names with alias.
 		   0.00.11 Updated references to required modules.
+2021.11.28 0.01.00 Updated multiple bugs introduced after adding Get-SQLOpServer
+                   and Get-SQLOpSQLCluster.  Because this module suports both
+				   these command-lets it is now enabled for FQDN also.
 #>
 
+<# Side Notes for Future Direction
+
+Get-SIDiskVolume should not be called from this module.  The results should be
+passed in via class object similar to other Get-SI* / Update-SQLOp* command-lets.
+
+Need to build additional command lets for Get-SQLOpDiskVolume etc.
+
+#>
 function Update-DiskVolumes
 {
 
@@ -60,14 +71,13 @@ function Update-DiskVolumes
     )
 
     $ModuleName = 'Update-DiskVolumes'
-    $ModuleVersion = '0.00.07'
-    $ModuleLastUpdated = 'March 15, 2020'
+    $ModuleVersion = '0.01.00'
+    $ModuleLastUpdated = 'Nov. 28, 2021'
 
     Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)" 
 
     $ServerID = 0
     $SQLClusterID = 0
-    $IsServerAccessible = $true
 
     $ServerObj = Get-SQLOpServer -ComputerName $ComputerName -Internal
 
@@ -82,9 +92,11 @@ function Update-DiskVolumes
 		return
     }
 
-    if (!([String]::IsNullOrEmpty($Name)))
+	$ServerID = $ServerObj.ServerID
+
+    if (!([String]::IsNullOrEmpty($ClusterName)))
     {
-        $ClusterObj = Get-SQLOpSQLCluster -Name $Name -Internal
+        $ClusterObj = Get-SQLOpSQLCluster -Name $ClusterName -Internal
 
 		if ($ClusterObj -eq $Global:Error_FailedToComplete)
 		{
@@ -96,7 +108,9 @@ function Update-DiskVolumes
 			Write-Output $Global:Error_ObjectsNotFound
 			return
 		}
-    }
+
+		$SQLClusterID = $ClusterObj.SQLClusterID
+    }	
 
 	$Volumes = Get-SIDiskVolume -ComputerName $ComputerName
 	if ($Volumes -eq $Global:Error_FailedToComplete)
@@ -138,7 +152,7 @@ function Update-DiskVolumes
             # Get the number of volumes assigned to cluster; if the current $SQLServer is not a clustered instance the current node can still belong to a cluster
             # Therefore we must check to make sure the volume discovered is not part of a clustered instance already before attempting to add to server.
 
-            if ($SQLClusterName -ne $null)
+            if ($SQLClusterID -ne 0)
             {
 
                 $TSQL = "SELECT COUNT(*) AS DrvCnt FROM dbo.DiskVolumes DV WHERE DiskVolumeName = '$VolumeName' AND SQLClusterID = $SQLClusterID"
@@ -149,28 +163,27 @@ function Update-DiskVolumes
                                             -Query $TSQL -ErrorAction Stop
 
                 $ClusterVolumeCount = $Results.DrvCnt
+
+				# A volume can belong to server, current sql instance (FCI) being checked, or another FCI running on same node.  However if it is another FCI
+				# we do not know the SQL Cluster Name, therefore it must be found based on Server Name and Volume Name pair.  
+				$TSQL = "SELECT COUNT(*) AS DrvCnt
+						FROM dbo.DiskVolumes DV
+						JOIN dbo.SQLClusters SC
+							ON DV.SQLClusterID = SC.SQLClusterID
+							AND DV.ServerID IS NULL
+						JOIN dbo.SQLClusterNodes CN
+							ON SC.SQLClusterID = CN.SQLClusterID
+							AND CN.SQLNodeID = $ServerID
+						WHERE DiskVolumeName = '$VolumeName'
+							AND SC.SQLClusterID <>  $SQLClusterID"
+				Write-StatusUpdate -Message $TSQL  -IsTSQL
+
+				$Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
+											-Database $Global:SQLCMDB_DatabaseName `
+											-Query $TSQL -ErrorAction Stop
+
+				$OtherClusterVolumeCount = $Results.DrvCnt
             }
-
-
-            # A volume can belong to server, current sql instance (FCI) being checked, or another FCI running on same node.  However if it is another FCI
-            # we do not know the SQL Cluster Name, therefore it must be found based on Server Name and Volume Name pair.  
-            $TSQL = "SELECT COUNT(*) AS DrvCnt
-                       FROM dbo.DiskVolumes DV
-                       JOIN dbo.SQLClusters SC
-                         ON DV.SQLClusterID = SC.SQLClusterID
-                        AND DV.ServerID IS NULL
-                       JOIN dbo.SQLClusterNodes CN
-                         ON SC.SQLClusterID = CN.SQLClusterID
-                        AND CN.SQLNodeID = $ServerID
-                      WHERE DiskVolumeName = '$VolumeName'
-                        AND SC.SQLClusterID <>  $SQLClusterID"
-            Write-StatusUpdate -Message $TSQL  -IsTSQL
-
-            $Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                        -Database $Global:SQLCMDB_DatabaseName `
-                                        -Query $TSQL -ErrorAction Stop
-
-            $OtherClusterVolumeCount = $Results.DrvCnt
 
 
             if (($VolumeName -eq 'C:') -or ($VolumeName -eq 'D:'))
@@ -209,7 +222,7 @@ function Update-DiskVolumes
                 if (($ServerVolumeCount -eq 0) -and ($ClusterVolumeCount -eq 0))
                 {
 
-                    if ($SQLClusterName -ne $null)
+                    if ($SQLClusterID -ne 0)
                     {
                         ForEach ($Folder IN $DBFolderList)
                         {
@@ -274,7 +287,7 @@ function Update-DiskVolumes
                 }
                 elseif (($ServerVolumeCount -ne 0) -and ($ClusterVolumeCount -eq 0))
                 {
-                    if ($SQLClusterName -ne $null)
+                    if ($SQLClusterID -ne 0)
                     {
                         ForEach ($Folder IN $DBFolderList)
                         {
