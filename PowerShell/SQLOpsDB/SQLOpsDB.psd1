@@ -106,8 +106,9 @@
     '.\Modules\Add-SQLOpServer.psm1';
     '.\Modules\Update-SQLOpServer.psm1';
         # SQL Service
-        '.\Modules\Get-SQLService.psm1';
-        '.\Modules\Update-SQLService.psm1';
+		'.\Modules\Get-SISQLService.psm1';
+        '.\Modules\Get-SQLOpSQLService.psm1';
+        '.\Modules\Update-SQLOpSQLService.psm1';
         # SQL Cluster Modules
         '.\Modules\Add-SQLOpSQLCluster.psm1';
         '.\Modules\Get-SQLOpSQLCluster.psm1';
@@ -134,8 +135,7 @@
     '.\Modules\Truncate-CMDBData.psm1';
     '.\Modules\Create-CMDBMonthlyTrend.psm1';
     '.\Modules\Delete-CMDBData.psm1';
-    '.\Modules\Truncate-CMDBLog.psm1';
-    '.\Modules\Get-SISQLService.psm1';
+    '.\Modules\Truncate-CMDBLog.psm1';    
     '.\Modules\Get-SISQLErrorLogs.psm1';
     # Support Modules
     '.\Modules\Split-Parts.psm1'

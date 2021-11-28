@@ -57,6 +57,7 @@ Date		Version		Author		Comments
 		    3.00.29.0000	Mohit K. Gupta	Added new settings for Error Log and SQL Agent Logs.
 			3.00.30.0000	Mohit K. Gupta  Added command-lets to manage SQLOps settings.
 2021.11.28 	3.00.31.0000	Mohit K. Gupta	Extended properties management added.
+            3.00.32.0000	Mohit K. Gupta	Updated command-lets for SQL Service to new standard.
 
 DBServerAndDBSpaceMonitoring.ps1 Version History
 ------------------------------------------------

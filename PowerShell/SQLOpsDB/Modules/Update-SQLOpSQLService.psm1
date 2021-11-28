@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-Update-SQLService
+Update-SQLOpSQLService
 
 .DESCRIPTION 
-Update-SQLService
+Update-SQLOpSQLService
 
 .PARAMETER ComputerName
 Target server name.
@@ -15,7 +15,7 @@ Result set from Get-SISQLService
 None
 
 .OUTPUTS
-Update-SQLService
+Update-SQLOpSQLService
 
 .EXAMPLE
 PowerShell Command Let
@@ -28,8 +28,11 @@ Date       Version  Comments
 2020.02.05 00.00.01 Initial Version
 2020.03.06 00.00.02 Saved the services current status.
 2020.03.12 00.00.03 Updated reference to Get-SQLOpServer vs Get-Server.
+2021.11.28 00.00.04 Command-let name updated Update-SQLOpSQLService.
+		   00.00.05 Added multiple execution possiblity by allowing SQL Services to be
+		            saved per PowerShell process ID.
 #>
-function Update-SQLService
+function Update-SQLOpSQLService
 {
     [CmdletBinding()] 
     param( 
@@ -43,9 +46,9 @@ function Update-SQLService
         return
     }
     
-    $ModuleName = 'Update-SQLService'
-    $ModuleVersion = '00.00.03'
-    $ModuleLastUpdated = 'March 12, 2020'
+    $ModuleName = 'Update-SQLOpSQLService'
+    $ModuleVersion = '00.00.05'
+    $ModuleLastUpdated = 'Nov. 28, 2021'
 
     try
     {
@@ -76,22 +79,27 @@ function Update-SQLService
         # Create a staging table to store the results.  Using staging table, we can do batch process.
         # Other option would be row-by-row operation.
 
-        $TSQL = "IF EXISTS (SELECT * FROM sys.tables WHERE name = 'SQLServiceDetails')
-                     DROP TABLE Staging.SQLServiceDetails
+		$ProcessID = $pid
 
-                  CREATE TABLE Staging.SQLServiceDetails (
-                                ServerName varchar(255) NULL,
-                                ServiceName varchar(255) NULL,
-                                InstanceName varchar(255) NULL,
-                                DisplayName varchar(255) NULL,
-                                FilePath varchar(512) NULL,
-                                ServiceType varchar(25) NULL,
-                                StartMode varchar(25) NULL,
-                                ServiceAccount varchar(50) NULL,
-                                ServiceVersion int NULL,
-                                ServiceBuild varchar(25) NULL,
-                                Status varchar(25) NULL
-                            )
+        $TSQL = "IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'SQLServiceDetails')
+					CREATE TABLE Staging.SQLServiceDetails (
+									ProcessID INT NULL,
+									ServerName varchar(255) NULL,
+									ServiceName varchar(255) NULL,
+									InstanceName varchar(255) NULL,
+									DisplayName varchar(255) NULL,
+									FilePath varchar(512) NULL,
+									ServiceType varchar(25) NULL,
+									StartMode varchar(25) NULL,
+									ServiceAccount varchar(50) NULL,
+									ServiceVersion int NULL,
+									ServiceBuild varchar(25) NULL,
+									Status varchar(25) NULL
+								)
+					ELSE
+						DELETE
+						  FROM Staging.SQLServiceDetails
+						 WHERE ProcessID = $ProcessID
                             GO"
         Write-StatusUpdate -Message $TSQL -IsTSQL
 
@@ -115,7 +123,8 @@ function Update-SQLService
                 ServiceVersion, ServiceBuild, Status
           FROM Staging.SQLServiceDetails SSS
           JOIN dbo.Servers S
-            ON SSS.ServerName = S.ServerName) AS Source (ServerID, ServiceName, InstanceName, DisplayName,
+            ON SSS.ServerName = S.ServerName
+		 WHERE ProcessID = $ProcessID) AS Source (ServerID, ServiceName, InstanceName, DisplayName,
                 FilePath, ServiceType, StartMode, ServiceAccount,
                 ServiceVersion, ServiceBuild, Status)
             ON (Target.ServerID = Source.ServerID and Target.ServiceName = Source.ServiceName)

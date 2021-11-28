@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-Get-SQLService
+Get-SQLOpSQLService
 
 .DESCRIPTION 
-Get-SQLService
+Get-SQLOpSQLService
 
 .PARAMETER ComputerName
 
@@ -15,11 +15,11 @@ List of services installed on a computer as per SQLOpsDB data set.  This command
 will only return results if data has been collected.
 
 .EXAMPLE
-Get-SQLService -ComputerName ContosoSQL
+Get-SQLOpSQLService -ComputerName ContosoSQL
 List all the services installed on ContosoSQL.
 
 .EXAMPLE
-Get-SQLService -ComputerName ContosoSQL -ServiceType SSRS
+Get-SQLOpSQLService -ComputerName ContosoSQL -ServiceType SSRS
 Get list of all the SSRS instances installed on ContosoSQL.
 
 .NOTES
@@ -27,8 +27,9 @@ Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2020.02.05 0.00.01 Initial Version
 2020.03.06 0.00.02 Exposed Service Status
+2020.11.28 0.00.03 Updated command-let name.
 #>
-function Get-SQLService
+function Get-SQLOpSQLService
 {
     [CmdletBinding(DefaultParameterSetName='ComputerName')] 
     param( 
@@ -44,9 +45,9 @@ function Get-SQLService
         return
     }
 
-    $ModuleName = 'Get-SQLService'
-    $ModuleVersion = '0.02'
-    $ModuleLastUpdated = 'March 6, 2020'
+    $ModuleName = 'Get-SQLOpSQLService'
+    $ModuleVersion = '00.00.03'
+    $ModuleLastUpdated = 'Nov. 28, 2021'
 
     try
     {

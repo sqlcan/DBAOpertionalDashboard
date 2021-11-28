@@ -21,6 +21,7 @@ IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'SQLServiceDetails' and sch
 BEGIN
 
 	CREATE TABLE [Staging].[SQLServiceDetails](
+		[ProcessID] [int] NULL,
 		[ServerName] [varchar](255) NULL,
 		[ServiceName] [varchar](255) NULL,
 		[InstanceName] [varchar](255) NULL,
