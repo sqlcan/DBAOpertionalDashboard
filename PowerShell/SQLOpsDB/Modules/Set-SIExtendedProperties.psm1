@@ -36,6 +36,8 @@ Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2021.11.27 1.00.00 Initial Version
                    Current version has limitation, as it does not support SQL 2000.
+		   1.00.01 Small bug, first passive node does not have 01 as part of extnded
+		           property name.
 #>
 function Set-SIExtendedProperties
 {
@@ -43,7 +45,7 @@ function Set-SIExtendedProperties
     param( 
     [Parameter(Position=0, Mandatory=$true)] [string]$ServerInstance,
 	[Parameter(Position=1, Mandatory=$true)] [ValidateSet('EnvironmentType','MachineType','ServerType', 'ActiveNode', 
-														  'PassiveNode01', 'PassiveNode02', 'PassiveNode03', 'PassiveNode04',
+														  'PassiveNode', 'PassiveNode02', 'PassiveNode03', 'PassiveNode04',
 														  'PassiveNode05', 'PassiveNode06', 'PassiveNode07', 'PassiveNode08',
 														  'ApplicationName')] [string]$ExtendedPropertyName,
 	[Parameter(Position=2, Mandatory=$true)] [string]$Value,
@@ -57,8 +59,8 @@ function Set-SIExtendedProperties
     }
     
     $ModuleName = 'Set-SIExtendedProperties'
-    $ModuleVersion = '1.00.00'
-    $ModuleLastUpdated = 'Nov. 27, 2021'
+    $ModuleVersion = '1.00.01'
+    $ModuleLastUpdated = 'Nov. 28, 2021'
 
     try
     {
