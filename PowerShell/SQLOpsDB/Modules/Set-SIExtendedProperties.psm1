@@ -38,6 +38,7 @@ Date       Version Comments
                    Current version has limitation, as it does not support SQL 2000.
 		   1.00.01 Small bug, first passive node does not have 01 as part of extnded
 		           property name.
+		   1.00.02 Forgot to return success message after update.
 #>
 function Set-SIExtendedProperties
 {
@@ -112,6 +113,8 @@ function Set-SIExtendedProperties
         Invoke-SQLCMD -ServerInstance $ServerInstance  `
                       -Database $Database `
                       -Query $TSQL
+
+		Write-Output $Global:Error_Successful # Successful
     }
     catch
     {
