@@ -45,6 +45,7 @@ Date        Version Comments
                     Added support to list all the instances if needed.
 2020.02.19  0.01.07 Updated command let name to avoid conflict with SQLServer
                      official Microsoft PowerShell module.
+2021.11.28 	0.01.08 Updated error handling.
 #>
 function Get-SqlOpSQLInstance
 {
@@ -69,8 +70,8 @@ function Get-SqlOpSQLInstance
     }
 
     $ModuleName = 'Get-SqlOpSQLInstance'
-    $ModuleVersion = '0.01.07'
-    $ModuleLastUpdated = 'February 19, 2020'
+    $ModuleVersion = '0.01.08'
+    $ModuleLastUpdated = 'Nov. 28, 2021'
 
     Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
@@ -108,9 +109,22 @@ function Get-SqlOpSQLInstance
             Write-Output $Results
         }
     }
+    catch [System.Data.SqlClient.SqlException]
+    {
+        if ($($_.Exception.Message) -like '*Could not open a connection to SQL Server*')
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Cannot connect to SQLOpsDB." -WriteToDB
+        }
+        else
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - SQL Expectation" -WriteToDB
+            Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
+        }
+        Write-Output $Global:Error_FailedToComplete
+    }
     catch
     {
-        Write-StatusUpdate -Message "Failed to Get-SqlOpSQLInstance (unhandled exception)." -WriteToDB
+        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Expectation" -WriteToDB
         Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
         Write-Output $Global:Error_FailedToComplete
     }

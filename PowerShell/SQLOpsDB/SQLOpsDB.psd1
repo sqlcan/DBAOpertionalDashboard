@@ -78,6 +78,8 @@
 	'.\Modules\Set-SQLOpSettings.psm1';
     # SQL Instance
     '.\Modules\Get-SQLOpSQLInstance.psm1';
+	'.\Modules\Add-SQLOpSQLInstance.psm1';
+	'.\Modules\Update-SQLOpSQLInstance.psm1';
     '.\Modules\Get-SISQLProperties.psm1';
         # SQL Error Log Modules
         '.\Modules\Get-SQLErrorLogs.psm1';
@@ -120,8 +122,7 @@
 	'.\Modules\Get-SQLOpCMSServerInstance.psm1';
 	'.\Modules\Get-SQLOpCMSGroups.psm1';	           
 	'.\Modules\Set-SQLOpCMSGroups.psm1';
-    #'.\Modules\Add-Database.psm1';            
-    '.\Modules\Add-SQLInstance.psm1';
+    #'.\Modules\Add-Database.psm1';                
     #'.\Modules\Get-Database.psm1';        
     '.\Modules\Update-Database.psm1';        
     '.\Modules\Update-SQLInstance.psm1';
