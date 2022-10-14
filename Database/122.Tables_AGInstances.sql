@@ -2,11 +2,11 @@
 --
 --              If table already exists the table is ignored.
 -- 
--- NOTE: NO change since release.
+-- NOTE: Added ReplicaRole and last updated and discovery on for clean up.
 
 --   Script By: Mohit K. Gupta (mogupta@microsoft.com)
---  Script Ver: 1.00
--- Last Tested: Nov. 3, 2020
+--  Script Ver: 1.01
+-- Last Tested: Oct. 13, 2022
 
 USE [SQLOpsDB]
 GO
@@ -23,6 +23,9 @@ BEGIN
 		[AGInstanceID] [int] IDENTITY(1,1) NOT NULL,
 		[AGID] [int] NOT NULL,
 		[SQLInstanceID] [int] NOT NULL,
+		[ReplicaRole] [varchar](25),
+		[DiscoveryOn] [date] NOT NULL,
+		[LastUpdated] [date] NOT NULL,
 	 CONSTRAINT [PK_AGInstances] PRIMARY KEY CLUSTERED 
 	(
 		[AGInstanceID] ASC
@@ -38,4 +41,8 @@ BEGIN
 	REFERENCES [dbo].[SQLInstances] ([SQLInstanceID])
 
 	ALTER TABLE [dbo].[AGInstances] CHECK CONSTRAINT [FK_AGInstance_SQLInstancesID]
+
+	ALTER TABLE [dbo].[AGInstances] ADD  CONSTRAINT [DF_AGInstances_DiscoveryOn]  DEFAULT (getdate()) FOR [DiscoveryOn]
+
+	ALTER TABLE [dbo].[AGInstances] ADD  CONSTRAINT [DF_AGInstances_LastUpdated]  DEFAULT (getdate()) FOR [LastUpdated]
 END

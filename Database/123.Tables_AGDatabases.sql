@@ -2,11 +2,11 @@
 --
 --              If table already exists the table is ignored.
 -- 
--- NOTE: No change since release.
+-- NOTE: Added last updated / discovery date for clean up.
 
 --   Script By: Mohit K. Gupta (mogupta@microsoft.com)
---  Script Ver: 1.00
--- Last Tested: Nov. 3, 2020
+--  Script Ver: 1.01
+-- Last Tested: Oct. 13, 2022
 
 USE [SQLOpsDB]
 GO
@@ -23,6 +23,8 @@ BEGIN
 		[AGDatabaseID] [int] IDENTITY(1,1) NOT NULL,
 		[AGInstanceID] [int] NOT NULL,
 		[DatabaseID] [int] NOT NULL,
+		[DiscoveryOn] [date] NOT NULL,
+		[LastUpdated] [date] NOT NULL,
 	 CONSTRAINT [PK_AGDatabases] PRIMARY KEY CLUSTERED 
 	(
 		[AGDatabaseID] ASC
@@ -38,5 +40,8 @@ BEGIN
 	REFERENCES [dbo].[Databases] ([DatabaseID])
 
 	ALTER TABLE [dbo].[AGDatabases] CHECK CONSTRAINT [FK_AGDatabases_DatabaseID]
+
+	ALTER TABLE [dbo].[AGDatabases] ADD  CONSTRAINT [DF_AGDatabases_DiscoveryOn]  DEFAULT (getdate()) FOR [DiscoveryOn]
+	ALTER TABLE [dbo].[AGDatabases] ADD  CONSTRAINT [DF_AGDatabases_LastUpdated]  DEFAULT (getdate()) FOR [LastUpdated]
 END
 

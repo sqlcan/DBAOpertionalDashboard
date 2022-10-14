@@ -59,8 +59,9 @@ Date		Version		Author		Comments
 2021.11.28 	3.00.31.0000	Mohit K. Gupta	Extended properties management added.
             3.00.32.0000	Mohit K. Gupta	Updated command-lets for SQL Service to new standard.
 			3.00.33.0000	Mohit K. Gupta  Updated command-lets for SQL instances in SQLOpsDB.
+2022.10.14	3.00.36.0000	Mohit K. Gupta	Updated all command-lets for Availability Group handling.
 
-DBServerAndDBSpaceMonitoring.ps1 Version History
+SQLOpsDB_DataCollection.ps1 Version History
 ------------------------------------------------
 
 Date		Version		Author		Comments
@@ -106,3 +107,4 @@ Date		Version		Author		Comments
             V1.30       Mohit K. Gupta  Updated reference to Add-SQLOpSQLClusterNode.
             V1.31       Mohit K. Gupta  Updated reference to Update-SQLOpSQLCluster.
 			V1.32		Mohit K. Gupta	Updated reference to Update-SQLOpSQLClusterNode.
+2022.10.14	V1.35		Mohit K. Gupta	Updated reference to Get-SIAvailabilityGroup and Update-SQLOpAvailabilityGroup.

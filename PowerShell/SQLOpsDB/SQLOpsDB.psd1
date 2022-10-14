@@ -18,7 +18,7 @@
     ModuleToProcess = ''
 
     # Version number of this module.
-    ModuleVersion = '3.00.17.0002'
+    ModuleVersion = '3.00.36.0000'
 
     # ID used to uniquely identify this module
     GUID = '4baba076-b43c-40a3-a483-16eed455f676'
@@ -81,6 +81,10 @@
 	'.\Modules\Add-SQLOpSQLInstance.psm1';
 	'.\Modules\Update-SQLOpSQLInstance.psm1';
     '.\Modules\Get-SISQLProperties.psm1';
+	# Availability Group Modules
+	'.\Modules\Get-SIAvailabilityGroups.psm1';
+	'.\Modules\Update-SQLOpAvailabilityGroup.psm1';
+	'.\Modules\Get-SQLOpAvailabilityGroup.psm1';
         # SQL Error Log Modules
         '.\Modules\Get-SQLErrorLogs.psm1';
         '.\Modules\Update-SQLOpSQLErrorLog.psm1';
@@ -128,9 +132,9 @@
     '.\Modules\Update-SQLInstance.psm1';
     '.\Modules\Update-DiskVolumes.psm1';    
     '.\Modules\Write-DataTable.psm1';
-    '.\Modules\Get-AG.psm1';
-    '.\Modules\Add-AG.psm1';
-    '.\Modules\Update-AG.psm1';
+    #'.\Modules\Get-AG.psm1';
+    #'.\Modules\Add-AG.psm1';
+    #'.\Modules\Update-AG.psm1';
     #'.\Modules\Update-CMSGroups.psm1'; #Does not exist.
     '.\Modules\Aggregate-CMDBMonthlyData.psm1';
     '.\Modules\Truncate-CMDBData.psm1';

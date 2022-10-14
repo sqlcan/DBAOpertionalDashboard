@@ -3,12 +3,22 @@ GO
 
 CREATE VIEW vSQLInstances
 AS
-   SELECT CASE WHEN SI.SQLClusterID IS NULL THEN
+   SELECT SI.SQLInstanceID,
+		  CASE WHEN SI.SQLClusterID IS NULL THEN
              S.ServerName
 		  ELSE
 		     SC.SQLClusterName
-		  END AS ComputerName,
-		  SI.SQLInstanceID,
+		  END + 
+		  CASE WHEN SI.SQLInstanceName = 'MSSQLServer' THEN
+			 ''
+		  ELSE 
+		     '\' + SI.SQLInstanceName
+		  END AS ServerInstance,
+          CASE WHEN SI.SQLClusterID IS NULL THEN
+             S.ServerName
+		  ELSE
+		     SC.SQLClusterName
+		  END AS ComputerName,		  
 		  SI.SQLInstanceName,
           SI.SQLInstanceVersionID,
           SI.SQLInstanceBuild,

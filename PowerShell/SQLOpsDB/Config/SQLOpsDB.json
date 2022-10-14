@@ -1,9 +1,9 @@
 {
     "Connections":[
         { "CMSServer":
-            {"SQLInstance":"mogupta-pc01",
+            {"SQLInstance":"SQLCMS",
              "Database":"msdb"}},
         {"SQLOpsDBServer":
-            {"SQLInstance":"mogupta-pc01",
-            "Database":"DBA_Dashboard_PROD"}}]
+            {"SQLInstance":"SQLCMS",
+            "Database":"SQLOpsDB"}}]
 }
