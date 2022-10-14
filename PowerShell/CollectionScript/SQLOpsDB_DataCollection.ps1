@@ -1,6 +1,6 @@
 ﻿#Import Required Modules for Data Collection
 Import-Module SQLServer -DisableNameChecking
-Import-Module '.\SQLOpsDB\SQLOpsDB.psd1' -DisableNameChecking
+Import-Module '..\SQLOpsDB\SQLOpsDB.psd1' -DisableNameChecking
 
 # Before we can utilize the command-lets in SQLOpsDB, it must be initialized.
 if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
@@ -132,7 +132,7 @@ ForEach ($SQLServerRC in $SQLServers)
 
     if (($OperatingSystem -eq 'Windows Server 2000') -or ($SQLVersion -eq 'Microsoft SQL Server 2000'))
     {
-        Write-StatusUpdate -Message "Both Windows Server 2000 and Server 2000 are no longer supported." -WriteToDB
+        Write-StatusUpdate -Message "Both Windows Server 2000 and SQL Server 2000 are no longer supported." -WriteToDB
         continue;
     }
 
@@ -151,11 +151,21 @@ ForEach ($SQLServerRC in $SQLServers)
         # Unlike Standalone Instances where the Physical Name is calculated, for FCI the node names must be supplied by DBA team.
         # If this information is blank, the servers list will be blank therefore no action will be taken.
 
+		# This limitation is due to support for Vertias Cluster.
+
         # Grab active node value from extended properties, if the domain information is missing, append the default domain name.
         $ActiveNode = $ExtendedProperties["ActiveNode"].ToLower()
         Write-StatusUpdate -Message "Found Server: $ActiveNode"        
 
         # Follow code will be added once the other command lets support FQDN.
+		#
+		# Extended properties for ActiveNode, PassiveNode do not have strict standard for FQDN.
+		#
+		# SQLOp* command-let must be enabled to support domain name.  Domain specific information is not saved
+		# or collected in SQLOps DB.  Therefore domain name information needs to be stripped before saving.
+		#
+		# However domain information is needed to connect to multiple domain environments.
+
         #$DomainDetails = $($SQLServerRC.ComputerName).Substring($($SQLServerRC.ComputerName).IndexOf('.')+1)
         #
         #if (($ActiveNode.IndexOf('.') -eq -1) -and ($DomainDetails -eq $FQDN))
@@ -280,7 +290,7 @@ ForEach ($SQLServerRC in $SQLServers)
                         if ($InnerResults -eq $Global:Error_FailedToComplete)
                         {
                             $ServerIsMonitored = $false
-                            Write-StatusUpdate -Message "Failed to Update-Server [$ServerName]."
+                            Write-StatusUpdate -Message "Failed to Update Server [$ServerName]."
                             continue;
                         }
                     }
@@ -429,7 +439,7 @@ ForEach ($SQLServerRC in $SQLServers)
 
             if ($SQLServices)
             {
-                $Results = Update-SQLService -ComputerName $ServerName -Data $SQLServices
+                $Results = Update-SQLOpSQLService -ComputerName $ServerName -Data $SQLServices
 
                 if ($Results -eq $Global:Error_FailedToComplete)
                 {
@@ -444,7 +454,7 @@ ForEach ($SQLServerRC in $SQLServers)
     }
     #endregion
 
-    # Phase 2: SQL Instances, Availability Groups, and Databases Process
+    #region Phase 2: SQL Instances, Availability Groups, and Databases Process
     $Results = Get-SqlOpSQLInstance -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
 
     switch ($Results)
@@ -452,13 +462,16 @@ ForEach ($SQLServerRC in $SQLServers)
         $Global:Error_ObjectsNotFound
         {
             Write-StatusUpdate -Message "New Instance."
-            $InnerResults = Add-SQLInstance $ComputerName_NoDomain $SQLServerRC.SQLInstanceName $SQLVersion $SQLServer_Build $SQLEdition $ServerType $EnvironmentType
+            $InnerResults = Add-SQLOpSQLInstance -ServerInstance $SQLServerRC.ServerInstanceConnectionString `
+			                                     -SQLVersion $SQLVersion -SQLServer_Build $SQLServer_Build `
+												 -SQLEdition $SQLEdition -ServerType $ServerType `
+												 -EnvironmentType $EnvironmentType
 
             switch ($InnerResults)
             {
                 $Global:Error_Duplicate
                 {
-                    Write-StatusUpdate -Message "Failed to Add-SQLInstance, duplicate object for [$($SQLServerRC.ServerInstance)]." -WriteToDB
+                    Write-StatusUpdate -Message "Failed to Add-SQLOpSQLInstance, duplicate object for [$($SQLServerRC.ServerInstance)]." -WriteToDB
                     break;
                 }
                 $Global:Error_FailedToComplete
@@ -483,6 +496,12 @@ ForEach ($SQLServerRC in $SQLServers)
         }
         default
         {
+			
+			Update-SQLOpSQLInstance -ServerInstance $SQLServerRC.ServerInstanceConnectionString `
+									-SQLVersion $SQLVersion -SQLServer_Build $SQLServer_Build `
+									-SQLEdition $SQLEdition -ServerType $ServerType `
+									-EnvironmentType $EnvironmentType
+
             Write-StatusUpdate -Message "Existing Instance."
             $ServerInstanceIsMonitored = $Results.IsMonitored
             $SQLInstanceID = $Results.SQLInstanceID
@@ -497,111 +516,17 @@ ForEach ($SQLServerRC in $SQLServers)
 
         #Instance is monitored; before we collect the database information; we need to check for any
         #existing AG configuration.  AG is only possible on SQL Server version 2012+.
-        try
-        {
-            if ($SQLServer_Major -ge 11)
-            {
-                #Request all the AG and their replica details for current instance.
-                $TSQL = "WITH CTE AS (
-                            SELECT AG.Group_id AS AGGuid,
-                                AG.name AS AGName,
-                                lower(AR.replica_server_name) AS ReplicaName,
-                                charindex('\',AR.replica_server_name) AS SlashLocation,
-                                len(AR.replica_server_name) - charindex('\',AR.replica_server_name) AS LenInstanceName
-                            FROM sys.availability_groups AG
-                            JOIN sys.availability_replicas AR
-                                ON AG.group_id = AR.group_id)
-                            SELECT AGGuid,
-                                AGName,
-                                CASE WHEN SlashLocation > 0 THEN
-                                    SUBSTRING(ReplicaName,1,SlashLocation-1)
-                                ELSE
-                                    ReplicaName
-                                END AS ServerVCOName,
-                                CASE WHEN SlashLocation > 0 THEN
-                                    SUBSTRING(ReplicaName,SlashLocation+1,LenInstanceName)
-                                ELSE
-                                    'mssqlserver'
-                                END AS InstanceName
-                            FROM CTE"
+		if ($SQLServer_Major -ge 11)
+		{
+			#Request all the AG and their replica details for current instance.                   
+			$Results = Get-SIAvailabilityGroups -SQLInstance $SQLServerRC.ServerInstanceConnectionString
 
-                Write-StatusUpdate -Message $TSQL -IsTSQL                    
-                $Results = Invoke-SQLCMD -ServerInstance $SQLServerRC.ServerInstanceConnectionString  `
-                                            -Database 'master' `
-                                            -Query $TSQL -ErrorAction Stop
-
-                # If result set is empty this instance has no AG on it right now.
-                If ($Results)
-                {
-                    ForEach ($Record in $Results)
-                    {
-                        $AGName = $Record.AGName
-                        $AGGuid = $Record.AGGuid.Guid
-                        $AGServerVCNOName = $Record.ServerVCOName
-                        $AGInstanceName = $Record.InstanceName
-                            
-                        $Results = Get-AG $AGServerVCNOName $AGInstanceName $AGName $AGGuid
-
-                        switch ($Results)
-                        {
-                            # Object not found means multiple things in this scenario:
-                            # 1) AG does not exist.
-                            # 2) Instance does not exist.
-                            # 3) AG <-> Instance relationship does not exist.
-                            $Global:Error_ObjectsNotFound
-                            {
-                                Write-StatusUpdate -Message "New AG."
-                                $InnerResults = Add-AG $AGServerVCNOName $AGInstanceName $AGName $AGGuid
-
-                                switch ($InnerResults)
-                                {
-                                    $Global:Error_Duplicate
-                                    {
-                                        Write-StatusUpdate -Message "Failed to Add-AG, duplicate object for [$AGServerVCNOName\$AGInstanceName\$AGName]." -WriteToDB
-                                        break;
-                                    }
-                                    $Global:Error_FailedToComplete
-                                    {
-                                        Write-StatusUpdate -Message "Failed to Add-AG for [$AGServerVCNOName\$AGInstanceName\$AGName]."
-                                        break;
-                                    }
-                                    default
-                                    {
-                                        $InnerResults = Get-AG $AGServerVCNOName $AGInstanceName $AGName $AGGuid
-                                        $AGID = $InnerResults.AGID
-                                        break;
-                                    }
-                                }
-                                break;
-                            }
-                            $Global:Error_FailedToComplete
-                            {
-                                Write-StatusUpdate -Message "Failed to Get-AG for [$AGServerVCNOName\$AGInstanceName\$AGName]."
-                                break;
-                            }
-                            default
-                            {
-                                Write-StatusUpdate -Message "Existing AG."
-                                $AGID = $InnerResults.AGID
-                                Update-AG $AGServerVCNOName $AGInstanceName $AGName $AGGuid
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        catch [System.Data.SqlClient.SqlException]
-        {
-            Write-StatusUpdate -Message "Cannot reach SQL Server instance [$($SQLServerRC.ServerInstance)]." -WriteToDB
-            $SQLInstanceAccessible = $false
-        }
-        catch
-        {
-            Write-StatusUpdate -Message "Failed to talk to SQL Instance (unhandled expectation)." -WriteToDB
-            Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
-            $SQLInstanceAccessible = $false
-        }
+			# If result set is empty this instance has no AG on it right now.
+			If ($Results -ne $Global:Error_ObjectsNotFound)
+			{
+				Update-SQLOpAvailabilityGroup -SQLInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+			}
+		}
 
         try
         {
@@ -846,6 +771,8 @@ ForEach ($SQLServerRC in $SQLServers)
     {
         Write-StatusUpdate -Message "Instance is not monitored."
     }
+
+	#endregion Phase 2
 
 }
 #endregion
