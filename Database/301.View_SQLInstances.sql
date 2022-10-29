@@ -20,7 +20,8 @@ AS
 		     SC.SQLClusterName
 		  END AS ComputerName,		  
 		  SI.SQLInstanceName,
-          SI.SQLInstanceVersionID,
+		  SV.SQLVersion,
+          SV.SQLMajorVersion, SV.SQLMinorVersion,
           SI.SQLInstanceBuild,
           SI.SQLInstanceEdition,
           SI.SQLInstanceType,
@@ -29,6 +30,8 @@ AS
           SI.DiscoveryOn,
           SI.LastUpdated
      FROM dbo.SQLInstances SI
+	 JOIN dbo.SQLVersions SV
+	   ON SI.SQLInstanceVersionID = SV.SQLVersionID
 LEFT JOIN dbo.Servers S
        ON SI.ServerID = S.ServerID
 	  AND SI.SQLClusterID IS NULL
