@@ -48,6 +48,7 @@ Date       Version Comments
 2021.11.28 0.01.00 Updated multiple bugs introduced after adding Get-SQLOpServer
                    and Get-SQLOpSQLCluster.  Because this module suports both
 				   these command-lets it is now enabled for FQDN also.
+2022.10.28 0.01.01 Updated all the references for SQLOps server and db name.
 #>
 
 <# Side Notes for Future Direction
@@ -143,9 +144,9 @@ function Update-DiskVolumes
             $TSQL = "SELECT COUNT(*) AS DrvCnt FROM dbo.DiskVolumes DV WHERE DiskVolumeName = '$VolumeName' AND ServerID = $ServerID"
             Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-            $Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                        -Database $Global:SQLCMDB_DatabaseName `
-                                        -Query $TSQL -ErrorAction Stop
+            $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
 
             $ServerVolumeCount = $Results.DrvCnt
 
@@ -158,9 +159,9 @@ function Update-DiskVolumes
                 $TSQL = "SELECT COUNT(*) AS DrvCnt FROM dbo.DiskVolumes DV WHERE DiskVolumeName = '$VolumeName' AND SQLClusterID = $SQLClusterID"
                 Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                $Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                            -Database $Global:SQLCMDB_DatabaseName `
-                                            -Query $TSQL -ErrorAction Stop
+                $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
 
                 $ClusterVolumeCount = $Results.DrvCnt
 
@@ -178,9 +179,9 @@ function Update-DiskVolumes
 							AND SC.SQLClusterID <>  $SQLClusterID"
 				Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-				$Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-											-Database $Global:SQLCMDB_DatabaseName `
-											-Query $TSQL -ErrorAction Stop
+				$Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
 
 				$OtherClusterVolumeCount = $Results.DrvCnt
             }
@@ -194,17 +195,17 @@ function Update-DiskVolumes
                     $TSQL = "INSERT INTO dbo.DiskVolumes (DiskVolumeName, ServerID) VALUES ('$VolumeName',$ServerID)"
                     Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                    Invoke-Sqlcmd -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                    -Database $Global:SQLCMDB_DatabaseName `
-                                    -Query $TSQL -ErrorAction Stop
+                    Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
                 }
 
                 $TSQL = "SELECT DiskVolumeID, IsMonitored FROM dbo.DiskVolumes DV WHERE DiskVolumeName = '$VolumeName' AND ServerID = $ServerID"
                 Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                $Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                            -Database $Global:SQLCMDB_DatabaseName `
-                                            -Query $TSQL -ErrorAction Stop
+                $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
 
                 $VolumeID = $Results.DiskVolumeID
                 $VolumeIsMonitored = $Results.IsMonitored
@@ -252,16 +253,16 @@ function Update-DiskVolumes
                         $TSQL = "INSERT INTO dbo.DiskVolumes (DiskVolumeName,ServerID) VALUES ('$VolumeName',$ServerID)"
                         Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                        Invoke-Sqlcmd -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                      -Database $Global:SQLCMDB_DatabaseName `
-                                      -Query $TSQL -ErrorAction Stop
+                        Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
 
                         $TSQL = "SELECT DiskVolumeID, IsMonitored FROM dbo.DiskVolumes DV WHERE DiskVolumeName = '$VolumeName' AND ServerID = $ServerID"
                         Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                        $Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                                 -Database $Global:SQLCMDB_DatabaseName `
-                                                 -Query $TSQL -ErrorAction Stop
+                        $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
                     }
                     elseif ($DriveBelongsTo -eq "Cluster")
                     {
@@ -269,16 +270,16 @@ function Update-DiskVolumes
                         $TSQL = "INSERT INTO dbo.DiskVolumes (DiskVolumeName,SQLClusterID) VALUES ('$VolumeName',$SQLClusterID)"
                         Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                        Invoke-Sqlcmd -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                      -Database $Global:SQLCMDB_DatabaseName `
-                                      -Query $TSQL -ErrorAction Stop
+                        Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
 
                         $TSQL = "SELECT DiskVolumeID, IsMonitored FROM dbo.DiskVolumes DV WHERE DiskVolumeName = '$VolumeName' AND SQLClusterID = $SQLClusterID"
                         Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                        $Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                                 -Database $Global:SQLCMDB_DatabaseName `
-                                                 -Query $TSQL -ErrorAction Stop
+                        $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
                     }
 
                     $VolumeID = $Results.DiskVolumeID
@@ -315,9 +316,9 @@ function Update-DiskVolumes
                         $TSQL = "SELECT DiskVolumeID, IsMonitored FROM dbo.DiskVolumes DV WHERE DiskVolumeName = '$VolumeName' AND ServerID = $ServerID"
                         Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                        $Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                                 -Database $Global:SQLCMDB_DatabaseName `
-                                                 -Query $TSQL -ErrorAction Stop
+                        $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
                     }
                     elseif ($DriveBelongsTo -eq "Cluster")
                     {
@@ -325,16 +326,16 @@ function Update-DiskVolumes
                         $TSQL = "UPDATE dbo.DiskVolumes SET ServerID = NULL, SQLClusterID = $SQLClusterID WHERE DiskVolumeName = '$VolumeName' AND ServerID = $ServerID"
                         Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                        Invoke-Sqlcmd -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                      -Database $Global:SQLCMDB_DatabaseName `
-                                      -Query $TSQL -ErrorAction Stop
+                        Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
 
                         $TSQL = "SELECT DiskVolumeID, IsMonitored FROM dbo.DiskVolumes DV WHERE DiskVolumeName = '$VolumeName' AND SQLClusterID = $SQLClusterID"
                         Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                        $Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                                 -Database $Global:SQLCMDB_DatabaseName `
-                                                 -Query $TSQL -ErrorAction Stop
+                        $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
                     }
 
                     $VolumeID = $Results.DiskVolumeID
@@ -347,9 +348,9 @@ function Update-DiskVolumes
                     $TSQL = "SELECT DiskVolumeID, IsMonitored FROM dbo.DiskVolumes DV WHERE DiskVolumeName = '$VolumeName' AND SQLClusterID = $SQLClusterID"
                     Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                    $Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                                -Database $Global:SQLCMDB_DatabaseName `
-                                                -Query $TSQL -ErrorAction Stop
+                    $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
 
                     $VolumeID = $Results.DiskVolumeID
                     $VolumeIsMonitored = $Results.IsMonitored
@@ -366,32 +367,32 @@ function Update-DiskVolumes
                     $TSQL = "SELECT DiskVolumeID FROM dbo.DiskVolumes DV WHERE DiskVolumeName = '$VolumeName' AND ServerID = $ServerID"
                     Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                    $Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                                -Database $Global:SQLCMDB_DatabaseName `
-                                                -Query $TSQL -ErrorAction Stop
+                    $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
 
                     $VolumeID = $Results.DiskVolumeID
 
                     $TSQL = "DELETE FROM dbo.DiskVolumeSpace WHERE DiskVolumeID = $VolumeID"
                     Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                    $Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                                -Database $Global:SQLCMDB_DatabaseName `
-                                                -Query $TSQL -ErrorAction Stop
+                    $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
 
                     $TSQL = "DELETE FROM History.DiskVolumeSpace WHERE DiskVolumeID = $VolumeID"
                     Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                    $Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                                -Database $Global:SQLCMDB_DatabaseName `
-                                                -Query $TSQL -ErrorAction Stop
+                    $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
 
                     $TSQL = "DELETE FROM dbo.DiskVolumes WHERE DiskVolumeID = $VolumeID"
                     Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                    $Results = Invoke-SQLCMD -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                                -Database $Global:SQLCMDB_DatabaseName `
-                                                -Query $TSQL -ErrorAction Stop
+                    $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
 
                     $VolumeID = 0
                 }
@@ -408,9 +409,9 @@ function Update-DiskVolumes
                 $TSQL = "SELECT COUNT(*) AS RowCnt FROM dbo.DiskVolumeSpace WHERE DiskVolumeID = $VolumeID AND DateCaptured = CAST(GETDATE() AS DATE)"
                 Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                            -Database $Global:SQLCMDB_DatabaseName `
-                                            -Query $TSQL -ErrorAction Stop
+                $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
 
                 $SpaceUsed = ($($Volume.Capacity) - $($Volume.FreeSpace))/1024/1024
                 $TotalSpace = $($Volume.Capacity)/1024/1024
@@ -421,9 +422,9 @@ function Update-DiskVolumes
                     $TSQL = "INSERT INTO dbo.DiskVolumeSpace (DiskVolumeID, DateCaptured, SpaceUsed_mb, TotalSpace_mb) VALUES ($VolumeID,CAST(GETDATE() AS DATE),$SpaceUsed,$TotalSpace)"
                     Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                    Invoke-Sqlcmd -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                    -Database $Global:SQLCMDB_DatabaseName `
-                                    -Query $TSQL -ErrorAction Stop
+                    Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
                 }
                 else
                 {
@@ -431,17 +432,17 @@ function Update-DiskVolumes
                     $TSQL = "UPDATE dbo.DiskVolumeSpace SET SpaceUsed_mb = (SpaceUsed_mb + $SpaceUsed) / 2, TotalSpace_mb = (TotalSpace_mb + $TotalSpace) / 2 WHERE DiskVolumeID = $VolumeID AND DateCaptured = CAST(GETDATE() AS DATE)"
                     Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                    Invoke-Sqlcmd -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                    -Database $Global:SQLCMDB_DatabaseName `
-                                    -Query $TSQL -ErrorAction Stop
+                    Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
                 }
 
                 $TSQL = "UPDATE dbo.DiskVolumes SET LastUpdated = CAST(GETDATE() AS DATE) WHERE DiskVolumeID = $VolumeID"
                 Write-StatusUpdate -Message $TSQL  -IsTSQL
 
-                Invoke-Sqlcmd -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                -Database $Global:SQLCMDB_DatabaseName `
-                                -Query $TSQL -ErrorAction Stop
+                Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                                    -Query $TSQL
             }
 
         }
@@ -449,9 +450,22 @@ function Update-DiskVolumes
         Write-Output $Global:Error_Successful
         
     }
+    catch [System.Data.SqlClient.SqlException]
+    {
+        if ($($_.Exception.Message) -like '*Could not open a connection to SQL Server*')
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Cannot connect to $ServerInstance." -WriteToDB
+        }
+        else
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - SQL Expectation" -WriteToDB
+            Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
+        }
+        Write-Output $Global:Error_FailedToComplete
+    }
     catch
     {
-        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Expection" -WriteToDB
+        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Expectation" -WriteToDB
         Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
         Write-Output $Global:Error_FailedToComplete
     }
