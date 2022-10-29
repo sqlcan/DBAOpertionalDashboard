@@ -435,7 +435,7 @@ ForEach ($SQLServerRC in $SQLServers)
 
         if ($DCS_DiscoverSQLServices)
         {
-            $SQLServices = Get-SISQLService -ComputerName $ServerName
+            $SQLServices = Get-SISQLService -ComputerName $ServerName -Internal
 
             if ($SQLServices)
             {
