@@ -31,6 +31,10 @@ Date       Version  Comments
 2021.11.28 00.00.04 Command-let name updated Update-SQLOpSQLService.
 		   00.00.05 Added multiple execution possiblity by allowing SQL Services to be
 		            saved per PowerShell process ID.
+2022.11.29 00.00.08 Added post excution cleanup of staging table.
+					Fixed a minor bug on how table name is checked for staging table.
+					Re-wrote how the staging tables are checked and recreated based
+					 on extended events properties against command let version.
 #>
 function Update-SQLOpSQLService
 {
@@ -47,8 +51,8 @@ function Update-SQLOpSQLService
     }
     
     $ModuleName = 'Update-SQLOpSQLService'
-    $ModuleVersion = '00.00.05'
-    $ModuleLastUpdated = 'Nov. 28, 2021'
+    $ModuleVersion = '00.00.08'
+    $ModuleLastUpdated = 'October 29, 2022'
 
     try
     {
@@ -81,26 +85,7 @@ function Update-SQLOpSQLService
 
 		$ProcessID = $pid
 
-        $TSQL = "IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'SQLServiceDetails')
-					CREATE TABLE Staging.SQLServiceDetails (
-									ProcessID INT NULL,
-									ServerName varchar(255) NULL,
-									ServiceName varchar(255) NULL,
-									InstanceName varchar(255) NULL,
-									DisplayName varchar(255) NULL,
-									FilePath varchar(512) NULL,
-									ServiceType varchar(25) NULL,
-									StartMode varchar(25) NULL,
-									ServiceAccount varchar(50) NULL,
-									ServiceVersion int NULL,
-									ServiceBuild varchar(25) NULL,
-									Status varchar(25) NULL
-								)
-					ELSE
-						DELETE
-						  FROM Staging.SQLServiceDetails
-						 WHERE ProcessID = $ProcessID
-                            GO"
+        $TSQL = "EXEC Staging.TableUpdates @TableName =N'SQLServiceDetails', @ModuleVersion=N'$ModuleVersion'"
         Write-StatusUpdate -Message $TSQL -IsTSQL
 
         Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
@@ -148,6 +133,13 @@ function Update-SQLOpSQLService
                         -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
                         -Query $TSQL
         
+		$TSQL = "DELETE FROM Staging.SQLServiceDetails WHERE ProcessID = $ProcessID"
+		Write-StatusUpdate -Message $TSQL -IsTSQL
+
+        Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                        -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                        -Query $TSQL
+
         Write-Output $Global:Error_Successful
     }
     catch

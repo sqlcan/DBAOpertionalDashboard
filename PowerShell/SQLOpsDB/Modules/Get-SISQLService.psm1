@@ -44,12 +44,16 @@ Date       Version Comments
                    Second bug, WMI name space sqlserver does not exist.
                    Refactor code and fixed some spelling mistakes.
                    SSRS 2005 WMI does not expose build information, defaulted to 9.0.0.0.
+2022.10.29 0.00.19 Added Process ID for PowerShell.  To allow to run in multi-threaded env.
+				   Fixed error handling to stop after first error.
 #>
 function Get-SISQLService
 {
-    [CmdletBinding()] 
+    [CmdletBinding(DefaultParameterSetName='ComputerName')] 
     param( 
-    [Parameter(Position=0, Mandatory=$true)] [string]$ComputerName
+	[Parameter(ParameterSetName='ComputerName', Position=0, Mandatory=$true)]
+    [Parameter(ParameterSetName='Internal', Position=0, Mandatory=$true)] [string]$ComputerName,
+	[Parameter(ParameterSetName='Internal', Position=1, Mandatory=$true, DontShow)] [Switch]$Internal
     )
 
     if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
@@ -59,25 +63,44 @@ function Get-SISQLService
     }
 	
     $ModuleName = 'Get-SISQLService'
-    $ModuleVersion = '0.00.17'
-    $ModuleLastUpdated = 'March 9, 2020'
+    $ModuleVersion = '0.00.19'
+    $ModuleLastUpdated = 'October 29, 2022'
 
     try
     {
         Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
-		Class SQLServices{
-			[string] $ServerName;
-			[string] $Name;
-			[string] $InstanceName;
-			[string] $DisplayName;
-			[string] $Path;
-			[string] $Type;
-			[string] $StartMode;
-			[string] $ServiceAccount;
-			[int] $Version;
-            [string] $Build;
-            [string] $Status;
+		if ($Internal)
+		{
+			Class SQLServices{
+				[int] $ProcessID;
+				[string] $ServerName;
+				[string] $Name;
+				[string] $InstanceName;
+				[string] $DisplayName;
+				[string] $Path;
+				[string] $Type;
+				[string] $StartMode;
+				[string] $ServiceAccount;
+				[int] $Version;
+				[string] $Build;
+				[string] $Status;
+			}
+		}
+		else {
+			Class SQLServices_External {
+				[string] $ServerName;
+				[string] $Name;
+				[string] $InstanceName;
+				[string] $DisplayName;
+				[string] $Path;
+				[string] $Type;
+				[string] $StartMode;
+				[string] $ServiceAccount;
+				[int] $Version;
+				[string] $Build;
+				[string] $Status;
+			}
 		}
 
         function Get-SQLVersion ($ServiceName)
@@ -123,7 +146,7 @@ function Get-SISQLService
 
 		# Get list of all services that have word "SQL" or "PowerBI" in them.  We are using WMI for Win32_Services.  Because WMI for SQL does not provide
 		# list of all SQL services.
-		$Services = Get-WmiObject -Class Win32_Service -ComputerName $ComputerName
+		$Services = Get-WmiObject -Class Win32_Service -ComputerName $ComputerName -ErrorAction Stop
 		$Services = $Services | Where-Object {($_.DisplayName -Like '*SQL*' -OR $_.DisplayName -Like '*PowerBI*'-OR $_.Name -Like '*MsDts*') -and
                                               ($_.Name -notlike 'MSSQLServerADHelper*' -and $_.Name -ne 'SQLWriter')} | SELECT PSComputerName, DisplayName, Name, PathName, StartName, StartMode, State, Status
 
@@ -196,7 +219,14 @@ function Get-SISQLService
 			#   Report Server
 			#   Full Text Search
 
-			$SQLService = New-Object SQLServices
+			if (!($Internal))
+			{
+				$SQLService = New-Object SQLServices_External
+			}
+			else {
+				$SQLService = New-Object SQLServices
+				$SQLService.ProcessID = $pid
+			}
 			$AddService = $false
 			$SQLService.ServerName = $Service.PSComputerName
 			$SQLService.Name = $Service.Name
@@ -275,7 +305,7 @@ function Get-SISQLService
 			}
 
 			# PowerBI
-			ElseIf ($Service.Name -LIke '*PowerBI*')
+			ElseIf (($Service.Name -LIke '*PowerBI*') -or ($Service.Name -LIke '*Power BI*'))
 			{
 				# Assuming PowerBI Report Server Version will always be 15.
 				$SQLService.Type = 'PowerBI (SSRS)'
