@@ -496,11 +496,11 @@ ForEach ($SQLServerRC in $SQLServers)
         }
         default
         {
-			
+		
 			Update-SQLOpSQLInstance -ServerInstance $SQLServerRC.ServerInstanceConnectionString `
 									-SQLVersion $SQLVersion -SQLServer_Build $SQLServer_Build `
 									-SQLEdition $SQLEdition -ServerType $ServerType `
-									-EnvironmentType $EnvironmentType
+									-ServerEnviornment $EnvironmentType
 
             Write-StatusUpdate -Message "Existing Instance."
             $ServerInstanceIsMonitored = $Results.IsMonitored
@@ -519,12 +519,12 @@ ForEach ($SQLServerRC in $SQLServers)
 		if ($SQLServer_Major -ge 11)
 		{
 			#Request all the AG and their replica details for current instance.                   
-			$Results = Get-SIAvailabilityGroups -SQLInstance $SQLServerRC.ServerInstanceConnectionString
+			$Results = Get-SIAvailabilityGroups -ServerInstance $SQLServerRC.ServerInstanceConnectionString
 
 			# If result set is empty this instance has no AG on it right now.
 			If ($Results -ne $Global:Error_ObjectsNotFound)
 			{
-				Update-SQLOpAvailabilityGroup -SQLInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+				Update-SQLOpAvailabilityGroup -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
 			}
 		}
 
@@ -535,7 +535,7 @@ ForEach ($SQLServerRC in $SQLServers)
 
 		if ($Results)
 		{
-			Update-SQLOpDatabases -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+			Update-SQLOpDatabase -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
 		}
 		else
 		{
@@ -628,6 +628,7 @@ ForEach ($SQLServerRC in $SQLServers)
 }
 #endregion
 
+<# Phase 3, Aggregations, Snapshots, Cleanups Suspended for now 2022.10.29
 #Phase 3: Aggregation for Disk Space & Database Space
 Write-StatusUpdate -Message "Phase 3: Aggregation for Disk Space & Database Space"
 
@@ -681,6 +682,7 @@ Write-StatusUpdate -Message "Phase 3: Aggregation for Disk Space & Database Spac
     {
         Truncate-CMDBLog
     }
+#>
 
 Write-StatusUpdate "SQLOpsDB - Collection End" -WriteToDB
 
