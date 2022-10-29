@@ -51,6 +51,16 @@ BEGIN
 				InstanceName VARCHAR(255),
                 ReplicaRole VARCHAR(25))
 
+		IF (@TableName = 'Databases')
+			CREATE TABLE Staging.Databases(
+			    ProcessID int NULL,
+				SQLInstanceID int NULL,
+				AGGuid uniqueidentifier NULL,
+				DatabaseName varchar(255) NULL,
+				DatabaseState varchar(60) NULL,
+				FileType char(4) NULL,
+				FileSize_mb bigint NULL)
+
 		EXEC sys.sp_addextendedproperty @name=N'SQLOpsDBVersion', @value=@ModuleVersion , @level0type=N'SCHEMA',@level0name=N'Staging', @level1type=N'TABLE',@level1name=@TableName
 	END
 END

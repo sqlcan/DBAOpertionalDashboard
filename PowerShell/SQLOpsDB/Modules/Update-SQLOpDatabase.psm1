@@ -24,13 +24,15 @@ Update-SQLOpDatabase -ServerInstance ContosoSQL -Data $Data
 Date        Version Comments
 ----------  ------- ------------------------------------------------------------------
 2022.10.28  0.00.01 Initial Version.
+2022.10.29  0.00.03 Fixed minor bug with data-type miss-match.
+					Updated how staging tables are created and managed.
 #>
 function Update-SQLOpDatabase
 {
     [CmdletBinding()] 
     param( 
     [Parameter(Position=0, Mandatory=$true)] [string]$ServerInstance,
-    [Parameter(Position=1, Mandatory=$true)] [DateTime]$Data
+    [Parameter(Position=1, Mandatory=$true)] $Data
     )
 
     if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
@@ -40,8 +42,8 @@ function Update-SQLOpDatabase
     }
     
     $ModuleName = 'Update-SQLOpDatabase'
-    $ModuleVersion = '0.01'
-    $ModuleLastUpdated = 'October 28, 2022'
+    $ModuleVersion = '0.00.03'
+    $ModuleLastUpdated = 'October 29, 2022'
    
     try
     {
@@ -69,16 +71,7 @@ function Update-SQLOpDatabase
 
 		$ProcessID = $pid
 		# Step 1 : Setup Staging Table - If Missing.
-		$TSQL = "IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Databases' and schema_id = SCHEMA_ID('Staging'))
-					CREATE TABLE [Staging].[Databases]([ProcessID] [int] NULL,
-										[SQLInstanceID] [int] NULL,
-										[AGGuid] [uniqueidentifier] NULL,
-										[DatabaseName] [varchar](255) NULL,
-										[DatabaseState] [varchar](60) NULL,
-										[FileType] [char](4) NULL,
-										[FileSize_mb] [bigint] NULL
-									) ON [PRIMARY]
-				GO"
+		$TSQL = "EXEC Staging.TableUpdates @TableName=N'Databases', @ModuleVersion=N'$ModuleVersion'"
 		Write-StatusUpdate -Message $TSQL -IsTSQL
 
 		Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
