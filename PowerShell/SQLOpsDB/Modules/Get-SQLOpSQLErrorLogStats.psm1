@@ -37,12 +37,16 @@ Date        Version Comments
 2020.02.19  0.00.06 Updated module name to Get-SQLOpSQLErrorLogStats.
                     Updated reference to Get-SQLOpSQLInstance.
 2020.03.02  0.00.07 Changed how to default data is calculated.  Issue #36.
+2022.10.29	0.00.09 Updated the field reference from dbo.SQLErrorLog_Stats to dbo.SQLInstances.
+					Updated behavior on returning full resultset.
 #>
 function Get-SQLOpSQLErrorLogStats
 {
-    [CmdletBinding()] 
+    [CmdletBinding(DefaultParameterSetName = 'List')] 
     param( 
-    [Parameter(Position=0, Mandatory=$false)] [string]$ServerInstance
+    [Parameter(ParameterSetName='ServerInstance',Position=0, Mandatory=$true)] [string]$ServerInstance,
+	[Alias('List','All')]
+	[Parameter(ParameterSetName='List',Position=0, Mandatory=$true)] [switch]$ListAvailable
     )
 
     if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
@@ -52,20 +56,20 @@ function Get-SQLOpSQLErrorLogStats
     }
     
     $ModuleName = 'Get-SQLOpSQLErrorLogStats'
-    $ModuleVersion = '0.07'
-    $ModuleLastUpdated = 'March 2, 2020'
+    $ModuleVersion = '0.09'
+    $ModuleLastUpdated = 'October 29, 2022'
 
     try
     {
         Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
         #What is T-SQL Doing?
-        $TSQL = "SELECT SI.ComputerName, SI.SQLInstanceName, ER.LastDateTimeCaptured
-                   FROM dbo.SQLErrorLog_Stats ER
-                   JOIN dbo.vSQLInstances SI
-                     ON ER.SQLInstanceID = SI.SQLInstanceID "
+        $TSQL = "SELECT vSI.ComputerName, vSI.SQLInstanceName, SI.ErrorLog_LastDateTimeCaptured AS LastDateTimeCaptured
+                FROM dbo.SQLInstances SI
+                JOIN dbo.vSQLInstances vSI
+                ON SI.SQLInstanceID = vSI.SQLInstanceID "
 
-        if (!([String]::IsNullOrEmpty($ServerInstance)))
+        if (!($ListAvailable))
         {
             # Validate sql instance exists.
             $ServerInstanceObj = Get-SqlOpSQLInstance -ServerInstance $ServerInstance -Internal
@@ -89,22 +93,25 @@ function Get-SQLOpSQLErrorLogStats
         # If no result sets are returned return an error; unless return the appropriate result set.
         if (!($Results))
         {
-            # If this is for a SQL instance, then it means there has been no collection for this instance to-date.
-            # Create a new default entry in the database and return current date - 30 days as date.
-
-            if (!([String]::IsNullOrEmpty($ServerInstance)))
-            {
-                $Results = Update-SQLOpSQLErrorLogStats -ServerInstance $ServerInstance -DateTime ((get-date).AddDays(-30).toString("yyyy-MM-dd HH:mm:ss"))
-                Write-Output $Results
-            }
-            else {
-                Write-Output $Global:Error_ObjectsNotFound
-            }
+            Write-Output $Global:Error_ObjectsNotFound
         }
         else
         {
             Write-Output $Results
         }
+    }
+	catch [System.Data.SqlClient.SqlException]
+    {
+        if ($($_.Exception.Message) -like '*Could not open a connection to SQL Server*')
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Cannot connect to $ServerInstance." -WriteToDB
+        }
+        else
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - SQL Expectation" -WriteToDB
+            Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
+        }
+        Write-Output $Global:Error_FailedToComplete
     }
     catch
     {

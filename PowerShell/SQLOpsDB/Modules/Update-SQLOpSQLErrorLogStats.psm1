@@ -38,6 +38,7 @@ Date        Version Comments
 2020.02.19  0.00.05 Updated reference to Get-SQLOpSQLInstance.
                     Updated module name to Get-SQLOpSQLErrorLogStats.
 2020.02.27  0.00.06 Fixed Bug #33.
+2022.10.28	0.00.07 Moved the stats column to dbo.SQLInstances.
 #>
 function Update-SQLOpSQLErrorLogStats
 {
@@ -55,8 +56,8 @@ function Update-SQLOpSQLErrorLogStats
     }
     
     $ModuleName = 'Update-SQLOpSQLErrorLogStats'
-    $ModuleVersion = '0.06'
-    $ModuleLastUpdated = 'February 27, 2020'
+    $ModuleVersion = '0.07'
+    $ModuleLastUpdated = 'October 28, 2022'
    
     try
     {
@@ -77,22 +78,7 @@ function Update-SQLOpSQLErrorLogStats
             $DateTime = (Get-Date -format "yyyy-MM-dd HH:mm:ss")
         }
 
-        $TSQL = "SELECT COUNT(*) AS RwCount FROM dbo.SQLErrorLog_Stats WHERE SQLInstanceID = $($ServerInstanceObj.SQLInstanceID)" 
-        Write-StatusUpdate -Message $TSQL -IsTSQL
-
-        $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
-                            -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
-                            -Query $TSQL
-        
-        if ($Results.RwCount -eq 0)
-        {
-            $TSQL = "INSERT INTO dbo.SQLErrorLog_Stats (SQLInstanceID,LastDateTimeCaptured) VALUES ($($ServerInstanceObj.SQLInstanceID),'$DateTime')"             
-        }
-        else
-        {
-            $TSQL = "UPDATE dbo.SQLErrorLog_Stats SET LastDateTimeCaptured = '$DateTime' WHERE SQLInstanceID = $($ServerInstanceObj.SQLInstanceID)"             
-        }
-
+        $TSQL = "UPDATE dbo.SQLInstances SET ErrorLog_LastDateTimeCaptured = '$DateTime' WHERE SQLInstanceID = $($ServerInstanceObj.SQLInstanceID)"             
         Write-StatusUpdate -Message $TSQL -IsTSQL
         Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
                       -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
@@ -100,6 +86,19 @@ function Update-SQLOpSQLErrorLogStats
         
         $Results = Get-SQLOpSQLErrorLogStats -ServerInstance $ServerInstance                                                                        
         Write-Output $Results
+    }
+    catch [System.Data.SqlClient.SqlException]
+    {
+        if ($($_.Exception.Message) -like '*Could not open a connection to SQL Server*')
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Cannot connect to $ServerInstance." -WriteToDB
+        }
+        else
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - SQL Expectation" -WriteToDB
+            Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
+        }
+        Write-Output $Global:Error_FailedToComplete
     }
     catch
     {

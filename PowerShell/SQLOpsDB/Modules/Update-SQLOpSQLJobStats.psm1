@@ -34,6 +34,8 @@ Date        Version Comments
 ----------  ------- ------------------------------------------------------------------
 2020.03.06  0.00.01 Initial Version.
             0.00.02 Fixed bug, was call Get-SQLOpSQLErrorLogStats vs Get-SQLOpSQLJobStats.
+2022.10.28	0.00.03 Moved the job stats column to dbo.SQLInstances.
+
 #>
 function Update-SQLOpSQLJobStats
 {
@@ -51,8 +53,8 @@ function Update-SQLOpSQLJobStats
     }
     
     $ModuleName = 'Update-SQLOpSQLJobStats'
-    $ModuleVersion = '0.02'
-    $ModuleLastUpdated = 'March 6, 2020'
+    $ModuleVersion = '0.03'
+    $ModuleLastUpdated = 'October 28, 2022'
    
     try
     {
@@ -73,22 +75,7 @@ function Update-SQLOpSQLJobStats
             $DateTime = (Get-Date -format "yyyy-MM-dd HH:mm:ss")
         }
 
-        $TSQL = "SELECT COUNT(*) AS RwCount FROM dbo.SQLJobs_Stats WHERE SQLInstanceID = $($ServerInstanceObj.SQLInstanceID)" 
-        Write-StatusUpdate -Message $TSQL -IsTSQL
-
-        $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
-                            -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
-                            -Query $TSQL
-        
-        if ($Results.RwCount -eq 0)
-        {
-            $TSQL = "INSERT INTO dbo.SQLJobs_Stats (SQLInstanceID,LastDateTimeCaptured) VALUES ($($ServerInstanceObj.SQLInstanceID),'$DateTime')"             
-        }
-        else
-        {
-            $TSQL = "UPDATE dbo.SQLJobs_Stats SET LastDateTimeCaptured = '$DateTime' WHERE SQLInstanceID = $($ServerInstanceObj.SQLInstanceID)"             
-        }
-
+        $TSQL = "UPDATE dbo.SQLInstances SET JobStats_LastDateTimeCaptured = '$DateTime' WHERE SQLInstanceID = $($ServerInstanceObj.SQLInstanceID)"             
         Write-StatusUpdate -Message $TSQL -IsTSQL
         Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
                       -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
@@ -96,6 +83,19 @@ function Update-SQLOpSQLJobStats
         
         $Results = Get-SQLOpSQLJobStats -ServerInstance $ServerInstance                                                                        
         Write-Output $Results
+    }
+    catch [System.Data.SqlClient.SqlException]
+    {
+        if ($($_.Exception.Message) -like '*Could not open a connection to SQL Server*')
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Cannot connect to $ServerInstance." -WriteToDB
+        }
+        else
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - SQL Expectation" -WriteToDB
+            Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
+        }
+        Write-Output $Global:Error_FailedToComplete
     }
     catch
     {

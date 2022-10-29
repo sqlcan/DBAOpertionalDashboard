@@ -32,8 +32,8 @@ BEGIN
 		[SQLInstanceType] [varchar](50) NOT NULL,
 		[SQLInstanceEnviornment] [varchar](25) NOT NULL,
 		[IsMonitored] [bit] NOT NULL,
-		ErrorLog_LastDateTimeCaptured DATETIME DEFAULT('1900-01-01 00:00:00'),
-		JobStats_LastDateTimeCaptured DATETIME DEFAULT('1900-01-01 00:00:00'),
+		[ErrorLog_LastDateTimeCaptured] DATETIME DEFAULT('1900-01-01 00:00:00'),
+		[JobStats_LastDateTimeCaptured] DATETIME DEFAULT('1900-01-01 00:00:00'),
 		[DiscoveryOn] [date] NOT NULL,
 		[LastUpdated] [date] NOT NULL,
 	 CONSTRAINT [PK_SQLInstances] PRIMARY KEY CLUSTERED 
