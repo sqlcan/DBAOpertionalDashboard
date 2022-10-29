@@ -18,7 +18,7 @@
     ModuleToProcess = ''
 
     # Version number of this module.
-    ModuleVersion = '3.00.36.0000'
+    ModuleVersion = '3.00.38.0000'
 
     # ID used to uniquely identify this module
     GUID = '4baba076-b43c-40a3-a483-16eed455f676'
@@ -81,10 +81,14 @@
 	'.\Modules\Add-SQLOpSQLInstance.psm1';
 	'.\Modules\Update-SQLOpSQLInstance.psm1';
     '.\Modules\Get-SISQLProperties.psm1';
+	'.\Modules\Get-SQLOpSQLProperties.psm1';
 	# Availability Group Modules
 	'.\Modules\Get-SIAvailabilityGroups.psm1';
 	'.\Modules\Update-SQLOpAvailabilityGroup.psm1';
 	'.\Modules\Get-SQLOpAvailabilityGroup.psm1';
+	# Database Modules
+	'.\Modules\Get-SIDatabases.psm1';
+	'.\Modules\Update-SQLOpDatabase.psm1';
         # SQL Error Log Modules
         '.\Modules\Get-SQLErrorLogs.psm1';
         '.\Modules\Update-SQLOpSQLErrorLog.psm1';
@@ -111,10 +115,10 @@
     '.\Modules\Add-SQLOpOperatingSystem.psm1';
     '.\Modules\Add-SQLOpServer.psm1';
     '.\Modules\Update-SQLOpServer.psm1';
-        # SQL Service
-		'.\Modules\Get-SISQLService.psm1';
-        '.\Modules\Get-SQLOpSQLService.psm1';
-        '.\Modules\Update-SQLOpSQLService.psm1';
+	# SQL Service
+	'.\Modules\Get-SISQLService.psm1';
+	'.\Modules\Get-SQLOpSQLService.psm1';
+	'.\Modules\Update-SQLOpSQLService.psm1';
         # SQL Cluster Modules
         '.\Modules\Add-SQLOpSQLCluster.psm1';
         '.\Modules\Get-SQLOpSQLCluster.psm1';
@@ -126,15 +130,10 @@
 	'.\Modules\Get-SQLOpCMSServerInstance.psm1';
 	'.\Modules\Get-SQLOpCMSGroups.psm1';	           
 	'.\Modules\Set-SQLOpCMSGroups.psm1';
-    #'.\Modules\Add-Database.psm1';                
-    #'.\Modules\Get-Database.psm1';        
-    '.\Modules\Update-Database.psm1';        
+
     '.\Modules\Update-SQLInstance.psm1';
     '.\Modules\Update-DiskVolumes.psm1';    
     '.\Modules\Write-DataTable.psm1';
-    #'.\Modules\Get-AG.psm1';
-    #'.\Modules\Add-AG.psm1';
-    #'.\Modules\Update-AG.psm1';
     #'.\Modules\Update-CMSGroups.psm1'; #Does not exist.
     '.\Modules\Aggregate-CMDBMonthlyData.psm1';
     '.\Modules\Truncate-CMDBData.psm1';

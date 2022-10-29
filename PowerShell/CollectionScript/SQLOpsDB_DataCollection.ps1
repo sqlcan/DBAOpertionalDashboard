@@ -31,7 +31,7 @@ try
 
     # Get list of SQL Server Instances from Central Management Server (CMS).
     # Enable or disable which CMS groups are monitored via Set-CMSGroup commandlet.
-    $SQLServers = Get-CMSServerInstance #-ServerInstance ContosoSQL
+    $SQLServers = Get-SQLOpCMSServerInstance #-ServerInstance ContosoSQL
     $TotalServers = ($SQLServers | Measure-Object).Count
     $ServersRunningCount = 0
 }
@@ -528,169 +528,20 @@ ForEach ($SQLServerRC in $SQLServers)
 			}
 		}
 
-        try
-        {
-            Write-StatusUpdate -Message "Getting list of databases"
 
-            if (($SQLServer_Major -ge 9) -and ($SQLServer_Major -le 10))
-            {
-                $TSQL = "   WITH DBDetails
-                                AS (SELECT   DB_NAME(D.database_id) AS DatabaseName
-                                            , D.state_desc AS DatabaseState
-                                            , CASE WHEN type = 0 THEN 'Data' ELSE 'Log' END AS FileType
-                                            , size/128 AS FileSize_mb
-                                    FROM sys.master_files mf
-                                    JOIN sys.databases D
-                                        ON mf.database_id = D.database_id
-                                    WHERE D.database_id NOT IN (1,3,4))
-                            SELECT   $SQLInstanceID AS InstanceID
-                                    , CAST('00000000-0000-0000-0000-000000000000' AS uniqueidentifier) AS AGGuid
-                                    , DatabaseName
-                                    , DatabaseState
-                                    , FileType
-                                    , SUM(FileSize_mb) AS FileSize_mb
-                            FROM DBDetails
-                        GROUP BY DatabaseName, DatabaseState, FileType"
-            }
-            else
-            {
-                $TSQL = "  WITH DBDetails
-                                AS (SELECT   ISNULL(AG.group_id,CAST('00000000-0000-0000-0000-000000000000' AS uniqueidentifier)) AS AGGuid
-                                        , DB_NAME(MF.database_id) AS DatabaseName
-                                        , D.state_desc AS DatabaseState
-                                        , CASE WHEN type = 0 THEN 'Data' ELSE 'Log' END AS FileType
-                                        , size/128 AS FileSize_mb
-                                    FROM sys.master_files MF
-                                LEFT JOIN sys.databases D
-                                        ON MF.database_id = D.database_id
-                                LEFT JOIN sys.availability_replicas AR
-                                        ON D.replica_id = AR.replica_id
-                                LEFT JOIN sys.availability_groups AG
-                                        ON AR.group_id = AG.group_id
-                                    WHERE MF.database_id NOT IN (1,3,4))
-                        SELECT   $SQLInstanceID AS InstanceID
-                                , AGGuid
-                                , DatabaseName
-                                , DatabaseState 
-                                , FileType
-                                , SUM(FileSize_mb) AS FileSize_mb
-                            FROM DBDetails
-                        GROUP BY AGGuid, DatabaseName, DatabaseState, FileType"
-            }
-            Write-StatusUpdate -Message $TSQL -IsTSQL                    
-            $Results = Invoke-SQLCMD -ServerInstance $SQLServerRC.ServerInstanceConnectionString  `
-                                        -Database 'master' `
-                                        -Query $TSQL -ErrorAction Stop
+		Write-StatusUpdate -Message "Getting list of databases"
 
-            if ($Results)
-            {
+		$Results = Get-SIDatabases -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal			
 
-                $TSQL = "Truncate Table Staging.DatabaseSizeDetails"
-                Write-StatusUpdate -Message $TSQL -IsTSQL                    
-                Invoke-SQLCMD -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
-                                -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
-                                -Query $TSQL -ErrorAction Stop
-
-                Write-StatusUpdate -Message "Writing database details to staging table" -IsTSQL                    
-                Write-DataTable -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
-                                -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database -Data $Results -Table "Staging.DatabaseSizeDetails"
-
-                # Update database catalog
-                $TSQL = "WITH CTE AS
-                        ( SELECT DISTINCT SQLInstanceID, DatabaseName, DatabaseState
-                            FROM Staging.DatabaseSizeDetails)
-                        MERGE dbo.Databases AS Target
-                        USING (SELECT SQLInstanceID, DatabaseName, DatabaseState FROM CTE) AS Source (SQLInstanceID, DatabaseName, DatabaseState)
-                        ON (Target.SQLInstanceID = Source.SQLInstanceID AND Target.DatabaseName = Source.DatabaseName)
-                        WHEN MATCHED THEN
-                            UPDATE SET Target.LastUpdated = GETDATE(),
-                                        Target.DatabaseState = Source.DatabaseState
-                        WHEN NOT MATCHED THEN
-                            INSERT (SQLInstanceID, DatabaseName, DatabaseState, IsMonitored, DiscoveryOn, LastUpdated) VALUES (Source.SQLInstanceID, Source.DatabaseName, Source.DatabaseState, 1, GetDate(), GetDate());"
-
-                Write-StatusUpdate -Message $TSQL -IsTSQL                    
-                $Results = Invoke-SQLCMD -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
-                                            -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
-                                            -Query $TSQL -ErrorAction Stop
-
-                IF ($SQLServer_Major -ne 8)
-                {
-                    # Update database space's catalog, only collect database space information for SQL 2005+.
-                    $TSQL = "WITH CTE AS (
-                            SELECT D.DatabaseID, SD.FileSize_mb, SD.FileType
-                                FROM Staging.DatabaseSizeDetails SD
-                                JOIN dbo.Databases D
-                                ON SD.DatabaseName = D.DatabaseName
-                                AND SD.SQLInstanceID = D.SQLInstanceID
-                                AND D.IsMonitored = 1)
-                            MERGE dbo.DatabaseSize AS Target
-                            USING (SELECT DatabaseID, FileSize_mb, FileType FROM CTE) AS Source (DatabaseID, FileSize_mb, FileType)
-                            ON (Target.DatabaseID = Source.DatabaseID AND Target.DateCaptured = GetDate() AND Target.FileType = Source.FileType)
-                            WHEN MATCHED THEN
-                            UPDATE SET FileSize_mb = (Target.FileSize_mb + Source.FileSize_mb)/2
-                            WHEN NOT MATCHED THEN
-                            INSERT (DatabaseID, FileType, DateCaptured, FileSize_mb) VALUES (Source.DatabaseID, Source.FileType, GetDate(), Source.FileSize_mb);"
-
-                    Write-StatusUpdate -Message $TSQL -IsTSQL                    
-                    $Results = Invoke-SQLCMD -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
-                                                -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
-                                                -Query $TSQL -ErrorAction Stop
-                }
-
-                if ($SQLServer_Major -ge 11)
-                {
-                    #Update AG to Database Mapping Information
-                    $TSQL = "  WITH CTE
-                                    AS (SELECT AGInstanceID, DatabaseID
-                                        FROM Staging.DatabaseSizeDetails SD
-                                        JOIN dbo.Databases D
-                                            ON SD.DatabaseName = D.DatabaseName
-                                        AND SD.SQLInstanceID = D.SQLInstanceID
-                                        AND D.IsMonitored = 1
-                                        JOIN dbo.AGs A
-                                        ON SD.AGGuid = A.AGGuid
-                                        JOIN dbo.AGInstances AGI
-                                            ON A.AGID = AGI.AGID
-                                            AND AGI.SQLInstanceID = SD.SQLInstanceID
-                                        WHERE FileType = 'Data')
-                                MERGE dbo.AGDatabases AS Target
-                                USING (SELECT AGInstanceID, DatabaseID FROM CTE) AS Source (AGInstanceID, DatabaseID)
-                                    ON (Target.DatabaseID = Source.DatabaseID AND Target.AGInstanceID = Source.AGInstanceID)
-                                WHEN NOT MATCHED THEN
-                                INSERT (AGInstanceID,DatabaseID) VALUES (Source.AGInstanceID, Source.DatabaseID);"
-
-                    Write-StatusUpdate -Message $TSQL -IsTSQL                    
-                    $Results = Invoke-SQLCMD -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
-                                                -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
-                                                -Query $TSQL -ErrorAction Stop
-                }
-
-            }
-            else
-            {
-                Write-StatusUpdate -Message "No user databases found on [$($SQLServerRC.ServerInstance)]." -WriteToDB
-                $SQLInstanceAccessible = $false
-            }
-
-        }
-        catch [System.Data.SqlClient.SqlException]
-        {
-            Write-StatusUpdate -Message "Cannot reach SQL Server instance [$($SQLServerRC.ServerInstance)]." -WriteToDB
-            $SQLInstanceAccessible = $false
-        }
-        catch
-        {
-            Write-StatusUpdate -Message "Failed to talk to SQL Instance (unhandled exception)." -WriteToDB
-            Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
-            $SQLInstanceAccessible = $false
-        }
-
-        # Update the Database Space Information
-        $Results = Update-SQLInstance $ComputerName_NoDomain $SQLServerRC.SQLInstanceName $SQLVersion $SQLServer_Build $SQLEdition $ServerType $EnvironmentType
-        if ($Results -eq $Global:Error_FailedToComplete)
-        {
-            Write-StatusUpdate -Message "Failed to Update-SQLInstance for [$($SQLServerRC.ServerInstance)]."
-        }
+		if ($Results)
+		{
+			Update-SQLOpDatabases -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+		}
+		else
+		{
+			Write-StatusUpdate -Message "No user databases found on [$($SQLServerRC.ServerInstance)]." -WriteToDB
+			$SQLInstanceAccessible = $false
+		}
 
         if ($DCS_ErrorLogs)
         {
