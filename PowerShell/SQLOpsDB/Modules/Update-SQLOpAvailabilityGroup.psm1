@@ -29,6 +29,8 @@ Date       Version Comments
 2016.07.14 0.00.01  Initial Draft
 2016.12.13 0.00.02  Removed -Level attribute from Write-StatusUpdate
 2022.10.13 1.00.00	Rewrite full module with new standard.
+2022.10.29 1.00.02	Updated how staging table is handled.
+					Updated error expection reporting.
 #>
 function Update-SQLOpAvailabilityGroup
 {
@@ -45,26 +47,15 @@ function Update-SQLOpAvailabilityGroup
     }
 
     $ModuleName = 'Update-SQLOpAvailabilityGroup'
-    $ModuleVersion = '1.00.00'
-    $ModuleLastUpdated = 'October 13, 2022'
+    $ModuleVersion = '1.00.02'
+    $ModuleLastUpdated = 'October 29, 2022'
 
     try
     {
         
         Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
-        $TSQL = "IF EXISTS (SELECT * FROM sys.tables WHERE name = 'AG')
-                     DROP TABLE Staging.AG
-
-                  CREATE TABLE Staging.AG (
-                                SQLInstanceID int,
-                                ServerInstance VARCHAR(255),
-                                AGGuid uniqueidentifier,
-                                AGName VARCHAR(255),
-                                ComputerName VARCHAR(255),
-								InstanceName VARCHAR(255),
-                                ReplicaRole VARCHAR(25))
-                            GO"
+        $TSQL = "EXEC Staging.TableUpdates @TableName=N'AG', @ModuleVersion=N'$ModuleVersion'"
         Write-StatusUpdate -Message $TSQL -IsTSQL
         Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
                       -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `

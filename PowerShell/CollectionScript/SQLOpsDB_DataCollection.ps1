@@ -519,7 +519,7 @@ ForEach ($SQLServerRC in $SQLServers)
 		if ($SQLServer_Major -ge 11)
 		{
 			#Request all the AG and their replica details for current instance.                   
-			$Results = Get-SIAvailabilityGroups -ServerInstance $SQLServerRC.ServerInstanceConnectionString
+			$Results = Get-SIAvailabilityGroups -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
 
 			# If result set is empty this instance has no AG on it right now.
 			If ($Results -ne $Global:Error_ObjectsNotFound)

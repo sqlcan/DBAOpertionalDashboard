@@ -32,13 +32,15 @@ Date       Version Comments
 2022.07.06 0.00.03 Added primary and secondary node information.
 2022.10.13 0.00.04 Added internal switch to allow me to return SQL Instance ID
                    when updating the AG in SQLOpsDB.
+2022.10.29 0.00.05 Refactored code for correctness.
 #>
 function Get-SIAvailabilityGroups
 {
-    [CmdletBinding()] 
+    [CmdletBinding(DefaultParameterSetName='ServerInstance')] 
     param( 
-    [Parameter(Position=0, Mandatory=$true)] [string]$ServerInstance,
-	[Parameter(Mandatory=$false, DontShow)] [Switch]$Internal
+	[Parameter(ParameterSetName='ServerInstance', Position=0, Mandatory=$true)]
+    [Parameter(ParameterSetName='Internal', Position=0, Mandatory=$true)] [string]$ServerInstance,
+	[Parameter(ParameterSetName='Internal', Position=1, Mandatory=$true, DontShow)] [Switch]$Internal
     )
 
     if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
@@ -48,12 +50,19 @@ function Get-SIAvailabilityGroups
     }
     
     $ModuleName = 'Get-SIAvailabilityGroups'
-    $ModuleVersion = '0.00.04'
-    $ModuleLastUpdated = 'October 13, 2022'
+    $ModuleVersion = '0.00.05'
+    $ModuleLastUpdated = 'October 29, 2022'
 
     try
     {
         Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
+
+		$ProcessID = $PID
+
+		if ($Internal)
+		{
+			$ServerInstanceObj = Get-SqlOpSQLInstance -ServerInstance $ServerInstance -Internal:$Internal
+		}
 
         $TSQL = "WITH CTE AS (
 			SELECT AG.Group_id AS AGGuid,
@@ -64,37 +73,26 @@ function Get-SIAvailabilityGroups
 				len(AR.replica_server_name) - charindex('\',AR.replica_server_name) AS LenInstanceName
 			FROM sys.availability_groups AG
 			JOIN sys.availability_replicas AR
-				ON AG.group_id = AR.group_id) "
-			
-        Write-StatusUpdate -Message $TSQL -IsTSQL
-
-		if (!($PSBoundParameters.Internal))
-        {            
-            $TSQL += "SELECT   '$ServerInstance' AS ServerInstance, "
-        }
-        else
-        {
-            $ServerInstanceObj = Get-SqlOpSQLInstance -ServerInstance $ServerInstance -Internal:$Internal
-            $TSQL += "SELECT   $($ServerInstanceObj.SQLInstanceID) AS SQLInstanceID 
-                            , '$ServerInstance' AS ServerInstance, "
-        }
-
-		$TSQL += "      AGGuid,
-						AGName,
-						CASE WHEN SlashLocation > 0 THEN
-							SUBSTRING(ReplicaName,1,SlashLocation-1)
-						ELSE
-							ReplicaName
-						END AS ComputerName,
-						CASE WHEN SlashLocation > 0 THEN
-							SUBSTRING(ReplicaName,SlashLocation+1,LenInstanceName)
-						ELSE
-							'mssqlserver'
-						END AS InstanceName,
-						CASE WHEN (rs.role_desc IS NULL) THEN 'PRIMARY' ELSE rs.role_desc END AS ReplicaRole
-					FROM CTE C
-					LEFT JOIN sys.dm_hadr_availability_replica_states rs
-						ON c.ReplicaID = rs.replica_id"
+				ON AG.group_id = AR.group_id)
+			SELECT $(IF ($Internal) { "$ProcessID AS ProcessID, " })
+			       $(IF ($Internal) { "$($ServerInstanceObj.SQLInstanceID) AS SQLInstanceID, " })
+			       '$ServerInstance' AS ServerInstance,
+		            AGGuid,
+					AGName,
+					CASE WHEN SlashLocation > 0 THEN
+						SUBSTRING(ReplicaName,1,SlashLocation-1)
+					ELSE
+						ReplicaName
+					END AS ComputerName,
+					CASE WHEN SlashLocation > 0 THEN
+						SUBSTRING(ReplicaName,SlashLocation+1,LenInstanceName)
+					ELSE
+						'mssqlserver'
+					END AS InstanceName,
+					CASE WHEN (rs.role_desc IS NULL) THEN 'PRIMARY' ELSE rs.role_desc END AS ReplicaRole
+				FROM CTE C
+				LEFT JOIN sys.dm_hadr_availability_replica_states rs
+					ON c.ReplicaID = rs.replica_id"
 
 		Write-Debug $TSQL
 
@@ -113,6 +111,19 @@ function Get-SIAvailabilityGroups
             return
         }
 
+    }
+    catch [System.Data.SqlClient.SqlException]
+    {
+        if ($($_.Exception.Message) -like '*Could not open a connection to SQL Server*')
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Cannot connect to SQLOpsDB." -WriteToDB
+        }
+        else
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - SQL Expectation" -WriteToDB
+            Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
+        }
+        Write-Output $Global:Error_FailedToComplete
     }
     catch
     {

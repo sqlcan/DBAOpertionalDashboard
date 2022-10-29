@@ -39,6 +39,18 @@ BEGIN
 				ServiceBuild varchar(25) NULL,
 				Status varchar(25) NULL
 			)
+
+		IF (@TableName = 'AG')
+			CREATE TABLE Staging.AG (
+                ProcessID INT NULL,
+				SQLInstanceID int,
+                ServerInstance VARCHAR(255),
+                AGGuid uniqueidentifier,
+                AGName VARCHAR(255),
+                ComputerName VARCHAR(255),
+				InstanceName VARCHAR(255),
+                ReplicaRole VARCHAR(25))
+
 		EXEC sys.sp_addextendedproperty @name=N'SQLOpsDBVersion', @value=@ModuleVersion , @level0type=N'SCHEMA',@level0name=N'Staging', @level1type=N'TABLE',@level1name=@TableName
 	END
 END
