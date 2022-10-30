@@ -1,9 +1,9 @@
 ﻿<#
 .SYNOPSIS
-Publish-MonthlyAggregate
+Publish-SQLOpMonthlyAggregate
 
 .DESCRIPTION 
-Publish-MonthlyAggregate moves the data from raw data and disk space
+Publish-SQLOpMonthlyAggregate moves the data from raw data and disk space
 to monthly aggregate summary data.
 
 .PARAMETER Type
@@ -13,10 +13,10 @@ What do they want to aggregate data for?
 None
 
 .OUTPUTS
-Publish-MonthlyAggregate
+Results from execution.
 
 .EXAMPLE
-Publish-MonthlyAggregate -Type DiskVolumes
+Publish-SQLOpMonthlyAggregate -Type DiskVolumes
 
 Aggregate data for last month for all disk volumes.
 
@@ -28,8 +28,9 @@ Date       Version Comments
                    information
 2022.10.29 0.00.04 Updated command let name.
 				   Added standard code for working with JSON parameters.
+2022.10.30 0.00.05 Updated command let name with standard "SQLOp".
 #>
-function Publish-MonthlyAggregate
+function Publish-SQLOpMonthlyAggregate
 {
     [CmdletBinding()] 
     param( 
@@ -42,8 +43,8 @@ function Publish-MonthlyAggregate
         return
     }
 
-    $ModuleName = 'Publish-MonthlyAggregate'
-    $ModuleVersion = '0.00.04'
+    $ModuleName = 'Publish-SQLOpMonthlyAggregate'
+    $ModuleVersion = '0.00.05'
     $ModuleLastUpdated = 'October 30, 2022'
 
     try

@@ -2,6 +2,9 @@
 #            all other settings will either migration to JSON or in-database table.
 #            Until migration is completed, both settings will be used together to prevent solution
 #            from breaking.
+#
+# 2022.10.30 Removed all the old settings, only global settings that are populated by JSON file
+#			 will be consumed.
 
 # By default connection information will be loaded from JSON File.
 $Global:JSONSettingsFile = '\..\Config\SQLOpsDB.json'
@@ -38,39 +41,6 @@ $Global:SQLOpsDBInitialized = $false
 [Int]$Global:SQLAgent_Jobs_CleanUp_Retention_Days = 180          # Number of Days before clean up; valid range 30 - 180 Days.
 
 [String]$Global:Default_DomainName = $null # Loaded from dbo.Setting.
-
-# Key Settings
-$Global:CMS_SQLServerName = "MOGUPTA-PC01"
-$Global:CMS_DatabaseName = "msdb"
-$Global:SQLCMDB_SQLServerName = "MOGUPTA-PC01"
-$Global:SQLCMDB_DatabaseName = "DBA_Dashboard_PROD"
-
-# Global Settings Below as above, these are kept for backwards compatibility.
-# To be removed as the respective modules are updated.
-$Global:Logs_CleanUp_Enabled = $true
-$Global:Logs_CleanUp = 180
-$Global:Expired_CleanUp_Enabled = $true
-$Global:Expired_Cleanup = 91
-$Global:Trending_CleanUp_Enabled = $true
-$Global:Trending_Cleanup = 60
-$Global:Aggregate_CleanUp_Enabled = $true
-$Global:Aggregate_Cleanup = 60
-$Global:RawData_Cleanup = 45
-
-# Constants
-
-$Global:OutputLevel_Zero = 0
-$Global:OutputLevel_One = 1
-$Global:OutputLevel_Two = 2
-$Global:OutputLevel_Three = 3
-$Global:OutputLevel_Four = 4
-$Global:OutputLevel_Five = 5
-$Global:OutputLevel_Six = 6
-$Global:OutputLevel_Seven = 7
-$Global:OutputLevel_Eight = 8
-$Global:OutputLevel_Nine = 9
-$Global:OutputLevel_Ten = 10
-
 
 # Errors
 $Global:Error_Successful = 0

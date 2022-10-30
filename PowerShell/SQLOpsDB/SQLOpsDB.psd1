@@ -132,7 +132,7 @@
 	'.\Modules\Get-SQLOpCMSGroups.psm1';	           
 	'.\Modules\Set-SQLOpCMSGroups.psm1';
 	# Snapshot, Aggregrate, Cleanup Modules
-	'.\Modules\Publish-MonthlyAggregate.psm1';
+	'.\Modules\Publish-SQLOpMonthlyAggregate.psm1';
 
 	# No Categorized / Or Still need Updates
        
