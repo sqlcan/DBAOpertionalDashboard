@@ -26,6 +26,8 @@ Date        Version Comments
 2022.10.28  0.00.01 Initial Version.
 2022.10.29  0.00.03 Fixed minor bug with data-type miss-match.
 					Updated how staging tables are created and managed.
+2022.10.30	0.00.05 Fixed bug with merge stagement for Database Size updates.
+					Fixed bug with SQL Version compare.
 #>
 function Update-SQLOpDatabase
 {
@@ -42,8 +44,8 @@ function Update-SQLOpDatabase
     }
     
     $ModuleName = 'Update-SQLOpDatabase'
-    $ModuleVersion = '0.00.03'
-    $ModuleLastUpdated = 'October 29, 2022'
+    $ModuleVersion = '0.00.05'
+    $ModuleLastUpdated = 'October 30, 2022'
    
     try
     {
@@ -104,8 +106,8 @@ function Update-SQLOpDatabase
 					  -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
 					  -Query $TSQL -ErrorAction Stop
 
-		# Step 4 : AG Database Update.
-		if ($SQLProperties.SQLServer_Major -gt 8)
+		# Step 4 : Database Size Update.
+		if ($SQLProperties.SQLBuild_Major -gt 8)
 		{
 			# Update database space's catalog, only collect database space information for SQL 2005+.
 			$TSQL = "WITH CTE AS (
@@ -118,7 +120,7 @@ function Update-SQLOpDatabase
 					  WHERE SD.ProcessID = $ProcessID)
 					MERGE dbo.DatabaseSize AS Target
 					USING (SELECT DatabaseID, FileSize_mb, FileType FROM CTE) AS Source (DatabaseID, FileSize_mb, FileType)
-					ON (Target.DatabaseID = Source.DatabaseID AND Target.DateCaptured = GetDate() AND Target.FileType = Source.FileType)
+					ON (Target.DatabaseID = Source.DatabaseID AND Target.DateCaptured = CAST(GetDate() AS DATE) AND Target.FileType = Source.FileType)
 					WHEN MATCHED THEN
 					UPDATE SET FileSize_mb = Source.FileSize_mb
 					WHEN NOT MATCHED THEN
@@ -130,8 +132,8 @@ function Update-SQLOpDatabase
 						  -Query $TSQL -ErrorAction Stop
 		}
 
-		# Step 5 : Database Size Update.
-		if ($SQLProperties.SQLServer_Major -ge 11)
+		# Step 5 : AG Database Update.
+		if ($SQLProperties.SQLBuild_Major -ge 11)
 		{
 			$TSQL = "  WITH CTE
 							AS (SELECT AGInstanceID, DatabaseID
@@ -161,6 +163,7 @@ function Update-SQLOpDatabase
 						  -Query $TSQL -ErrorAction Stop
 		}
 
+		
 		# Step 6 : Clear Staging Table.
 		$TSQL = "DELETE FROM Staging.Databases WHERE ProcessID = $ProcessID"
 		Write-StatusUpdate -Message $TSQL -IsTSQL                    
