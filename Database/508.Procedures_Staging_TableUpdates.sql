@@ -1,4 +1,4 @@
-CREATE PROCEDURE Staging.TableUpdates
+create PROCEDURE Staging.TableUpdates
 @TableName NVARCHAR(50),
 @ModuleVersion NVARCHAR(25)
 AS
@@ -55,6 +55,7 @@ BEGIN
 			CREATE TABLE Staging.Databases(
 			    ProcessID int NULL,
 				SQLInstanceID int NULL,
+				ServerInstance VARCHAR(255),
 				AGGuid uniqueidentifier NULL,
 				DatabaseName varchar(255) NULL,
 				DatabaseState varchar(60) NULL,
