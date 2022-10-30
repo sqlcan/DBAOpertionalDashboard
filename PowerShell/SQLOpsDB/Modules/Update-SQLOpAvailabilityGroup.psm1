@@ -31,6 +31,9 @@ Date       Version Comments
 2022.10.13 1.00.00	Rewrite full module with new standard.
 2022.10.29 1.00.02	Updated how staging table is handled.
 					Updated error expection reporting.
+2022.10.30 1.00.04 	Changed how the AG information is updated from MERGE to
+					 UPDATE and INSERT.
+					Added handling for Process ID.
 #>
 function Update-SQLOpAvailabilityGroup
 {
@@ -47,8 +50,8 @@ function Update-SQLOpAvailabilityGroup
     }
 
     $ModuleName = 'Update-SQLOpAvailabilityGroup'
-    $ModuleVersion = '1.00.02'
-    $ModuleLastUpdated = 'October 29, 2022'
+    $ModuleVersion = '1.00.04'
+    $ModuleLastUpdated = 'October 30, 2022'
 
     try
     {
@@ -72,8 +75,10 @@ function Update-SQLOpAvailabilityGroup
 		#
 		# First Update AG Meta Data.
 
+		$ProcessID = $pid
+
 		$TSQL = " MERGE dbo.AGs AS Target
-					USING (SELECT DISTINCT AGName, AGGuid FROM Staging.AG) AS SOURCE (AGName, AGGuid)
+					USING (SELECT DISTINCT AGName, AGGuid FROM Staging.AG WHERE ProcessID = $ProcessID) AS SOURCE (AGName, AGGuid)
 					ON (Target.AGName = Source.AGName AND Target.AGGuid = Source.AGGuid)
 					WHEN NOT MATCHED THEN
 					INSERT (AGName, AGGuid) VALUES (Source.AGName, Source.AGGuid)
@@ -93,10 +98,10 @@ function Update-SQLOpAvailabilityGroup
 		
 		# This code first finds the SQL Instance ID of non-current replica.
 		# Then it updates either inserts or updates the records using Merge.
-		$TSQL = "WITH OtherReplicas AS (
+		$Primary_TSQL = "WITH OtherReplicas AS (
 			SELECT DISTINCT ComputerName, InstanceName
 			  FROM Staging.AG
-			 WHERE ServerInstance <> (CASE WHEN InstanceName = 'mssqlserver' THEN ComputerName ELSE ComputerName + '\' + InstanceName END)),
+			 WHERE ServerInstance <> (CASE WHEN InstanceName = 'mssqlserver' THEN ComputerName ELSE ComputerName + '\' + InstanceName END) AND ProcessID = $ProcessID),
 		   OtherReplicaInstanceID AS (
 		   SELECT SQLInstanceID, ORep.ComputerName, ORep.InstanceName
 			 FROM OtherReplicas ORep
@@ -108,22 +113,47 @@ function Update-SQLOpAvailabilityGroup
 		   FinalStagingAGData AS
 		   (
 			   SELECT B.AGID, A.ReplicaRole, ISNULL(ORI.SQLInstanceID, A.SQLInstanceID) AS SQLInstanceID
-				 FROM STaging.AG A
+				 FROM Staging.AG A
 				 LEFT JOIN OtherReplicaInstanceID ORI
 				   ON A.ComputerName = ORI.ComputerName
 				  AND A.InstanceName = ORI.InstanceName
 				 LEFT JOIN dbo.AGs B
 				   ON A.AGGuid = B.AGGuid
 				   AND A.AGName = B.AGName
-		   )
-		   MERGE dbo.AGInstances AS Target
-		   USING (SELECT AGID, ReplicaRole, SQLInstanceID FROM FinalStagingAGData) AS Source (AGID, ReplicaRole, SQLInstanceID)
-		   ON (Target.AGID = Source.AGID AND Target.SQLInstanceID = Source.SQLInstanceID)
-		   WHEN NOT MATCHED THEN
-		   INSERT (AGID, SQLInstanceID, ReplicaRole) VALUES (SOURCE.AGID, SOURCE.SQLInstanceID, SOURCE.ReplicaRole)
-		   WHEN MATCHED THEN
-		   UPDATE SET LastUpdated = GETDATE();"
+				 WHERE ProcessID = $ProcessID
+		   ) "
 
+		# Could not use MERGE because when matching on AGID and InstanceID it results in duplicate rows.
+		# replica role can change from one execution to another.
+
+		$TSQL = $Primary_TSQL +
+		              "UPDATE AGI
+					  SET LastUpdated = GETDATE(),
+						  ReplicaRole = SAG.ReplicaRole
+					 FROM dbo.AGInstances AGI
+					 JOIN FinalStagingAGData SAG
+					   ON AGI.AGID = SAG.AGID
+					  AND AGI.SQLInstanceID = SAG.SQLInstanceID;"
+
+		Write-StatusUpdate -Message $TSQL -IsTSQL
+
+		Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+						-Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+						-Query $TSQL
+
+		$TSQL = $Primary_TSQL +
+						"INSERT INTO dbo.AGInstances (AGID, SQLInstanceID, ReplicaRole)
+						SELECT AGID, SQLInstanceID, ReplicaRole
+						  FROM FinalStagingAGData SAG
+						 WHERE NOT EXISTS (SELECT * FROM dbo.AGInstances AGI WHERE Sag.AGID = AGI.AGID AND SAG.SQLInstanceID = AGI.SQLInstanceID)"
+  
+		  Write-StatusUpdate -Message $TSQL -IsTSQL
+  
+		  Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+						  -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+						  -Query $TSQL
+
+		$TSQL = "DELETE FROM Staging.AG WHERE ProcessID = $ProcessID"
 		Write-StatusUpdate -Message $TSQL -IsTSQL
 
 		Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
