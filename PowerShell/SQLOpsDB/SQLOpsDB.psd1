@@ -133,9 +133,8 @@
 	'.\Modules\Set-SQLOpCMSGroups.psm1';
 	# Snapshot, Aggregrate, Cleanup Modules
 	'.\Modules\Publish-SQLOpMonthlyAggregate.psm1';
+    '.\Modules\Publish-SQLOpTreadData.psm1';
 	'.\Modules\Clear-SQLOpData.psm1';
-	# No Categorized / Or Still need Updates
-    '.\Modules\Create-CMDBMonthlyTrend.psm1';
     # Support Modules
 	'.\Modules\Write-DataTable.psm1';    
     '.\Modules\Split-Parts.psm1'

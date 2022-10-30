@@ -659,9 +659,7 @@ Write-StatusUpdate -Message "Phase 3: Aggregation for Disk Space & Database Spac
     Write-StatusUpdate -Message "Phase 3.4: Build Trending Data, Truncate Aggregate Data"
     if ($Today -eq $FirstDayOfMonth)
     {
-        <#Create-CMDBMonthlyTrend -Type Servers
-        Create-CMDBMonthlyTrend -Type SQLInstances
-        Create-CMDBMonthlyTrend -Type Databases#>
+        Publish-SQLOpTreadData
         Clear-SQLOpData -DataSet Trending | Out-Null
     }
 
