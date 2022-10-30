@@ -637,54 +637,50 @@ Write-StatusUpdate -Message "Phase 3: Aggregation for Disk Space & Database Spac
     $Today = $CurrentDate.ToString('yyyyMMdd')
     $FirstDayOfMonth = $FirstDayOfMonth.ToString('yyyyMMdd')
 
-    #Phase 3.1: Aggregate Data for Disk Space and Database Space
-    Write-StatusUpdate -Message "Phase 3.1: Aggregate Data for Disk Space and Database Space"
+    #Phase 3.1: Clean Up Expired Data
+    Write-StatusUpdate -Message "Phase 3.1: Clean Up Expired Data"
+	Clear-SQLOpData -DataSet Expired | Out-Null
 
+    #Phase 3.2: Aggregate Data for Disk Space and Database Space
+    Write-StatusUpdate -Message "Phase 3.2: Aggregate Data for Disk Space and Database Space"
     if ($Today -eq $FirstDayOfMonth)
     {
         Publish-SQLOpMonthlyAggregate -Type DiskVolumes
         Publish-SQLOpMonthlyAggregate -Type Databases
+		Clear-SQLOpData -DataSet Aggregate | Out-Null
     }
 
-<# Phase 3, Aggregations, Snapshots, Cleanups Suspended for now 2022.10.29
-    #Phase 3.2: Truncate Raw Data for Disk Space and Database Space
-    Write-StatusUpdate -Message "Phase 3.2: Truncate Raw Data for Disk Space and Database Space"
+    #Phase 3.3: Truncate Raw Data for Disk Space and Database Space
+    Write-StatusUpdate -Message "Phase 3.3: Truncate Raw Data for Disk Space and Database Space"
+	Clear-SQLOpData -DataSet RawData | Out-Null
 
-    Truncate-CMDBData -Type Raw_DiskVolumes
-    Truncate-CMDBData -Type Raw_Database
 
-    #Phase 3.3: Build Trending Data, Truncate Aggregate Data
-    Write-StatusUpdate -Message "Phase 3.3: Build Trending Data, Truncate Aggregate Data"
-
+    #Phase 3.4: Build Trending Data, Truncate Aggregate Data
+    Write-StatusUpdate -Message "Phase 3.4: Build Trending Data, Truncate Aggregate Data"
     if ($Today -eq $FirstDayOfMonth)
     {
-        Create-CMDBMonthlyTrend -Type Servers
+        <#Create-CMDBMonthlyTrend -Type Servers
         Create-CMDBMonthlyTrend -Type SQLInstances
-        Create-CMDBMonthlyTrend -Type Databases
-        Truncate-CMDBData -Type Monthly_DiskVolumes
-        Truncate-CMDBData -Type Monthly_Database
-        Truncate-CMDBData -Type Trending_AllObjects
+        Create-CMDBMonthlyTrend -Type Databases#>
+        Clear-SQLOpData -DataSet Trending | Out-Null
     }
 
-    #Phase 3.4: Clean Up Expired Data
-    Write-StatusUpdate -Message "Phase 3.4: Clean Up Expired Data"
+    #Phase 3.5: Clean Up Expired Data
+    Write-StatusUpdate -Message "Phase 3.5: Clean Up SQL Logs"
+	Clear-SQLOpData -DataSet SQL_ErrorLog | Out-Null
 
-    # Disabled 20200310 -- Multiple bugs --
-    #Delete-CMDBData -Type Databases
-    #Delete-CMDBData -Type DiskVolumes
-    #Delete-CMDBData -Type SQLInstances
-    #Delete-CMDBData -Type SQLClusters
-    #Delete-CMDBData -Type Servers
+    #Phase 3.6: Clean Up Expired Data
+    Write-StatusUpdate -Message "Phase 3.6: Clean Up SQL Agent Logs"
+	Clear-SQLOpData -DataSet SQL_JobHistory | Out-Null
 
-    #Phase 3.5: Clean Up CMDB Log Data
-    Write-StatusUpdate -Message "Phase 3.5: Clean Up CMDB Log Data"
+    #Phase 3.7: Clean Up CMDB Log Data
+    Write-StatusUpdate -Message "Phase 3.7: Clean Up CMDB Log Data"
 
     if ($Today -eq $FirstDayOfMonth)
     {
-        Truncate-CMDBLog
+        Clear-SQLOpData -DataSet SQLOps_Logs | Out-Null
     }
-#>
 
-Write-StatusUpdate "SQLOpsDB - Collection End" -WriteToDB
+	Write-StatusUpdate "SQLOpsDB - Collection End" -WriteToDB
 
 ## Code End

@@ -92,10 +92,10 @@
 	'.\Modules\Get-SIDatabases.psm1';
 	'.\Modules\Update-SQLOpDatabase.psm1';
 	# SQL Error Log Modules
-	'.\Modules\Get-SQLErrorLogs.psm1';
-	'.\Modules\Update-SQLOpSQLErrorLog.psm1';
-	'.\Modules\Get-SQLOpSQLErrorLogStats.psm1';
-	'.\Modules\Update-SQLOpSQLErrorLog.psm1';
+	'.\Modules\Get-SISQLErrorLogs.psm1';
+	'.\Modules\Get-SQLErrorLogs.psm1';					# REQUIRED NOT DUPLICTE #
+	'.\Modules\Update-SQLOpSQLErrorLog.psm1';	
+	'.\Modules\Get-SQLOpSQLErrorLogStats.psm1';	
 	'.\Modules\Update-SQLOpSQLErrorLogStats.psm1';
 	# SQL Jobs Modules
 	'.\Modules\Get-SISQLJobs.psm1';
@@ -133,18 +133,12 @@
 	'.\Modules\Set-SQLOpCMSGroups.psm1';
 	# Snapshot, Aggregrate, Cleanup Modules
 	'.\Modules\Publish-SQLOpMonthlyAggregate.psm1';
-
+	'.\Modules\Clear-SQLOpData.psm1';
 	# No Categorized / Or Still need Updates
-       
-    '.\Modules\Write-DataTable.psm1';    
-    '.\Modules\Truncate-CMDBData.psm1';
     '.\Modules\Create-CMDBMonthlyTrend.psm1';
-    '.\Modules\Delete-CMDBData.psm1';
-    '.\Modules\Truncate-CMDBLog.psm1';    
-    '.\Modules\Get-SISQLErrorLogs.psm1';
     # Support Modules
+	'.\Modules\Write-DataTable.psm1';    
     '.\Modules\Split-Parts.psm1'
-    #'.\Modules\.psm1';
     )
 
     # Functions to export from this module
