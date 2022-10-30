@@ -642,8 +642,8 @@ Write-StatusUpdate -Message "Phase 3: Aggregation for Disk Space & Database Spac
 
     if ($Today -eq $FirstDayOfMonth)
     {
-        Publish-MonthlyAggregate -Type DiskVolumes
-        Publish-MonthlyAggregate -Type Databases
+        Publish-SQLOpMonthlyAggregate -Type DiskVolumes
+        Publish-SQLOpMonthlyAggregate -Type Databases
     }
 
 <# Phase 3, Aggregations, Snapshots, Cleanups Suspended for now 2022.10.29
