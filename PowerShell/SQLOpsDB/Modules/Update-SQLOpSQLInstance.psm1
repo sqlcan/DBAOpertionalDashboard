@@ -134,7 +134,7 @@ function Update-SQLOpSQLInstance
 
 		if ($PSBoundParameters.ContainsKey('DisableMonitoring'))
 		{
-			$TSQL = "UPDATE dbo.SQLInstance SET IsMonitored = 0 WHERE InstanceName = '$SQLInstanceName' AND "
+			$TSQL = "UPDATE dbo.SQLInstances SET IsMonitored = 0 WHERE InstanceName = '$SQLInstanceName' AND "
 
 			if ($ServerID -eq 0) {$TSQL += " SQLClusterID = $SQLClusterID"}
 			else {$TSQL += " ServerID = $ServerID"}
@@ -148,7 +148,7 @@ function Update-SQLOpSQLInstance
 		}
 		elseif ($PSBoundParameters.ContainsKey('EnableMonitoring'))
 		{
-			$TSQL = "UPDATE dbo.SQLInstance SET IsMonitored = 1 WHERE InstanceName = '$SQLInstanceName' AND "
+			$TSQL = "UPDATE dbo.SQLInstances SET IsMonitored = 1 WHERE InstanceName = '$SQLInstanceName' AND "
 
 			if ($ServerID -eq 0) {$TSQL += " SQLClusterID = $SQLClusterID"}
 			else {$TSQL += " ServerID = $ServerID"}
@@ -184,7 +184,7 @@ function Update-SQLOpSQLInstance
 				$SQLVersionID = 1 # Unknown
 			}
 
-			$TSQL = "UPDATE dbo.SQLInstance
+			$TSQL = "UPDATE dbo.SQLInstances
 			            SET SQLInstanceVersionID = $SQLVersionID,
 						    SQLInstanceBuild = $SQLServer_Build, 
 							SQLInstanceEdition = '$SQLEdition',
