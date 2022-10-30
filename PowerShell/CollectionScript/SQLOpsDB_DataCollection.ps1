@@ -628,7 +628,7 @@ ForEach ($SQLServerRC in $SQLServers)
 }
 #endregion
 
-<# Phase 3, Aggregations, Snapshots, Cleanups Suspended for now 2022.10.29
+
 #Phase 3: Aggregation for Disk Space & Database Space
 Write-StatusUpdate -Message "Phase 3: Aggregation for Disk Space & Database Space"
 
@@ -642,10 +642,11 @@ Write-StatusUpdate -Message "Phase 3: Aggregation for Disk Space & Database Spac
 
     if ($Today -eq $FirstDayOfMonth)
     {
-        Aggregate-CMDBMonthlyData -Type DiskVolumes
-        Aggregate-CMDBMonthlyData -Type Databases
+        Publish-MonthlyAggregate -Type DiskVolumes
+        Publish-MonthlyAggregate -Type Databases
     }
 
+<# Phase 3, Aggregations, Snapshots, Cleanups Suspended for now 2022.10.29
     #Phase 3.2: Truncate Raw Data for Disk Space and Database Space
     Write-StatusUpdate -Message "Phase 3.2: Truncate Raw Data for Disk Space and Database Space"
 

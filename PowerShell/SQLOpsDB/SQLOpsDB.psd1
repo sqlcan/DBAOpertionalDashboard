@@ -80,8 +80,10 @@
     '.\Modules\Get-SQLOpSQLInstance.psm1';
 	'.\Modules\Add-SQLOpSQLInstance.psm1';
 	'.\Modules\Update-SQLOpSQLInstance.psm1';
+	'.\Modules\Update-SQLInstance.psm1'; 
     '.\Modules\Get-SISQLProperties.psm1';
 	'.\Modules\Get-SQLOpSQLProperties.psm1';
+	'.\Modules\Get-SISQLVolumeDetails.psm1';
 	# Availability Group Modules
 	'.\Modules\Get-SIAvailabilityGroups.psm1';
 	'.\Modules\Update-SQLOpAvailabilityGroup.psm1';
@@ -89,23 +91,21 @@
 	# Database Modules
 	'.\Modules\Get-SIDatabases.psm1';
 	'.\Modules\Update-SQLOpDatabase.psm1';
-        # SQL Error Log Modules
-        '.\Modules\Get-SQLErrorLogs.psm1';
-        '.\Modules\Update-SQLOpSQLErrorLog.psm1';
-        '.\Modules\Get-SQLOpSQLErrorLogStats.psm1';
-        '.\Modules\Update-SQLOpSQLErrorLog.psm1';
-        '.\Modules\Update-SQLOpSQLErrorLogStats.psm1';
-        # SQL Jobs Modules
-        '.\Modules\Get-SISQLJobs.psm1';
-        '.\Modules\Update-SQLOpSQLJobs.psm1';
-        '.\Modules\Get-SQLOpSQLJobs.psm1';
-        '.\Modules\Update-SQLOpSQLJobStats.psm1';
-        '.\Modules\Get-SQLOpSQLJobStats.psm1';
-        # Extended Properties Modules
-        '.\Modules\Get-SIExtendedProperties.psm1';
-		'.\Modules\Set-SIExtendedProperties.psm1';
-        # Data, Log, and Backup Paths
-        '.\Modules\Get-SISQLVolumeDetails.psm1';
+	# SQL Error Log Modules
+	'.\Modules\Get-SQLErrorLogs.psm1';
+	'.\Modules\Update-SQLOpSQLErrorLog.psm1';
+	'.\Modules\Get-SQLOpSQLErrorLogStats.psm1';
+	'.\Modules\Update-SQLOpSQLErrorLog.psm1';
+	'.\Modules\Update-SQLOpSQLErrorLogStats.psm1';
+	# SQL Jobs Modules
+	'.\Modules\Get-SISQLJobs.psm1';
+	'.\Modules\Update-SQLOpSQLJobs.psm1';
+	'.\Modules\Get-SQLOpSQLJobs.psm1';
+	'.\Modules\Update-SQLOpSQLJobStats.psm1';
+	'.\Modules\Get-SQLOpSQLJobStats.psm1';
+	# Extended Properties Modules
+	'.\Modules\Get-SIExtendedProperties.psm1';
+	'.\Modules\Set-SIExtendedProperties.psm1';
     # Server Modules
     '.\Modules\Get-SIOperatingSystem.psm1';
 	'.\Modules\Get-SIProcessor.psm1';
@@ -115,27 +115,28 @@
     '.\Modules\Add-SQLOpOperatingSystem.psm1';
     '.\Modules\Add-SQLOpServer.psm1';
     '.\Modules\Update-SQLOpServer.psm1';
+	'.\Modules\Update-DiskVolumes.psm1';    
 	# SQL Service
 	'.\Modules\Get-SISQLService.psm1';
 	'.\Modules\Get-SQLOpSQLService.psm1';
 	'.\Modules\Update-SQLOpSQLService.psm1';
-        # SQL Cluster Modules
-        '.\Modules\Add-SQLOpSQLCluster.psm1';
-        '.\Modules\Get-SQLOpSQLCluster.psm1';
-        '.\Modules\Get-SQLOpSQLClusterNode.psm1';
-        '.\Modules\Add-SQLOpSQLClusterNode.psm1';
-		'.\Modules\Update-SQLOpSQLCluster.psm1';
-		'.\Modules\Update-SQLOpSQLClusterNode.psm1';
+	# SQL Cluster Modules
+	'.\Modules\Add-SQLOpSQLCluster.psm1';
+	'.\Modules\Get-SQLOpSQLCluster.psm1';
+	'.\Modules\Get-SQLOpSQLClusterNode.psm1';
+	'.\Modules\Add-SQLOpSQLClusterNode.psm1';
+	'.\Modules\Update-SQLOpSQLCluster.psm1';
+	'.\Modules\Update-SQLOpSQLClusterNode.psm1';
     # CMS Modules
 	'.\Modules\Get-SQLOpCMSServerInstance.psm1';
 	'.\Modules\Get-SQLOpCMSGroups.psm1';	           
 	'.\Modules\Set-SQLOpCMSGroups.psm1';
+	# Snapshot, Aggregrate, Cleanup Modules
+	'.\Modules\Publish-MonthlyAggregate.psm1';
 
-    '.\Modules\Update-SQLInstance.psm1';
-    '.\Modules\Update-DiskVolumes.psm1';    
-    '.\Modules\Write-DataTable.psm1';
-    #'.\Modules\Update-CMSGroups.psm1'; #Does not exist.
-    '.\Modules\Aggregate-CMDBMonthlyData.psm1';
+	# No Categorized / Or Still need Updates
+       
+    '.\Modules\Write-DataTable.psm1';    
     '.\Modules\Truncate-CMDBData.psm1';
     '.\Modules\Create-CMDBMonthlyTrend.psm1';
     '.\Modules\Delete-CMDBData.psm1';

@@ -1,9 +1,10 @@
 ﻿<#
 .SYNOPSIS
-Aggregate-CMDBMonthlyData
+Publish-MonthlyAggregate
 
 .DESCRIPTION 
-Aggregate-CMDBMonthlyData
+Publish-MonthlyAggregate moves the data from raw data and disk space
+to monthly aggregate summary data.
 
 .PARAMETER Type
 What do they want to aggregate data for?
@@ -12,10 +13,10 @@ What do they want to aggregate data for?
 None
 
 .OUTPUTS
-Aggregate-CMDBMonthlyData
+Publish-MonthlyAggregate
 
 .EXAMPLE
-Aggregate-CMDBMonthlyData -Type DiskVolumes
+Publish-MonthlyAggregate -Type DiskVolumes
 
 Aggregate data for last month for all disk volumes.
 
@@ -25,17 +26,25 @@ Date       Version Comments
 2016.12.14 0.01    Inital Version
 2017.01.10 0.02    Misspelled stored procedure name for aggregating disk volume
                    information
+2022.10.29 0.00.04 Updated command let name.
+				   Added standard code for working with JSON parameters.
 #>
-function Aggregate-CMDBMonthlyData
+function Publish-MonthlyAggregate
 {
     [CmdletBinding()] 
     param( 
     [Parameter(Position=0, Mandatory=$true)] [ValidateSet(“DiskVolumes”,”Databases”)] [string]$Type
     )
 
-    $ModuleName = 'Aggregate-CMDBMonthlyData'
-    $ModuleVersion = '0.02'
-    $ModuleLastUpdated = 'January 10, 2017'
+    if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
+    {
+        Write-Error "Unable to initialize SQLOpsDB.  Cannot continue with collection."
+        return
+    }
+
+    $ModuleName = 'Publish-MonthlyAggregate'
+    $ModuleVersion = '0.00.04'
+    $ModuleLastUpdated = 'October 30, 2022'
 
     try
     {
@@ -63,9 +72,9 @@ function Aggregate-CMDBMonthlyData
         }
         Write-StatusUpdate -Message $TSQL
 
-        $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLCMDB_SQLServerName `
-                                    -Database $Global:SQLCMDB_DatabaseName `
-                                    -Query $TSQL
+        $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+							     -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+						 		 -Query $TSQL
         
         # If no result sets are returned return an error; unless return the appropriate resultset.
         if (!($Results))
@@ -77,9 +86,22 @@ function Aggregate-CMDBMonthlyData
             Write-Output $Results
         }
     }
+    catch [System.Data.SqlClient.SqlException]
+    {
+        if ($($_.Exception.Message) -like '*Could not open a connection to SQL Server*')
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Cannot connect to $ServerInstance." -WriteToDB
+        }
+        else
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - SQL Expectation" -WriteToDB
+            Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
+        }
+        Write-Output $Global:Error_FailedToComplete
+    }
     catch
     {
-        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Expection" -WriteToDB
+        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Expectation" -WriteToDB
         Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
         Write-Output $Global:Error_FailedToComplete
     }
