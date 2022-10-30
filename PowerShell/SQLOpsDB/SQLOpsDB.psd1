@@ -80,7 +80,6 @@
     '.\Modules\Get-SQLOpSQLInstance.psm1';
 	'.\Modules\Add-SQLOpSQLInstance.psm1';
 	'.\Modules\Update-SQLOpSQLInstance.psm1';
-	'.\Modules\Update-SQLInstance.psm1'; 
     '.\Modules\Get-SISQLProperties.psm1';
 	'.\Modules\Get-SQLOpSQLProperties.psm1';
 	'.\Modules\Get-SISQLVolumeDetails.psm1';
@@ -137,7 +136,8 @@
 	'.\Modules\Clear-SQLOpData.psm1';
     # Support Modules
 	'.\Modules\Write-DataTable.psm1';    
-    '.\Modules\Split-Parts.psm1'
+    '.\Modules\Split-Parts.psm1';
+	'.\Modules\Get-SQLOpErrorDetails.psm1';
     )
 
     # Functions to export from this module
