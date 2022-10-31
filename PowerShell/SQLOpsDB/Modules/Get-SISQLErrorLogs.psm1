@@ -47,7 +47,7 @@ Date       Version Comments
 2020.03.05 0.00.09 Update to use a custom Error Log collector.
 2020.03.06 0.00.10 Bug fix with how new error log collector was called.
 2020.03.09 0.00.11 Bug fix.  Changed the date field name from Date to LogDate.
-
+2022.10.31 0.00.13 Added Process ID and expanded error handling.
 #>
 function Get-SISQLErrorLogs
 {
@@ -69,14 +69,15 @@ function Get-SISQLErrorLogs
     }
     
     $ModuleName = 'Get-SISQLErrorLogs'
-    $ModuleVersion = '0.00.11'
-    $ModuleLastUpdated = 'March 9, 2020'
+    $ModuleVersion = '0.00.13'
+    $ModuleLastUpdated = 'October 31, 2022'
 
     $ServerInstanceObj = Get-SqlOpSQLInstance -ServerInstance $ServerInstance -Internal:$Internal
 
     if ($Internal)
     {
         Class SQLErrorMsg {
+			[int] $ProcessID;
             [int] $SQLInstanceID;
             [string] $ServerInstance;
             [datetime] $DateTimeCaptured;
@@ -141,6 +142,7 @@ function Get-SISQLErrorLogs
                     $ErrorToReport.DateTimeCaptured = $Msg.LogDate
                     $ErrorToReport.ServerInstance = $Msg.ServerInstance
                     $ErrorToReport.SQLInstanceID = $ServerInstanceObj.SQLInstanceID
+					$ErrorToReport.ProcessID = $pid
                 }
                 else {
                     $ErrorToReport = New-Object SQLErrorMsg_ex
@@ -198,6 +200,7 @@ function Get-SISQLErrorLogs
                     $ErrorToReport.DateTimeCaptured = $Msg.LogDate
                     $ErrorToReport.ServerInstance = $Msg.ServerInstance
                     $ErrorToReport.SQLInstanceID = $ServerInstanceObj.SQLInstanceID
+					$ErrorToReport.ProcessID = $pid
                 }
                 else {
                     $ErrorToReport = New-Object SQLErrorMsg_ex
@@ -212,6 +215,19 @@ function Get-SISQLErrorLogs
         }
         
         Write-Output $ErrorsToReport
+    }
+    catch [System.Data.SqlClient.SqlException]
+    {
+        if ($($_.Exception.Message) -like '*Could not open a connection to SQL Server*')
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Cannot connect to $ServerInstance." -WriteToDB
+        }
+        else
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - SQL Expectation" -WriteToDB
+            Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
+        }
+        Write-Output $Global:Error_FailedToComplete
     }
     catch
     {

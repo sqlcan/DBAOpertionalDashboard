@@ -479,7 +479,7 @@ ForEach ($SQLServerRC in $SQLServers)
 			Update-SQLOpSQLInstance -ServerInstance $SQLServerRC.ServerInstanceConnectionString `
 									-SQLVersion $SQLVersion -SQLServer_Build $SQLServer_Build `
 									-SQLEdition $SQLEdition -ServerType $ServerType `
-									-ServerEnviornment $EnvironmentType
+									-ServerEnviornment $EnvironmentType | Out-Null
 
             Write-StatusUpdate -Message "Existing Instance."
             $ServerInstanceIsMonitored = $Results.IsMonitored

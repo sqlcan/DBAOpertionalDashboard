@@ -73,6 +73,14 @@ BEGIN
 				ExtendedPropertyName VARCHAR(255) NULL,
 				ExtendedPropertyValue VARCHAR(250) NULL)
 
+		IF (@TableName = 'SQLErrLog')
+			CREATE TABLE Staging.SQLErrLog (
+				ProcessID int,
+                SQLInstanceID int,
+                ServerInstance VARCHAR(255),
+                DateTimeCaptured DATETIME,
+                Message VARCHAR(MAX))
+
 		EXEC sys.sp_addextendedproperty @name=N'SQLOpsDBVersion', @value=@ModuleVersion , @level0type=N'SCHEMA',@level0name=N'Staging', @level1type=N'TABLE',@level1name=@TableName
 	END
 END
