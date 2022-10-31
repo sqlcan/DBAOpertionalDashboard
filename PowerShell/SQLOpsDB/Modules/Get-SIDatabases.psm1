@@ -24,6 +24,8 @@ Get all the databases and their size information.
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2022.10.14 0.00.01 Initial Version
+2022.10.31 0.00.02 Added support for pulling extended property 'ApplicationName'
+                    If not defined, will default to 'Unknown'
 #>
 function Get-SIDatabases
 {
@@ -54,32 +56,46 @@ function Get-SIDatabases
 
 		if (($SQLServer_Major -ge 9) -and ($SQLServer_Major -le 10))
 		{
-			$TSQL = "   WITH DBDetails
+			$TSQL = "CREATE TABLE #DBApps (DatabaseID INT, ApplicationName VARCHAR(255))
+
+					 INSERT INTO #DBApps (DatabaseID, ApplicationName)
+					 EXEC sp_msforeachdb 'select db_id(''?'') as DatabaseID, CAST(value AS VARCHAR(255)) AS ApplicationName from [?].sys.extended_properties WHERE class_desc = ''DATABASE'' AND name = ''ApplicationName''';
+
+					  WITH DBDetails
 							AS (SELECT   DB_NAME(D.database_id) AS DatabaseName
 										, D.state_desc AS DatabaseState
+										, CASE WHEN D.database_id = 2 THEN 'Microsoft SQL Server' ELSE ISNULL(DA.ApplicationName, 'Unknown') END AS ApplicationName
 										, CASE WHEN type = 0 THEN 'Data' ELSE 'Log' END AS FileType
 										, size/128 AS FileSize_mb
 								FROM sys.master_files mf
 								JOIN sys.databases D
 									ON mf.database_id = D.database_id
+							LEFT JOIN #DBApps DA ON d.database_id = DA.DatabaseID
 								WHERE D.database_id NOT IN (1,3,4))
 						SELECT   $(IF ($Internal) { "$ProcessID AS ProcessID, " })
 						         $(IF ($Internal) { "$($SQLInstanceObj.SQLInstanceID) AS InstanceID, " })
 						         '$ServerInstance' AS ServerInstance
 								, CAST('00000000-0000-0000-0000-000000000000' AS uniqueidentifier) AS AGGuid
+								, ApplicationName
 								, DatabaseName
 								, UPPER(DatabaseState) AS DatabaseState 
 								, FileType
 								, SUM(FileSize_mb) AS FileSize_mb
-						FROM DBDetails
-					GROUP BY DatabaseName, DatabaseState, FileType"
+						FROM DBDetails				   
+					GROUP BY ApplicationName, DatabaseName, DatabaseState, FileType"
 		}
 		else
 		{
-			$TSQL = "  WITH DBDetails
+			$TSQL = "CREATE TABLE #DBApps (DatabaseID INT, ApplicationName VARCHAR(255))
+
+					 INSERT INTO #DBApps (DatabaseID, ApplicationName)
+					 EXEC sp_msforeachdb 'select db_id(''?'') as DatabaseID, CAST(value AS VARCHAR(255)) AS ApplicationName from [?].sys.extended_properties WHERE class_desc = ''DATABASE'' AND name = ''ApplicationName''';
+			
+						WITH DBDetails
 							AS (SELECT   ISNULL(AG.group_id,CAST('00000000-0000-0000-0000-000000000000' AS uniqueidentifier)) AS AGGuid
 									, DB_NAME(MF.database_id) AS DatabaseName
 									, D.state_desc AS DatabaseState
+									, CASE WHEN D.database_id = 2 THEN 'Microsoft SQL Server' ELSE ISNULL(DA.ApplicationName, 'Unknown') END AS ApplicationName
 									, CASE WHEN type = 0 THEN 'Data' ELSE 'Log' END AS FileType
 									, size/128 AS FileSize_mb
 								FROM sys.master_files MF
@@ -89,17 +105,19 @@ function Get-SIDatabases
 									ON D.replica_id = AR.replica_id
 							LEFT JOIN sys.availability_groups AG
 									ON AR.group_id = AG.group_id
+							LEFT JOIN #DBApps DA ON d.database_id = DA.DatabaseID
 								WHERE MF.database_id NOT IN (1,3,4))
 					SELECT   $(IF ($Internal) { "$ProcessID AS ProcessID, " })
 							 $(IF ($Internal) { "$($SQLInstanceObj.SQLInstanceID) AS InstanceID, " })
 						  	 '$ServerInstance' AS ServerInstance
 							, AGGuid
+							, ApplicationName
 							, DatabaseName
 							, UPPER(DatabaseState) AS DatabaseState 
 							, FileType
 							, SUM(FileSize_mb) AS FileSize_mb
 						FROM DBDetails
-					GROUP BY AGGuid, DatabaseName, DatabaseState, FileType"
+					GROUP BY AGGuid, ApplicationName, DatabaseName, DatabaseState, FileType"
 		}
 
 		Write-StatusUpdate -Message $TSQL -IsTSQL                    

@@ -115,8 +115,8 @@ function Get-SIExtendedProperties
 		{
 			if ($RowCount -eq 0)
 			{
-				# Application Name will not be a required property.  If possible, we would like to collect it to help 
-				# catalog databases.  Therefore is no rows are returned SQLOp will assume Unknown.
+				# Application Name will not be a required property.  ApplicationName is collected
+				# with Get-SIDatabase.   This command-let supports it for query purpose nothing more.
 			}
 		}
 

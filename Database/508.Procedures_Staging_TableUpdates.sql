@@ -1,4 +1,7 @@
-create PROCEDURE Staging.TableUpdates
+USE [SQLOpsDB]
+GO
+
+CREATE OR ALTER PROCEDURE Staging.TableUpdates
 @TableName NVARCHAR(50),
 @ModuleVersion NVARCHAR(25)
 AS
@@ -57,6 +60,7 @@ BEGIN
 				SQLInstanceID int NULL,
 				ServerInstance VARCHAR(255),
 				AGGuid uniqueidentifier NULL,
+				ApplicationName VARCHAR(255) NULL,
 				DatabaseName varchar(255) NULL,
 				DatabaseState varchar(60) NULL,
 				FileType char(4) NULL,
@@ -65,3 +69,4 @@ BEGIN
 		EXEC sys.sp_addextendedproperty @name=N'SQLOpsDBVersion', @value=@ModuleVersion , @level0type=N'SCHEMA',@level0name=N'Staging', @level1type=N'TABLE',@level1name=@TableName
 	END
 END
+GO

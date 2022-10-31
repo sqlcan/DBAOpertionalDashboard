@@ -24,6 +24,7 @@ BEGIN
 		[SQLInstanceID] [int] NOT NULL,
 		[DatabaseName] [varchar](255) NOT NULL,
 		[DatabaseState] [varchar](60) NOT NULL,
+		[ApplicationID] int NOT NULL,
 		[IsMonitored] [bit] NOT NULL,
 		[DiscoveryOn] [date] NOT NULL,
 		[LastUpdated] [date] NOT NULL,
@@ -41,8 +42,14 @@ BEGIN
 
 	ALTER TABLE [dbo].[Databases] ADD  CONSTRAINT [DF_Databases_LastUpdated]  DEFAULT (getdate()) FOR [LastUpdated]
 
+	ALTER TABLE [dbo].[Databases] ADD  CONSTRAINT [DF_Databases_ApplicationID]  DEFAULT (1) FOR [LastUpdated]
+
 	ALTER TABLE [dbo].[Databases]  WITH CHECK ADD  CONSTRAINT [FK_Databases_SQLInstances] FOREIGN KEY([SQLInstanceID])
 	REFERENCES [dbo].[SQLInstances] ([SQLInstanceID])
 
+	ALTER TABLE [dbo].[Databases]  WITH CHECK ADD  CONSTRAINT [FK_Databases_Application] FOREIGN KEY([ApplicationID])
+	REFERENCES [dbo].[Application] ([ApplicationID])
+
+	ALTER TABLE [dbo].[Databases] CHECK CONSTRAINT [FK_Databases_Application]
 	ALTER TABLE [dbo].[Databases] CHECK CONSTRAINT [FK_Databases_SQLInstances]
 END

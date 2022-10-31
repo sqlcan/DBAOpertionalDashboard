@@ -28,6 +28,7 @@ Date        Version Comments
 					Updated how staging tables are created and managed.
 2022.10.30	0.00.05 Fixed bug with merge stagement for Database Size updates.
 					Fixed bug with SQL Version compare.
+2022.10.31	0.00.06 Saved the Application Name for each Database.
 #>
 function Update-SQLOpDatabase
 {
@@ -44,8 +45,8 @@ function Update-SQLOpDatabase
     }
     
     $ModuleName = 'Update-SQLOpDatabase'
-    $ModuleVersion = '0.00.05'
-    $ModuleLastUpdated = 'October 30, 2022'
+    $ModuleVersion = '0.00.06'
+    $ModuleLastUpdated = 'October 31, 2022'
    
     try
     {
@@ -87,26 +88,44 @@ function Update-SQLOpDatabase
                            -SchemaName Staging `
                            -InputData $Data
 
-		# Step 3 : Database Update.
+		# Step 3 : Update Application Information.
 		$TSQL = "WITH CTE AS
-				( SELECT DISTINCT SQLInstanceID, DatabaseName, DatabaseState
+				( SELECT DISTINCT ApplicationName
 					FROM Staging.Databases
 				   WHERE ProcessID = $ProcessID)
+				MERGE dbo.Application AS Target
+				USING (SELECT ApplicationName FROM CTE) AS Source (ApplicationName)
+		           ON (Target.ApplicationName = Source.ApplicationName)
+				WHEN NOT MATCHED THEN
+			    	INSERT (ApplicationName) VALUES (Source.ApplicationName);"
+		Write-StatusUpdate -Message $TSQL -IsTSQL                    
+		Invoke-SQLCMD -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+						-Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+						-Query $TSQL -ErrorAction Stop
+
+		# Step 4 : Database Update.
+		$TSQL = "WITH CTE AS
+				( SELECT DISTINCT SQLInstanceID, DatabaseName, DatabaseState, A.ApplicationID
+					FROM Staging.Databases D
+					JOIN dbo.Application A
+					  ON D.ApplicationName = A.ApplicationName
+				   WHERE ProcessID = $ProcessID)
 				MERGE dbo.Databases AS Target
-				USING (SELECT SQLInstanceID, DatabaseName, DatabaseState FROM CTE) AS Source (SQLInstanceID, DatabaseName, DatabaseState)
+				USING (SELECT SQLInstanceID, DatabaseName, DatabaseState, ApplicationID FROM CTE) AS Source (SQLInstanceID, DatabaseName, DatabaseState, ApplicationID)
 		           ON (Target.SQLInstanceID = Source.SQLInstanceID AND Target.DatabaseName = Source.DatabaseName)
 		        WHEN MATCHED THEN
 			    UPDATE SET Target.LastUpdated = GETDATE(),
-						   Target.DatabaseState = Source.DatabaseState
+						   Target.DatabaseState = Source.DatabaseState,
+						   Target.ApplicationID = Source.ApplicationID
 				WHEN NOT MATCHED THEN
-			    	INSERT (SQLInstanceID, DatabaseName, DatabaseState, IsMonitored, DiscoveryOn, LastUpdated) VALUES (Source.SQLInstanceID, Source.DatabaseName, Source.DatabaseState, 1, GetDate(), GetDate());"
+			    	INSERT (SQLInstanceID, DatabaseName, DatabaseState, ApplicationID, IsMonitored, DiscoveryOn, LastUpdated) VALUES (Source.SQLInstanceID, Source.DatabaseName, Source.DatabaseState, Source.ApplicationID, 1, GetDate(), GetDate());"
 
 		Write-StatusUpdate -Message $TSQL -IsTSQL                    
 		Invoke-SQLCMD -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
 					  -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
 					  -Query $TSQL -ErrorAction Stop
 
-		# Step 4 : Database Size Update.
+		# Step 5 : Database Size Update.
 		if ($SQLProperties.SQLBuild_Major -gt 8)
 		{
 			# Update database space's catalog, only collect database space information for SQL 2005+.
@@ -132,7 +151,7 @@ function Update-SQLOpDatabase
 						  -Query $TSQL -ErrorAction Stop
 		}
 
-		# Step 5 : AG Database Update.
+		# Step 6 : AG Database Update.
 		if ($SQLProperties.SQLBuild_Major -ge 11)
 		{
 			$TSQL = "  WITH CTE
@@ -162,9 +181,8 @@ function Update-SQLOpDatabase
 			  			  -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
 						  -Query $TSQL -ErrorAction Stop
 		}
-
 		
-		# Step 6 : Clear Staging Table.
+		# Step 7 : Clear Staging Table.
 		$TSQL = "DELETE FROM Staging.Databases WHERE ProcessID = $ProcessID"
 		Write-StatusUpdate -Message $TSQL -IsTSQL                    
 		Invoke-SQLCMD -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
