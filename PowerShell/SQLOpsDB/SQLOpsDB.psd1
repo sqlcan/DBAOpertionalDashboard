@@ -109,6 +109,7 @@
     # Server Modules
     '.\Modules\Get-SIOperatingSystem.psm1';
 	'.\Modules\Get-SIProcessor.psm1';
+	'.\Modules\Get-SIMemory.psm1';
 	'.\Modules\Get-SIDiskVolume.psm1';
     '.\Modules\Get-SQLOpServer.psm1';
     '.\Modules\Get-SQLOpOperatingSystem.psm1';

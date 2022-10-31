@@ -46,6 +46,7 @@ Date       Version Comments
                    Updated function name.
                    Added alias for computer name.
            2.00.01 Fixed a bug with how server name was being checked. 
+2022.10.31 2.00.03 Added support for memory and page file size.
 #>
 
 function Add-SQLOpServer
@@ -60,7 +61,9 @@ function Add-SQLOpServer
     [Parameter(Position=3, Mandatory=$true)] [int]$NumberOfCores,
     [Parameter(Position=4, Mandatory=$true)] [int]$NumberOfLogicalCores,
     [Parameter(Position=5, Mandatory=$true)] [int]$IsPhysical,
-    [Parameter(Position=6, Mandatory=$false, DontShow)] [switch]$Internal
+	[Parameter(Position=6, Mandatory=$true)] [int]$Memory,
+    [Parameter(Position=7, Mandatory=$true)] [int]$PageFile,
+    [Parameter(Position=8, Mandatory=$false, DontShow)] [switch]$Internal
     )
 
     if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
@@ -70,8 +73,8 @@ function Add-SQLOpServer
     }
     
     $ModuleName = 'Add-SQLOpServer'
-    $ModuleVersion = '2.00.01'
-    $ModuleLastUpdated = 'March 12, 2020'
+    $ModuleVersion = '2.00.03'
+    $ModuleLastUpdated = 'October 31, 2022'
 
     try
     {
@@ -117,8 +120,8 @@ function Add-SQLOpServer
         
         $OperatingSystemID = $OSObj.OperatingSystemID
 
-        $TSQL = "INSERT INTO dbo.Servers (ServerName, OperatingSystemID, ProcessorName, NumberOfCores, NumberOfLogicalCores, IsPhysical) 
-                 VALUES ('$($CompObj.ComputerName)', $OperatingSystemID, '$ProcessorName', $NumberOfCores, $NumberOfLogicalCores, $IsPhysical)"
+        $TSQL = "INSERT INTO dbo.Servers (ServerName, OperatingSystemID, ProcessorName, NumberOfCores, NumberOfLogicalCores, IsPhysical, Memory_mb, PageFile_mb) 
+                 VALUES ('$($CompObj.ComputerName)', $OperatingSystemID, '$ProcessorName', $NumberOfCores, $NumberOfLogicalCores, $IsPhysical, $Memory, $PageFile)"
         Write-StatusUpdate -Message $TSQL
 
         Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `

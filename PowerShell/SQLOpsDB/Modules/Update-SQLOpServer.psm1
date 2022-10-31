@@ -42,6 +42,7 @@ Date       Version Comments
                    Updated for JSON parameters.
                    Updated function name.
                    Added alias for computer name.
+2022.10.31 2.00.02 Added support for memory and page file size.
 #>
 function Update-SQLOpServer
 {
@@ -55,7 +56,9 @@ function Update-SQLOpServer
     [Parameter(Position=3, Mandatory=$true)] [int]$NumberOfCores,
     [Parameter(Position=4, Mandatory=$true)] [int]$NumberOfLogicalCores,
     [Parameter(Position=5, Mandatory=$true)] [int]$IsPhysical,
-    [Parameter(Position=6, Mandatory=$false, DontShow)] [switch]$Internal
+	[Parameter(Position=6, Mandatory=$true)] [int]$Memory,
+    [Parameter(Position=7, Mandatory=$true)] [int]$PageFile,
+    [Parameter(Position=8, Mandatory=$false, DontShow)] [switch]$Internal
     )
 
     if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
@@ -65,8 +68,8 @@ function Update-SQLOpServer
     }
     
     $ModuleName = 'Update-SQLOpServer'
-    $ModuleVersion = '2.00.00'
-    $ModuleLastUpdated = 'March 12, 2020'
+    $ModuleVersion = '2.00.02'
+    $ModuleLastUpdated = 'October 31, 2022'
 
     try
     {
@@ -117,7 +120,10 @@ function Update-SQLOpServer
                       ProcessorName = '$ProcessorName',
                NumberOfLogicalCores = $NumberOfLogicalCores,
                       NumberOfCores = $NumberOfCores,
-                         IsPhysical = $IsPhysical WHERE ServerName = '$($CompObj.ComputerName)'"
+                         IsPhysical = $IsPhysical,
+						  Memory_mb = $Memory,
+						PageFile_mb = $PageFile
+				  WHERE ServerName = '$($CompObj.ComputerName)'"
 
         Write-StatusUpdate -Message $TSQL -IsTSQL
 

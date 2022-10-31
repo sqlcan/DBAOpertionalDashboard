@@ -216,6 +216,7 @@ ForEach ($SQLServerRC in $SQLServers)
 
         Write-StatusUpdate -Message "Processing Server [$ServerName]."
         $ProcessorObj = Get-SIProcessor -ComputerName $ServerName
+		$MemoryObj = Get-SIMemory -ComputerName $ServerName
 
         # If WMI called for processor failed; chances are the volume call failed also.  To minimize the error reporting in
         # execution log; only attempt server related updates if initial WMI was successful.
@@ -233,7 +234,7 @@ ForEach ($SQLServerRC in $SQLServers)
                     Write-StatusUpdate -Message "... New server, adding to database."
                     $InnerResults = Add-SQLOpServer -ComputerName $ServerName -OperatingSystem $OperatingSystem -ProcessorName $ProcessorObj.Name `
                                                     -NumberOfCores $ProcessorObj.NumberOfCores -NumberOfLogicalCores $ProcessorObj.NumberOfLogicalProcessors `
-                                                    -IsPhysical $IsPhysical
+                                                    -IsPhysical $IsPhysical -Memory $MemoryObj.Memory_MB -PageFile $MemoryObj.PageFile_MB
                     Switch ($InnerResults)
                     {
                         $Global:Error_FailedToComplete
@@ -263,7 +264,7 @@ ForEach ($SQLServerRC in $SQLServers)
                     {
                         $InnerResults = Update-SQLOpServer -ComputerName $ServerName -OperatingSystem $OperatingSystem -ProcessorName $ProcessorObj.Name `
                                                            -NumberOfCores $ProcessorObj.NumberOfCores -NumberOfLogicalCores $ProcessorObj.NumberOfLogicalProcessors `
-                                                           -IsPhysical $IsPhysical
+                                                           -IsPhysical $IsPhysical -Memory $MemoryObj.Memory_MB -PageFile $MemoryObj.PageFile_MB
 
                         if ($InnerResults -eq $Global:Error_FailedToComplete)
                         {

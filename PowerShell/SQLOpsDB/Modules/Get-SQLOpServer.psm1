@@ -33,6 +33,7 @@ Date       Version Comments
                    Added alias for parameter ComputerName.
            2.00.01 Exposed Operating system details.
            2.00.02 Added ability to return full server list.
+2022.10.31 2.00.04 Added support to return current memory and page file size info.
 #>
 
 function Get-SQLOpServer
@@ -54,8 +55,8 @@ function Get-SQLOpServer
     }
     
     $ModuleName = 'Get-SQLOpServer'
-    $ModuleVersion = '2.00.01'
-    $ModuleLastUpdated = 'March 12, 2020'
+    $ModuleVersion = '2.00.04'
+    $ModuleLastUpdated = 'October 31, 2022'
 
     if (($PSCmdlet.ParameterSetName -eq 'List') -and (!($PSBoundParameters.ListAvailable)))
     {
@@ -69,13 +70,13 @@ function Get-SQLOpServer
         if ($Internal)
         {
             $TSQL = "SELECT S.ServerID, ServerName AS ComputerName, OS.OperatingSystemName, ProcessorName,
-                            NumberOfCores, NumberOfLogicalCores, IsMonitored, DiscoveryOn, LastUpdated
+                            NumberOfCores, NumberOfLogicalCores, Memory_mb, PageFile_mb, IsMonitored, DiscoveryOn, LastUpdated
                        FROM dbo.Servers S
                        JOIN dbo.OperatingSystems OS ON S.OperatingSystemID = OS.OperatingSystemID "
         }
         else {
             $TSQL = "SELECT ServerName AS ComputerName, OS.OperatingSystemName, ProcessorName,
-                            NumberOfCores, NumberOfLogicalCores, IsMonitored, DiscoveryOn, LastUpdated
+                            NumberOfCores, NumberOfLogicalCores, Memory_mb, PageFile_mb, IsMonitored, DiscoveryOn, LastUpdated
                        FROM dbo.Servers S
                        JOIN dbo.OperatingSystems OS ON S.OperatingSystemID = OS.OperatingSystemID "
         }
