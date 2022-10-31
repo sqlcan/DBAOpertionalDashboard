@@ -31,10 +31,11 @@ Date       Version  Comments
 2021.11.28 00.00.04 Command-let name updated Update-SQLOpSQLService.
 		   00.00.05 Added multiple execution possiblity by allowing SQL Services to be
 		            saved per PowerShell process ID.
-2022.11.29 00.00.08 Added post excution cleanup of staging table.
+2022.10.29 00.00.08 Added post excution cleanup of staging table.
 					Fixed a minor bug on how table name is checked for staging table.
 					Re-wrote how the staging tables are checked and recreated based
 					 on extended events properties against command let version.
+2022.10.31 00.00.09 The service start mode is updated if service already exists.
 #>
 function Update-SQLOpSQLService
 {
@@ -51,8 +52,8 @@ function Update-SQLOpSQLService
     }
     
     $ModuleName = 'Update-SQLOpSQLService'
-    $ModuleVersion = '00.00.08'
-    $ModuleLastUpdated = 'October 29, 2022'
+    $ModuleVersion = '00.00.09'
+    $ModuleLastUpdated = 'October 31, 2022'
 
     try
     {
@@ -118,7 +119,8 @@ function Update-SQLOpSQLService
                        ServiceAccount = Source.ServiceAccount,
                        ServiceVersion = Source.ServiceVersion,
                        ServiceBuild = Source.ServiceBuild,
-                       Status = Source.Status
+                       Status = Source.Status,
+					   StartMode = Source.StartMode
         WHEN NOT MATCHED THEN
             INSERT (ServerID, ServiceName, InstanceName, DisplayName,
                 FilePath, ServiceType, StartMode, ServiceAccount,
