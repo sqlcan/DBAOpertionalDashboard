@@ -105,6 +105,7 @@
 	# Extended Properties Modules
 	'.\Modules\Get-SIExtendedProperties.psm1';
 	'.\Modules\Set-SIExtendedProperties.psm1';
+	'.\Modules\Update-SQLOpExtendedProperties.psm1';	# Update only Custom Extended Properties #
     # Server Modules
     '.\Modules\Get-SIOperatingSystem.psm1';
 	'.\Modules\Get-SIProcessor.psm1';

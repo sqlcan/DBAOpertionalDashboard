@@ -31,13 +31,19 @@ Date       Version Comments
 2020.03.11 0.00.01 Initial Version
 2020.04.03 0.00.02 Error with property name for Extended Properties.  Causing
                     PassiveNode extended property was being skipped.
+2022.10.31 0.00.04 Added support to pull custom extended properties on master
+                   database.
+				   Expended the error handling reporting.
 #>
 function Get-SIExtendedProperties
 {
-    [CmdletBinding()] 
+
+    [CmdletBinding(DefaultParameterSetName='SupportedExProp')] 
     param( 
-    [Parameter(Position=0, Mandatory=$true)] [string]$ServerInstance,
-    [Parameter(Position=2, Mandatory=$false)] [String]$Database='master'
+    [Parameter(ParameterSetName='SupportedExProp',Position=0, Mandatory=$true)]
+	[Parameter(ParameterSetName='CustomExProp',Position=0, Mandatory=$true)][string]$ServerInstance,
+    [Parameter(ParameterSetName='SupportedExProp',Position=1, Mandatory=$false)] [String]$Database='master',
+	[Parameter(ParameterSetName='CustomExProp',Position=1, Mandatory=$true)][switch]$CustomProperties
     )
 
     if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
@@ -47,8 +53,8 @@ function Get-SIExtendedProperties
     }
     
     $ModuleName = 'Get-SIExtendedProperties'
-    $ModuleVersion = '0.00.02'
-    $ModuleLastUpdated = 'April 3, 2020'
+    $ModuleVersion = '0.00.04'
+    $ModuleLastUpdated = 'October 31, 2022'
 
     try
     {
@@ -78,13 +84,31 @@ function Get-SIExtendedProperties
             return
         }
 
+		if ($CustomProperties)
+		{
+			# When executing with swithc CustomProperties, we do not want user to 
+			# change database name from default 'master'.
+			$Database = 'master'
+		}
+
         if ($Database -eq 'master')
         {
-            $TSQL = "SELECT name AS PropertyName, value AS Value
-                    FROM $SchemaPrefix.extended_properties
-                    WHERE class = 0
-                    AND name in ('EnvironmentType','MachineType','ServerType', 'ActiveNode')
-                     OR name like 'PassiveNode%'"
+			if (!($CustomProperties))
+			{
+				$TSQL = "SELECT name AS PropertyName, value AS Value
+						   FROM $SchemaPrefix.extended_properties
+						  WHERE class = 0
+						    AND name in ('EnvironmentType','MachineType','ServerType', 'ActiveNode')
+						     OR name like 'PassiveNode%'"
+			}
+			else
+			{
+				$TSQL = "SELECT name AS PropertyName, value AS Value
+				           FROM $SchemaPrefix.extended_properties
+				          WHERE class = 0
+				            AND name NOT in ('EnvironmentType','MachineType','ServerType', 'ActiveNode')
+				            AND name NOT like 'PassiveNode%'"
+			}
         }
         else
         {
@@ -104,9 +128,9 @@ function Get-SIExtendedProperties
 
 		if ($Database -eq 'master')
 		{
-			if (!($RowCount -ge 4))
+			if (!($RowCount -ge 4) -and !($CustomProperties))
 			{
-				Write-StatusUpdate -Message "Failed to find one or more of the required extended properties on [$ServerInstance]." -WriteToDB
+				Write-StatusUpdate -Message "Failed to find one or more of the required extended properties (EnvironmentType, MachineType, ServerType, and ActiveNode) on [$ServerInstance]." -WriteToDB
 				Write-Output $Global:Error_FailedToComplete
 				return
 			}
@@ -125,18 +149,28 @@ function Get-SIExtendedProperties
 
         ForEach ($Row in $Results)
         {
-            if (($Row.PropertyName -in ('EnvironmentType','ServerType','MachineType','ActiveNode','ApplicationName')) -or ($Row.PropertyName -like 'PassiveNode*'))
-            {
-                $HashTable.Add($($Row.PropertyName), $($Row.Value))
-            }
+			$HashTable.Add($($Row.PropertyName), $($Row.Value))
         }
 
         Write-Output $HashTable
+    }
+    catch [System.Data.SqlClient.SqlException]
+    {
+        if ($($_.Exception.Message) -like '*Could not open a connection to SQL Server*')
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Cannot connect to $ServerInstance." -WriteToDB
+        }
+        else
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - SQL Expectation" -WriteToDB
+            Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
+        }
+        return $Global:Error_FailedToComplete
     }
     catch
     {
         Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Expectation" -WriteToDB
         Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
-        Write-Output $Global:Error_FailedToComplete
+        return $Global:Error_FailedToComplete
     }
 }

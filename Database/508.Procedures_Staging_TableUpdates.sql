@@ -66,6 +66,13 @@ BEGIN
 				FileType char(4) NULL,
 				FileSize_mb bigint NULL)
 
+		IF (@TableName = 'ExtendedProperties')
+			CREATE TABLE Staging.ExtendedProperties(
+			    ProcessID int NULL,
+				SQLInstanceID int NULL,
+				ExtendedPropertyName VARCHAR(255) NULL,
+				ExtendedPropertyValue VARCHAR(250) NULL)
+
 		EXEC sys.sp_addextendedproperty @name=N'SQLOpsDBVersion', @value=@ModuleVersion , @level0type=N'SCHEMA',@level0name=N'Staging', @level1type=N'TABLE',@level1name=@TableName
 	END
 END

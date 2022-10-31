@@ -521,6 +521,15 @@ ForEach ($SQLServerRC in $SQLServers)
 			$SQLInstanceAccessible = $false
 		}
 
+		Write-StatusUpdate -Message "Getting custom extended properties"
+
+		$Results = Get-SIExtendedProperties -ServerInstance $SQLServerRC.ServerInstanceConnectionString -CustomProperties
+
+		if ($Results)
+		{
+			Update-SQLOpExtendedProperties -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+		}
+
         if ($DCS_ErrorLogs)
         {
             # Get SQL Instance Error Logs.  Get the last collect date, then get only errors since last collection.
