@@ -37,6 +37,8 @@ Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2020.03.05 0.00.01 Initial Version
 2020.03.09 0.00.02 Removed development code left behind.
+2022.10.31 0.00.03 Added sort on date column to grantee consistency when capturing 
+                   errors.
 #>
 function Get-SQLErrorLogs
 {
@@ -110,7 +112,8 @@ function Get-SQLErrorLogs
     DEALLOCATE crs
     
     SELECT *
-      FROM #err_log_text_tmp_final"
+      FROM #err_log_text_tmp_final
+  ORDER BY LogDate"
 
     try
     {
