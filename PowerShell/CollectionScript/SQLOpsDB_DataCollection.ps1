@@ -157,7 +157,7 @@ ForEach ($SQLServerRC in $SQLServers)
             $ActiveNode += ".$DomainDetails"
         }
         
-        $ServerList += ($ActiveNode,1)
+        $ServerList += ,($ActiveNode,1)
 
         # Check if there are passive nodes defined.
         if ($ExtendedProperties.Keys -contains 'PassiveNode')
@@ -173,7 +173,7 @@ ForEach ($SQLServerRC in $SQLServers)
             }
 
             Write-StatusUpdate -Message "Found Server: $PassiveNode)"
-            $ServerList += $PassiveNode
+            $ServerList += ,($PassiveNode,0)
 
             # I am assuming no clusters will be deployed with more then eight nodes in SQL world!
             For ($index = 2; $index -le 8; $index++)
@@ -193,7 +193,7 @@ ForEach ($SQLServerRC in $SQLServers)
                     }
 
                     Write-StatusUpdate -Message "Found Server: $PassiveNode)"
-                    $ServerList += ($PassiveNode,0)
+                    $ServerList += ,($PassiveNode,0)
                 }
             }
         }
