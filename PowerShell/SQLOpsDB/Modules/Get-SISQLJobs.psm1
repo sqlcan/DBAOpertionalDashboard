@@ -38,6 +38,9 @@ Date       Version Comments
 2020.03.06 0.00.03 Fixed bug in Write-StatusUpdate parameter.
                    Refactored the parameters code.
            0.00.04 Bug fix with how duration was being calculated.
+2022.10.31 0.00.07 Refactored the code for $Internal parameter.
+				   Expended the error handling.
+				   Added support for Process ID.
 #>
 function Get-SISQLJobs
 {
@@ -58,12 +61,15 @@ function Get-SISQLJobs
     }
     
     $ModuleName = 'Get-SISQLJobs'
-    $ModuleVersion = '0.00.03'
-    $ModuleLastUpdated = 'March 6, 2020'
+    $ModuleVersion = '0.00.07'
+    $ModuleLastUpdated = 'October 31, 2022'
 
     try
     {
         Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
+
+		$ProcessID = $pid
+		$SQLInstanceObj = Get-SqlOpSQLInstance -ServerInstance $ServerInstance -Internal:$Internal
 
         $TSQL = "WITH CTE AS (SELECT job_id,
                     msdb.dbo.agent_datetime(run_date,run_time) AS ExecutionDateTime,
@@ -80,22 +86,12 @@ function Get-SISQLJobs
                     CAST(SUBSTRING(RIGHT(REPLICATE('0',8) + CAST(run_duration AS VARCHAR(8)),8),5,2) AS INT) AS NumOfMin,
                     CAST(SUBSTRING(RIGHT(REPLICATE('0',8) + CAST(run_duration AS VARCHAR(8)),8),7,2) AS INT) AS NumOfSec
                 FROM msdb.dbo.sysjobhistory
-               WHERE step_id = 0) "
-
-        if (!($PSBoundParameters.Internal))
-        {            
-            $TSQL += "SELECT   '$ServerInstance' AS ServerInstance
-                            , J.name AS JobName "
-        }
-        else
-        {
-            $ServerInstanceObj = Get-SqlOpSQLInstance -ServerInstance $ServerInstance -Internal:$Internal
-            $TSQL += "SELECT   $($ServerInstanceObj.SQLInstanceID) AS SQLInstanceID 
-                            , '$ServerInstance' AS ServerInstance
-                            , J.name AS JobName "   
-        }
-
-        $TSQL += ", C.name AS CategoryName
+               WHERE step_id = 0) 
+			   SELECT   $(IF ($Internal) { "$ProcessID AS ProcessID, " })
+				  	    $(IF ($Internal) { "$($SQLInstanceObj.SQLInstanceID) AS InstanceID, " })
+                         '$ServerInstance' AS ServerInstance
+                        , J.name AS JobName
+                        , C.name AS CategoryName
                         , ExecutionDateTime
                         , (NumOfDays * 24 * 3600)+(NumOfHr * 3600)+(NumOfMin * 60)+NumOfSec AS Duration
                         , JobStatus
@@ -119,6 +115,19 @@ function Get-SISQLJobs
                                  -Query $TSQL
 
         Write-Output $Results
+    }
+    catch [System.Data.SqlClient.SqlException]
+    {
+        if ($($_.Exception.Message) -like '*Could not open a connection to SQL Server*')
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Cannot connect to $ServerInstance." -WriteToDB
+        }
+        else
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - SQL Expectation" -WriteToDB
+            Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
+        }
+        Write-Output $Global:Error_FailedToComplete
     }
     catch
     {

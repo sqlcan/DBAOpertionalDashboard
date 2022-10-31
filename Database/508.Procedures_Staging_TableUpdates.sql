@@ -81,6 +81,17 @@ BEGIN
                 DateTimeCaptured DATETIME,
                 Message VARCHAR(MAX))
 
+		IF (@TableName = 'SQLJobs')
+			CREATE TABLE Staging.SQLJobs (
+                ProcessID int,
+				SQLInstanceID int,
+                ServerInstance VARCHAR(255),
+                JobName VARCHAR(255),
+                CategoryName VARCHAR(255),
+                ExecutionDateTime DATETIME,
+                Duration INT,
+                JobStatus VARCHAR(25))
+
 		EXEC sys.sp_addextendedproperty @name=N'SQLOpsDBVersion', @value=@ModuleVersion , @level0type=N'SCHEMA',@level0name=N'Staging', @level1type=N'TABLE',@level1name=@TableName
 	END
 END

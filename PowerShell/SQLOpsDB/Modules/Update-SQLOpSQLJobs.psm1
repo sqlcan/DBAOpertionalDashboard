@@ -26,6 +26,9 @@ Take the data passed in and save it in SQLOpsDB for ServerInstance.
 Date        Version Comments
 ----------  ------- ------------------------------------------------------------------
 2020.03.06  0.00.01 Initial version.
+2021.10.31	0.00.04	Updated how staging table is created.
+					Added support for process id.
+					Expanded the error handling.
 #>
 function Update-SQLOpSQLJobs
 {
@@ -42,8 +45,8 @@ function Update-SQLOpSQLJobs
     }
     
     $ModuleName = 'Update-SQLOpSQLJobs'
-    $ModuleVersion = '0.01'
-    $ModuleLastUpdated = 'March 6, 2020'
+    $ModuleVersion = '0.04'
+    $ModuleLastUpdated = 'October 31, 2022'
 
     # Validate sql instance exists.
     $ServerInstanceObj = Get-SqlOpSQLInstance -ServerInstance $ServerInstance
@@ -63,19 +66,7 @@ function Update-SQLOpSQLJobs
         # Create a staging table to store the results.  Using staging table, we can do batch process.
         # Other option would be row-by-row operation.
 
-        $TSQL = "IF EXISTS (SELECT * FROM sys.tables WHERE name = 'SQLJobs')
-                     DROP TABLE Staging.SQLJobs
-
-                  CREATE TABLE Staging.SQLJobs (
-                                SQLInstanceID int,
-                                ServerInstance VARCHAR(255),
-                                JobName VARCHAR(255),
-                                CategoryName VARCHAR(255),
-                                ExecutionDateTime DATETIME,
-                                Duration INT,
-                                JobStatus VARCHAR(25)
-                            )
-                            GO"
+        $TSQL = "EXEC Staging.TableUpdates @TableName=N'SQLJobs', @ModuleVersion=N'$ModuleVersion'"	
         Write-StatusUpdate -Message $TSQL -IsTSQL
 
         Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
@@ -84,10 +75,10 @@ function Update-SQLOpSQLJobs
 
         # Load the Staging table we just created.
         Write-SqlTableData -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
-        -DatabaseName $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
-        -TableName SQLJobs `
-        -SchemaName Staging `
-        -InputData $Data
+        				   -DatabaseName $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+        				   -TableName SQLJobs `
+        				   -SchemaName Staging `
+        				   -InputData $Data
 
         # Staging data is loaded now need to process the data incrementally.
         #
@@ -95,8 +86,10 @@ function Update-SQLOpSQLJobs
         # 2) Then update the job list.
         # 3) Then update the job execution history.
 
+		$ProcessID = $PID
+
         $TSQL = "MERGE dbo.SQLJobCategory AS Target
-                USING (SELECT DISTINCT CategoryName FROM Staging.SQLJobs) AS Source (CategoryName)
+                USING (SELECT DISTINCT CategoryName FROM Staging.SQLJobs WHERE ProcessID = $ProcessID) AS Source (CategoryName)
                 ON (Target.SQLJobCategoryName = Source.CategoryName)
                 WHEN NOT MATCHED THEN
                     INSERT (SQLJobCategoryName)
@@ -112,7 +105,8 @@ function Update-SQLOpSQLJobs
                 USING (SELECT DISTINCT SQLInstanceID, C.SQLJobCategoryID, JobName
                         FROM Staging.SQLJobs J
                         JOIN dbo.SQLJobCategory C 
-                        ON J.CategoryName = C.SQLJobCategoryName) AS Source (SQLInstanceID, SQLJobCategoryID, JobName)
+                        ON J.CategoryName = C.SQLJobCategoryName
+						WHERE ProcessID = $ProcessID) AS Source (SQLInstanceID, SQLJobCategoryID, JobName)
                 ON (Target.SQLInstanceID = Source.SQLInstanceID AND
                     Target.SQLJobName = Source.JobName)
                 WHEN MATCHED THEn
@@ -134,15 +128,34 @@ function Update-SQLOpSQLJobs
                 FROM Staging.SQLJobs SJ
                 JOIN dbo.SQLJobs DJ
                     ON SJ.SQLInstanceID = DJ.SQLInstanceID
-                AND SJ.JobName = DJ.SQLJobName"
+                AND SJ.JobName = DJ.SQLJobName
+				WHERE ProcessID = $ProcessID"
 
         Write-StatusUpdate -Message $TSQL -IsTSQL
+        Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+                    -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+                    -Query $TSQL
 
+		$TSQL = "DELETE FROM Staging.SQLJobs WHERE ProcessID = $ProcessID"
+		Write-StatusUpdate -Message $TSQL -IsTSQL
         Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
                     -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
                     -Query $TSQL
 
         Write-Output $Global:Error_Successful
+    }
+    catch [System.Data.SqlClient.SqlException]
+    {
+        if ($($_.Exception.Message) -like '*Could not open a connection to SQL Server*')
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Cannot connect to $ServerInstance." -WriteToDB
+        }
+        else
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - SQL Expectation" -WriteToDB
+            Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
+        }
+        Write-Output $Global:Error_FailedToComplete
     }
     catch
     {
