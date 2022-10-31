@@ -52,10 +52,6 @@ if (($SQLServers -eq $Global:Error_FailedToComplete) -or ($SQLServers -eq $Globa
 #region Loop through all the SQL Instances collected from Central Management Servers (CMS).
 ForEach ($SQLServerRC in $SQLServers)
 {
-
-    # For backwards compatibility.  Eventually will be removed as all modules should be able to handle FQDN.
-    $ComputerName_NoDomain = $($SQLServerRC.ComputerName).Substring(0,$($SQLServerRC.ComputerName).IndexOf('.'))
-
     $ServersRunningCount++
     Write-StatusUpdate -Message "Processing SQL Instance [$($SQLServerRC.ServerInstance)] ($ServersRunningCount/$TotalServers) ..." -WriteToDB
 
@@ -66,17 +62,10 @@ ForEach ($SQLServerRC in $SQLServers)
     $ServerType = 'Stand Alone'
     $EnvironmentType = 'Prod'
     $ServerInstanceIsMonitored = $true
-    $DBFolderList = $null
-    $BackupFolderList = $null
-    $PassiveNodes = $null
-    $ActiveNodeName = $null
-    $InstanceDetails = $null
     $OperatingSystem = 'Unknown'
     $SQLEdition = 'Unknown'
     $SQLVersion = 'Unknown'
-    $SQLBuild = 0
     $SQLInstanceAccessible = $true
-    $SchemaPrefix = 'sys'
     $FQDN = $Global:Default_DomainName
 
     # Check to confirm Extended Properties table exists; as script heavily relies on this table.
@@ -155,27 +144,18 @@ ForEach ($SQLServerRC in $SQLServers)
 
         # Grab active node value from extended properties, if the domain information is missing, append the default domain name.
         $ActiveNode = $ExtendedProperties["ActiveNode"].ToLower()
-        Write-StatusUpdate -Message "Found Server: $ActiveNode"        
+        Write-StatusUpdate -Message "Found Server: $ActiveNode" 
 
-        # Follow code will be added once the other command lets support FQDN.
-		#
-		# Extended properties for ActiveNode, PassiveNode do not have strict standard for FQDN.
-		#
-		# SQLOp* command-let must be enabled to support domain name.  Domain specific information is not saved
-		# or collected in SQLOps DB.  Therefore domain name information needs to be stripped before saving.
-		#
-		# However domain information is needed to connect to multiple domain environments.
-
-        #$DomainDetails = $($SQLServerRC.ComputerName).Substring($($SQLServerRC.ComputerName).IndexOf('.')+1)
-        #
-        #if (($ActiveNode.IndexOf('.') -eq -1) -and ($DomainDetails -eq $FQDN))
-        #{
-        #    $ActiveNode += ".$FQDN"
-        #}
-        #else
-        #{
-        #    $ActiveNode += ".$DomainDetails"
-        #}
+        $DomainDetails = $($SQLServerRC.ComputerName).Substring($($SQLServerRC.ComputerName).IndexOf('.')+1)
+        
+        if (($ActiveNode.IndexOf('.') -eq -1) -and ($DomainDetails -eq $FQDN))
+        {
+            $ActiveNode += ".$FQDN"
+        }
+        else
+        {
+            $ActiveNode += ".$DomainDetails"
+        }
         
         $ServerList += ($ActiveNode,1)
 
@@ -183,15 +163,14 @@ ForEach ($SQLServerRC in $SQLServers)
         if ($ExtendedProperties.Keys -contains 'PassiveNode')
         {
             $PassiveNode = $ExtendedProperties["PassiveNode"].ToLower()
-            # Follow code will be added once the other command lets support FQDN.
-            #if ($PassiveNode.IndexOf('.') -eq -1)
-            #{
-            #    $PassiveNode += ".$FQDN"
-            #}
-            #else
-            #{
-            #    $PassiveNode += ".$DomainDetails"
-            #}
+            if ($PassiveNode.IndexOf('.') -eq -1)
+            {
+                $PassiveNode += ".$FQDN"
+            }
+            else
+            {
+                $PassiveNode += ".$DomainDetails"
+            }
 
             Write-StatusUpdate -Message "Found Server: $PassiveNode)"
             $ServerList += $PassiveNode
@@ -204,15 +183,14 @@ ForEach ($SQLServerRC in $SQLServers)
                 if ($ExtendedProperties.ContainsKey($KeyName))
                 {
                     $PassiveNode = $ExtendedProperties[$KeyName].ToLower()
-                    # Follow code will be added once the other command lets support FQDN.
-                    #if ($PassiveNode.IndexOf('.') -eq -1)
-                    #{
-                    #    $PassiveNode += ".$FQDN"
-                    #}
-                    #else
-                    #{
-                    #    $PassiveNode += ".$DomainDetails"
-                    #}
+                    if ($PassiveNode.IndexOf('.') -eq -1)
+                    {
+                        $PassiveNode += ".$FQDN"
+                    }
+                    else
+                    {
+                        $PassiveNode += ".$DomainDetails"
+                    }
 
                     Write-StatusUpdate -Message "Found Server: $PassiveNode)"
                     $ServerList += ($PassiveNode,0)
@@ -222,8 +200,8 @@ ForEach ($SQLServerRC in $SQLServers)
     }
     else
     {
-        $ServerList += ,($ComputerName_NoDomain,1)
-        Write-StatusUpdate -Message "Found Server: $ComputerName_NoDomain"
+        $ServerList += ,($SQLServerRC.ComputerName,1)
+        Write-StatusUpdate -Message "Found Server: $SQLServerRC.ComputerName"
     }
 
     #region Phase 1: Server, Cluster, and Volume Process
@@ -330,7 +308,7 @@ ForEach ($SQLServerRC in $SQLServers)
                     $Global:Error_FailedToComplete
                     {
                         $ClusterIsMonitored = $false
-                        Write-StatusUpdate -Message "Failed to get cluster details for [$ComputerName_NoDomain]."
+                        Write-StatusUpdate -Message "Failed to get cluster details for [$($SQLServerRC.ComputerName)]."
                         break;
                     }
                     default
