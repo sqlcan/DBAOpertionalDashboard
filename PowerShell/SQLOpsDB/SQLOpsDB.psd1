@@ -139,6 +139,8 @@
     # Support Modules
     '.\Modules\Split-Parts.psm1';
 	'.\Modules\Get-SQLOpErrorDetails.psm1';
+	'.\Modules\Out-DataTable.psm1';				# This module is not used by SQLOpsDB but is required for Perf Dashboard.
+	'.\Modules\Add-SqlTable.psm1';				# This module is not used by SQLOpsDB but is required for Perf Dashboard.
     )
 
     # Functions to export from this module
