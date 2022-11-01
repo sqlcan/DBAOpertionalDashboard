@@ -147,7 +147,7 @@ function Get-SISQLService
 		# Get list of all services that have word "SQL" or "PowerBI" in them.  We are using WMI for Win32_Services.  Because WMI for SQL does not provide
 		# list of all SQL services.
 		$Services = Get-WmiObject -Class Win32_Service -ComputerName $ComputerName -ErrorAction Stop
-		$Services = $Services | Where-Object {($_.DisplayName -Like '*SQL*' -OR $_.DisplayName -Like '*PowerBI*'-OR $_.Name -Like '*MsDts*') -and
+		$Services = $Services | Where-Object {($_.DisplayName -Like '*SQL*' -OR $_.DisplayName -Like '*PowerBI*'-OR $_.DisplayName -Like '*Power BI*' -OR $_.Name -Like '*MsDts*') -and
                                               ($_.Name -notlike 'MSSQLServerADHelper*' -and $_.Name -ne 'SQLWriter')} | SELECT PSComputerName, DisplayName, Name, PathName, StartName, StartMode, State, Status
 
 
