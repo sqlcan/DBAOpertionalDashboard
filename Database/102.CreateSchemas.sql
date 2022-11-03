@@ -12,6 +12,7 @@
 --              Policy   | Stores data for Policy Based Management data.
 --              Snapshot | Snapshot of the daily stats.
 --              Expired  | Objects past 90-days Old
+--				Security | Login & User information from all instances.
 
 --   Script By: Mohit K. Gupta (mogupta@microsoft.com)
 --  Script Ver: 1.00
@@ -48,4 +49,8 @@ GO
 
 IF NOT (EXISTS (SELECT * FROM sys.schemas WHERE NAME = 'Expired'))
 	EXEC ('CREATE SCHEMA [Expired]')
+GO
+
+IF NOT (EXISTS (SELECT * FROM sys.schemas WHERE NAME = 'Security'))
+	EXEC ('CREATE SCHEMA [Security]')
 GO

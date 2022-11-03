@@ -83,6 +83,17 @@
     '.\Modules\Get-SISQLProperties.psm1';
 	'.\Modules\Get-SQLOpSQLProperties.psm1';
 	'.\Modules\Get-SISQLVolumeDetails.psm1';
+	# SQL Security Modules
+	'.\Modules\Get-SIServerPrincipalMembership.psm1';
+	'.\Modules\Get-SIServerRole.psm1';
+	'.\Modules\Get-SIDatabasePrincipalMembership.psm1';
+	'.\Modules\Get-SIDatabaseRole.psm1';
+	'.\Modules\Update-SQLOpServerRole.psm1';
+	'.\Modules\Update-SQLOpDatabaseRole.psm1';
+	'.\Modules\Update-SQLOpServerPrincipalMembership.psm1';
+	'.\Modules\Update-SQLOpDatabasePrincipalMembership.psm1';
+	'.\Modules\Get-SIServerPermission.psm1'
+	'.\Modules\Update-SQLOpServerPermission.psm1'
 	# Availability Group Modules
 	'.\Modules\Get-SIAvailabilityGroups.psm1';
 	'.\Modules\Update-SQLOpAvailabilityGroup.psm1';

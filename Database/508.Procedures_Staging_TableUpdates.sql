@@ -80,7 +80,7 @@ BEGIN
                 ServerInstance VARCHAR(255),
                 DateTimeCaptured DATETIME,
                 Message VARCHAR(MAX))
-
+				
 		IF (@TableName = 'SQLJobs')
 			CREATE TABLE Staging.SQLJobs (
                 ProcessID int,
@@ -91,6 +91,55 @@ BEGIN
                 ExecutionDateTime DATETIME,
                 Duration INT,
                 JobStatus VARCHAR(25))
+				
+		IF (@TableName = 'ServerRole')
+			CREATE TABLE Staging.ServerRole (
+                ProcessID int,
+				SQLInstanceID int,
+                ServerInstance VARCHAR(255),
+                RoleName VARCHAR(255),
+                RoleType VARCHAR(255))
+
+		IF (@TableName = 'DatabaseRole')
+			CREATE TABLE Staging.DatabaseRole (
+                ProcessID int,
+				SQLInstanceID int,
+                ServerInstance VARCHAR(255),
+                RoleName VARCHAR(255),
+                RoleType VARCHAR(255))
+
+		IF (@TableName = 'ServerPrincipalMembership')
+			CREATE TABLE Staging.ServerPrincipalMembership (
+                ProcessID int,
+				SQLInstanceID int,
+                ServerInstance VARCHAR(255),
+                RoleName VARCHAR(255),
+                LoginName VARCHAR(255),
+				LoginType VARCHAR(255))
+				
+		IF (@TableName = 'DatabasePrincipalMembership')
+			CREATE TABLE Staging.DatabasePrincipalMembership (
+                ProcessID int,
+				SQLInstanceID int,
+				ServerInstance VARCHAR(255),
+				DatabaseName VARCHAR(255),                
+                RoleName VARCHAR(255),
+                UserName VARCHAR(255),
+				UserType VARCHAR(255),
+				IsOrphaned BIT)
+
+		IF (@TableName = 'ServerPermission')
+			CREATE TABLE Staging.ServerPermission (
+                ProcessID int,
+				SQLInstanceID int,
+				ServerInstance VARCHAR(255),
+				GranteeName VARCHAR(255),                
+                GrantorName VARCHAR(255),
+                GranteeType VARCHAR(255),
+				ObjectType VARCHAR(255),
+				ObjectID BIGINT,
+				Access VARCHAR(25),
+				PermissionName VARCHAR(255))
 
 		EXEC sys.sp_addextendedproperty @name=N'SQLOpsDBVersion', @value=@ModuleVersion , @level0type=N'SCHEMA',@level0name=N'Staging', @level1type=N'TABLE',@level1name=@TableName
 	END

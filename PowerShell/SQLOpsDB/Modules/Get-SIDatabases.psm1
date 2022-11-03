@@ -24,8 +24,10 @@ Get all the databases and their size information.
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2022.10.14 0.00.01 Initial Version
-2022.10.31 0.00.02 Added support for pulling extended property 'ApplicationName'
+2022.10.31 0.00.03 Added support for pulling extended property 'ApplicationName'
                     If not defined, will default to 'Unknown'
+				   Enable monitor for MSDB database, as it will be required
+				    for security audits.
 #>
 function Get-SIDatabases
 {
@@ -41,8 +43,8 @@ function Get-SIDatabases
     }
     
     $ModuleName = 'Get-SIDatabases'
-    $ModuleVersion = '0.00.01'
-    $ModuleLastUpdated = 'March 6, 2020'
+    $ModuleVersion = '0.00.03'
+    $ModuleLastUpdated = 'October 31, 2022'
 
     try
     {
@@ -71,7 +73,7 @@ function Get-SIDatabases
 								JOIN sys.databases D
 									ON mf.database_id = D.database_id
 							LEFT JOIN #DBApps DA ON d.database_id = DA.DatabaseID
-								WHERE D.database_id NOT IN (1,3,4))
+								WHERE D.database_id NOT IN (1,3))
 						SELECT   $(IF ($Internal) { "$ProcessID AS ProcessID, " })
 						         $(IF ($Internal) { "$($SQLInstanceObj.SQLInstanceID) AS InstanceID, " })
 						         '$ServerInstance' AS ServerInstance
@@ -106,7 +108,7 @@ function Get-SIDatabases
 							LEFT JOIN sys.availability_groups AG
 									ON AR.group_id = AG.group_id
 							LEFT JOIN #DBApps DA ON d.database_id = DA.DatabaseID
-								WHERE MF.database_id NOT IN (1,3,4))
+								WHERE MF.database_id NOT IN (1,3))
 					SELECT   $(IF ($Internal) { "$ProcessID AS ProcessID, " })
 							 $(IF ($Internal) { "$($SQLInstanceObj.SQLInstanceID) AS InstanceID, " })
 						  	 '$ServerInstance' AS ServerInstance
