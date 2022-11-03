@@ -28,6 +28,11 @@ Date       Version Comments
                     If not defined, will default to 'Unknown'
 				   Enable monitor for MSDB database, as it will be required
 				    for security audits.
+2022.11.03 0.00.04 Removed the msdb from collection list.  Also excluded SSIDB
+                    from collection list.  In security collection, it is very
+					constrainted on data collected.  Therefore various 
+					collections fail because of these DBs. Will revisit these
+					DB in the futur.
 #>
 function Get-SIDatabases
 {
@@ -43,8 +48,8 @@ function Get-SIDatabases
     }
     
     $ModuleName = 'Get-SIDatabases'
-    $ModuleVersion = '0.00.03'
-    $ModuleLastUpdated = 'October 31, 2022'
+    $ModuleVersion = '0.00.04'
+    $ModuleLastUpdated = 'November 3, 2022'
 
     try
     {
@@ -73,7 +78,8 @@ function Get-SIDatabases
 								JOIN sys.databases D
 									ON mf.database_id = D.database_id
 							LEFT JOIN #DBApps DA ON d.database_id = DA.DatabaseID
-								WHERE D.database_id NOT IN (1,3))
+								WHERE D.database_id NOT IN (1,3,4)
+								  AND db_name(D.database_id) <> 'SSISDB')
 						SELECT   $(IF ($Internal) { "$ProcessID AS ProcessID, " })
 						         $(IF ($Internal) { "$($SQLInstanceObj.SQLInstanceID) AS InstanceID, " })
 						         '$ServerInstance' AS ServerInstance
@@ -108,7 +114,8 @@ function Get-SIDatabases
 							LEFT JOIN sys.availability_groups AG
 									ON AR.group_id = AG.group_id
 							LEFT JOIN #DBApps DA ON d.database_id = DA.DatabaseID
-								WHERE MF.database_id NOT IN (1,3))
+								WHERE MF.database_id NOT IN (1,3,4)
+								  AND db_name(MF.database_id) <> 'SSISDB')
 					SELECT   $(IF ($Internal) { "$ProcessID AS ProcessID, " })
 							 $(IF ($Internal) { "$($SQLInstanceObj.SQLInstanceID) AS InstanceID, " })
 						  	 '$ServerInstance' AS ServerInstance

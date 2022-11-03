@@ -70,8 +70,7 @@ function Get-SIDatabasePrincipalMembership
 				ON DP.principal_id = DRM.member_principal_id
 				LEFT JOIN sys.server_principals SP
 				ON DP.sid = SP.sid
-				WHERE (DP.name <> ''dbo'')
-				AND DP.type IN (''U'',''S'', ''G'')
+				WHERE DP.type IN (''U'',''S'', ''G'')
 				
 				UNION ALL
 				
@@ -84,7 +83,7 @@ function Get-SIDatabasePrincipalMembership
 				LEFT JOIN sys.server_principals SP
 				ON DP.sid = SP.sid
 				WHERE DP.type IN (''U'',''S'') 
-				AND DP.name NOT IN (''dbo'',''guest'',''sys'',''INFORMATION_SCHEMA'')'
+				AND DP.name NOT IN (''sys'',''INFORMATION_SCHEMA'')'
 				
 				  SELECT $(IF ($Internal) { "$ProcessID AS ProcessID, " })
 						 $(IF ($Internal) { "$($SQLInstanceObj.SQLInstanceID) AS InstanceID, " })
@@ -98,7 +97,8 @@ function Get-SIDatabasePrincipalMembership
 														'##MS_SSISServerCleanupJobLogin##','##MS_SSISServerCleanupJobUser##','MS_DataCollectorInternalUser',
 														'AllSchemaOwner')
 					AND UserName NOT LIKE 'NT SERVICE\MSSQL$%'
-					AND UserName NOT LIKE 'NT SERVICE\SQLAGENT$%'"		
+					AND UserName NOT LIKE 'NT SERVICE\SQLAGENT$%'
+					AND DatabaseName NOT IN ('master','model','msdb','SSISDB')"		
 		
 
 		Write-StatusUpdate -Message $TSQL -IsTSQL        

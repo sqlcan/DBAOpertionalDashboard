@@ -92,8 +92,10 @@
 	'.\Modules\Update-SQLOpDatabaseRole.psm1';
 	'.\Modules\Update-SQLOpServerPrincipalMembership.psm1';
 	'.\Modules\Update-SQLOpDatabasePrincipalMembership.psm1';
-	'.\Modules\Get-SIServerPermission.psm1'
-	'.\Modules\Update-SQLOpServerPermission.psm1'
+	'.\Modules\Get-SIServerPermission.psm1';
+	'.\Modules\Update-SQLOpServerPermission.psm1';
+	'.\Modules\Get-SIDatabasePermission.psm1';
+	'.\Modules\Update-SQLOpDatabasePermission.psm1'
 	# Availability Group Modules
 	'.\Modules\Get-SIAvailabilityGroups.psm1';
 	'.\Modules\Update-SQLOpAvailabilityGroup.psm1';

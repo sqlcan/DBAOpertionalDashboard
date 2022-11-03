@@ -87,7 +87,7 @@ function Update-SQLOpServerPermission
 								AND SP.GranteeType = GranteeSP.PrincipalType
 						LEFT JOIN Security.ServerPrincipal GrantorSP
 								ON SP.GrantorName = GrantorSP.PrincipalName
-								AND GrantorSP.PrincipalType <> 'SERVER_ROLE'
+								AND SP.GranteeType = GrantorSP.PrincipalType
 					WHERE ProcessID = $ProcessID) AS Source (SQLInstanceID, GranteeID, GrantorID, ObjectType, ObjectID, Access, PermissionName)
 					ON (Target.SQLInstanceID = Source.SQLInstanceID AND 
 					    Target.GranteeID = Source.GranteeID AND 
@@ -101,10 +101,12 @@ function Update-SQLOpServerPermission
 						UPDATE SET LastUpdated = GETDATE()
 					WHEN NOT MATCHED THEN
 						INSERT (SQLInstanceID, GranteeID, GrantorID, ObjectType, ObjectID, Access, PermissionName) 
-						VALUES (Source.SQLInstanceID, Source.GranteeID, Source.GrantorID, Source.ObjectType, Source.ObjectID, Source.Access, Source.PermissionName)
-					WHEN NOT MATCHED BY SOURCE THEN
-						UPDATE SET LastUpdated = GETDATE(),
-						           IsArchived = 1;"
+						VALUES (Source.SQLInstanceID, Source.GranteeID, Source.GrantorID, Source.ObjectType, Source.ObjectID, Source.Access, Source.PermissionName);
+
+					UPDATE Security.ServerPermission
+					   SET IsArchived = 1
+					 WHERE IsArchived = 0
+					   AND LastUpdated < CAST(GETDATE() AS DATE)"
 		Write-StatusUpdate -Message $TSQL -IsTSQL
 
 		Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `

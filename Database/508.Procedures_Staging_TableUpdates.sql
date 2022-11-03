@@ -136,8 +136,24 @@ BEGIN
 				GranteeName VARCHAR(255),                
                 GrantorName VARCHAR(255),
                 GranteeType VARCHAR(255),
+				GrantorType VARCHAR(255),
 				ObjectType VARCHAR(255),
 				ObjectID BIGINT,
+				Access VARCHAR(25),
+				PermissionName VARCHAR(255))
+
+		IF (@TableName = 'DatabasePermission')
+			CREATE TABLE Staging.DatabasePermission (
+                ProcessID int,
+				SQLInstanceID int,
+				ServerInstance VARCHAR(255),
+				DatabaseName VARCHAR(255),
+				GranteeName VARCHAR(255),                
+                GrantorName VARCHAR(255),
+                GranteeType VARCHAR(255),
+				GrantorType VARCHAR(255),
+				ObjectType VARCHAR(255),
+				ObjectName VARCHAR(255),
 				Access VARCHAR(25),
 				PermissionName VARCHAR(255))
 

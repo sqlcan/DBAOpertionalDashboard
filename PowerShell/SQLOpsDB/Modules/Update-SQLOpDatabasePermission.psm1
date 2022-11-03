@@ -1,18 +1,16 @@
 <#
 .SYNOPSIS
-Update-SQLOpServerPrincipalMembership
+Update-SQLOpDatabasePermission
 
 .DESCRIPTION 
-Update-SQLOpServerPrincipalMembership has following purpose.
-1) Update list of server principals with distinct list of logins.
-2) Update principal to role membership.
+Update-SQLOpDatabasePermission save all explicit permissions.
 
 
 .PARAMETER ServerInstance
-SQL Server instance name for which the server roles & logins are being updated.
+SQL Server instance name for which save explicit permissions for.
 
 .PARAMETER Data
-Role data from Get-SIServerPrincipalMembership.
+Permissions data from Get-SIDatabasePermission.
 
 .INPUTS
 None
@@ -21,14 +19,14 @@ None
 Nothing.
 
 .EXAMPLE
-Update-SQLOpServerPrincipalMembership -ServerInstance Contoso -Data $Data
+Update-SQLOpDatabasePermission -ServerInstance Contoso -Data $Data
 
 .NOTES
 Date        Version Comments
 ----------  ------- ------------------------------------------------------------------
-2020.11.02  0.00.01 Initial version.
+2020.11.03  0.00.01 Initial version.
 #>
-function Update-SQLOpServerPrincipalMembership
+function Update-SQLOpDatabasePermission
 {
     [CmdletBinding()] 
     param( 
@@ -42,9 +40,9 @@ function Update-SQLOpServerPrincipalMembership
         return
     }
     
-    $ModuleName = 'Update-SQLOpServerPrincipalMembership'
+    $ModuleName = 'Update-SQLOpDatabasePermission'
     $ModuleVersion = '0.01'
-    $ModuleLastUpdated = 'November 2, 2022'
+    $ModuleLastUpdated = 'November 3, 2022'
 
     # Validate sql instance exists.
     $ServerInstanceObj = Get-SqlOpSQLInstance -ServerInstance $ServerInstance
@@ -64,7 +62,7 @@ function Update-SQLOpServerPrincipalMembership
         # Create a staging table to store the results.  Using staging table, we can do batch process.
         # Other option would be row-by-row operation.
 
-        $TSQL = "EXEC Staging.TableUpdates @TableName=N'ServerPrincipalMembership', @ModuleVersion=N'$ModuleVersion'"	
+        $TSQL = "EXEC Staging.TableUpdates @TableName=N'DatabasePermission', @ModuleVersion=N'$ModuleVersion'"	
         Write-StatusUpdate -Message $TSQL -IsTSQL
 
         Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
@@ -74,52 +72,52 @@ function Update-SQLOpServerPrincipalMembership
         # Load the Staging table we just created.
         Write-SqlTableData -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
         				   -DatabaseName $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
-        				   -TableName ServerPrincipalMembership `
+        				   -TableName DatabasePermission `
         				   -SchemaName Staging `
         				   -InputData $Data
 
 		$ProcessID = $PID
 
-        $TSQL = "MERGE Security.ServerPrincipal AS Target
-                USING (SELECT DISTINCT LoginName, LoginType FROM Staging.ServerPrincipalMembership WHERE ProcessID = $ProcessID) AS Source (LoginName, LoginType)
-                ON (Target.PrincipalName = Source.LoginName AND Target.PrincipalType=Source.LoginType)
-                WHEN NOT MATCHED THEN
-                    INSERT (PrincipalName, PrincipalType)
-                    VALUES (Source.LoginName, Source.LoginType);"
+		$TSQL = "MERGE Security.DatabasePermission AS TARGET
+				USING (SELECT DP.SQLInstanceID, DatabaseID, GranteeSP.PrincipalID AS GranteeID, GrantorSP.PrincipalID AS GrantorID,
+								ObjectType, ObjectName, Access, PermissionName
+							FROM Staging.DatabasePermission DP
+					LEFT JOIN Security.DatabasePrincipal GranteeSP
+							ON DP.GranteeName = GranteeSP.PrincipalName
+							AND DP.GranteeType = GranteeSP.PrincipalType
+					LEFT JOIN Security.DatabasePrincipal GrantorSP
+							ON DP.GrantorName = GrantorSP.PrincipalName
+							AND DP.GrantorType = GrantorSP.PrincipalType
+					LEFT JOIN dbo.Databases D
+							ON D.DatabaseName = DP.DatabaseName
+							AND D.SQLInstanceID = DP.SQLInstanceID
+				WHERE ProcessID = $ProcessID) AS Source (SQLInstanceID, DatabaseID, GranteeID, GrantorID, ObjectType, ObjectName, Access, PermissionName)
+				ON (Target.DatabaseID = Source.DatabaseID AND 
+					Target.GranteeID = Source.GranteeID AND 
+					Target.GrantorID = Source.GrantorID AND
+					Target.ObjectType = Source.ObjectType AND
+					Target.ObjectName = Source.ObjectName AND
+					Target.Access = Source.Access AND
+					Target.PermissionName = Source.PermissionName AND
+					Target.IsArchived = 0)
+				WHEN MATCHED THEN
+					UPDATE SET LastUpdated = GETDATE()
+				WHEN NOT MATCHED THEN
+					INSERT (DatabaseID, GranteeID, GrantorID, ObjectType, ObjectName, Access, PermissionName) 
+					VALUES (Source.DatabaseID, Source.GranteeID, Source.GrantorID, Source.ObjectType, Source.ObjectName, Source.Access, Source.PermissionName);
 
-        Write-StatusUpdate -Message $TSQL -IsTSQL
+				 UPDATE Security.DatabasePermission
+					SET IsArchived = 1
+				  WHERE IsArchived = 0
+					AND LastUpdated < CAST(GETDATE() AS DATE)"
 
-        Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
-                      -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
-                      -Query $TSQL
-
-		$TSQL = "MERGE Security.ServerPrincipalMembership AS TARGET
-		         USING (SELECT SPM.SQLInstanceID, RoleP.PrincipalID AS ServerRoleID, LoginP.PrincipalID AS ServerLoginID
-						FROM Staging.ServerPrincipalMembership SPM
-					LEFT JOIN Security.ServerPrincipal RoleP
-						ON SPM.RoleName = RoleP.PrincipalName
-						AND RoleP.PrincipalType = 'SERVER_ROLE'
-					LEFT JOIN Security.ServerPrincipal LoginP
-						ON SPM.LoginName = LoginP.PrincipalName
-						AND SPM.LoginType = LoginP.PrincipalType
-					WHERE ProcessID = $ProcessID) AS Source (SQLInstanceID, ServerRoleID, ServerLoginID)
-					ON (Target.SQLInstanceID = Source.SQLInstanceID AND Target.ServerRoleID = Source.ServerRoleID AND Target.ServerLoginID = Source.ServerLoginID AND Target.IsArchived = 0)
-					WHEN MATCHED THEN
-						UPDATE SET LastUpdated = GETDATE()
-					WHEN NOT MATCHED THEN
-						INSERT (SQLInstanceID, ServerRoleID, ServerLoginID) VALUES (Source.SQLInstanceID, Source.ServerRoleID, Source.ServerLoginID);
-								   
-					UPDATE Security.ServerPrincipalMembership
-					   SET IsArchived = 1
-					 WHERE IsArchived = 0
-					   AND LastUpdated < CAST(GETDATE() AS DATE)"
 		Write-StatusUpdate -Message $TSQL -IsTSQL
 
 		Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
 						-Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
 						-Query $TSQL
 
-		$TSQL = "DELETE FROM Staging.ServerPrincipalMembership WHERE ProcessID = $ProcessID"
+		$TSQL = "DELETE FROM Staging.DatabasePermission WHERE ProcessID = $ProcessID"
 		Write-StatusUpdate -Message $TSQL -IsTSQL
         Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
                     -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `

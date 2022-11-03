@@ -531,6 +531,43 @@ ForEach ($SQLServerRC in $SQLServers)
 			Update-SQLOpExtendedProperties -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
 		}
 
+		Write-StatusUpdate -Message "Collecting all server and database security information"
+		$Results = Get-SIServerRole -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
+		if ($Results)
+		{
+			Update-SQLOpServerRole -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+		}
+
+		$Results = Get-SIDatabaseRole -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
+		if ($Results)
+		{
+			Update-SQLOpDatabaseRole -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+		}
+
+		$Results = Get-SIServerPrincipalMembership -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
+		if ($Results)
+		{
+			Update-SQLOpServerPrincipalMembership -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+		}
+
+		$Results = Get-SIDatabasePrincipalMembership -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
+		if ($Results)
+		{
+			Update-SQLOpDatabasePrincipalMembership -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+		}
+
+		$Results = Get-SIServerPermission -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
+		if ($Results)
+		{
+			Update-SQLOpServerPermission -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+		}
+
+		$Results = Get-SIDatabasePermission -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
+		if ($Results)
+		{
+			Update-SQLOpDatabasePermission -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+		}
+
         if ($DCS_ErrorLogs)
         {
             # Get SQL Instance Error Logs.  Get the last collect date, then get only errors since last collection.

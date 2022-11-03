@@ -94,7 +94,7 @@ function Update-SQLOpDatabasePrincipalMembership
                       -Query $TSQL
 
 		$TSQL = "MERGE Security.DatabasePrincipalMembership AS TARGET
-		         USING (SELECT D.DatabaseID, RoleP.PrincipalID AS DatabaseRoleID, LoginP.PrincipalID AS DatabaseUserID
+		         USING (SELECT D.DatabaseID, RoleP.PrincipalID AS DatabaseRoleID, LoginP.PrincipalID AS DatabaseUserID, SPM.IsOrphaned
 						FROM Staging.DatabasePrincipalMembership SPM
 					LEFT JOIN Security.DatabasePrincipal RoleP
 						ON SPM.RoleName = RoleP.PrincipalName
@@ -105,15 +105,18 @@ function Update-SQLOpDatabasePrincipalMembership
                     LEFT JOIN dbo.Databases D
 					    ON D.DatabaseName = SPM.DatabaseName
 					   AND D.SQLInstanceID = SPM.SQLInstanceID
-					WHERE ProcessID = $ProcessID) AS Source (DatabaseID, DatabaseRoleID, DatabaseUserID)
+					WHERE ProcessID = $ProcessID) AS Source (DatabaseID, DatabaseRoleID, DatabaseUserID,IsOrphaned)
 					ON (Target.DatabaseID = Source.DatabaseID AND Target.DatabaseRoleID = Source.DatabaseRoleID AND Target.DatabaseUserID = Source.DatabaseUserID AND Target.IsArchived = 0)
 					WHEN MATCHED THEN
-						UPDATE SET LastUpdated = GETDATE()
-					WHEN NOT MATCHED THEN
-						INSERT (DatabaseID, DatabaseRoleID, DatabaseUserID) VALUES (Source.DatabaseID, Source.DatabaseRoleID, Source.DatabaseUserID)
-					WHEN NOT MATCHED BY SOURCE THEN
 						UPDATE SET LastUpdated = GETDATE(),
-						           IsArchived = 1;"
+							       IsOrphaned = Source.IsOrphaned
+					WHEN NOT MATCHED THEN
+						INSERT (DatabaseID, DatabaseRoleID, DatabaseUserID, IsOrphaned) VALUES (Source.DatabaseID, Source.DatabaseRoleID, Source.DatabaseUserID, Source.IsOrphaned);
+
+					 UPDATE Security.DatabasePrincipalMembership
+						SET IsArchived = 1
+					  WHERE IsArchived = 0
+						AND LastUpdated < CAST(GETDATE() AS DATE)"
 		Write-StatusUpdate -Message $TSQL -IsTSQL
 
 		Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `

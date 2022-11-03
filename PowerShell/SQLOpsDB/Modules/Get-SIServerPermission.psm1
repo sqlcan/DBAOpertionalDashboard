@@ -51,6 +51,7 @@ function Get-SIServerPermission
 						'$ServerInstance' AS ServerInstance,SP.name AS GranteeName,       
 						SGP.name AS GrantorName,
 						SP.type_desc AS GranteeType,
+						SGP.type_desc AS GrantorType,
 						PE.class_desc AS ObjectType,
 						PE.major_id AS ObjectID,
 						PE.state_desc AS Access,
