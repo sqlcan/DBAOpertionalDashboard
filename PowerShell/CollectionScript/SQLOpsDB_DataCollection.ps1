@@ -670,8 +670,7 @@ Write-StatusUpdate -Message "Phase 3: Aggregation for Disk Space & Database Spac
     Write-StatusUpdate -Message "Phase 3.2: Aggregate Data for Disk Space and Database Space"
     if ($Today -eq $FirstDayOfMonth)
     {
-        Publish-SQLOpMonthlyAggregate -Type DiskVolumes
-        Publish-SQLOpMonthlyAggregate -Type Databases
+        Publish-SQLOpMonthlyAggregate | Out-Null
 		Clear-SQLOpData -DataSet Aggregate | Out-Null
     }
 
@@ -679,12 +678,11 @@ Write-StatusUpdate -Message "Phase 3: Aggregation for Disk Space & Database Spac
     Write-StatusUpdate -Message "Phase 3.3: Truncate Raw Data for Disk Space and Database Space"
 	Clear-SQLOpData -DataSet RawData | Out-Null
 
-
     #Phase 3.4: Build Trending Data, Truncate Aggregate Data
     Write-StatusUpdate -Message "Phase 3.4: Build Trending Data, Truncate Aggregate Data"
     if ($Today -eq $FirstDayOfMonth)
     {
-        Publish-SQLOpTreadData
+        Publish-SQLOpTreadData | Out-Null
         Clear-SQLOpData -DataSet Trending | Out-Null
     }
 

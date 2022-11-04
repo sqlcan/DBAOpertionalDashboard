@@ -29,13 +29,13 @@ Date       Version Comments
 2022.10.29 0.00.04 Updated command let name.
 				   Added standard code for working with JSON parameters.
 2022.10.30 0.00.05 Updated command let name with standard "SQLOp".
+2022.11.04 0.00.06 Simplified the command let to create both disk and database
+                    aggregate at same time.
 #>
 function Publish-SQLOpMonthlyAggregate
 {
     [CmdletBinding()] 
-    param( 
-    [Parameter(Position=0, Mandatory=$true)] [ValidateSet(“DiskVolumes”,”Databases”)] [string]$Type
-    )
+    param()
 
     if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)
     {
@@ -44,8 +44,8 @@ function Publish-SQLOpMonthlyAggregate
     }
 
     $ModuleName = 'Publish-SQLOpMonthlyAggregate'
-    $ModuleVersion = '0.00.05'
-    $ModuleLastUpdated = 'October 30, 2022'
+    $ModuleVersion = '0.00.06'
+    $ModuleLastUpdated = 'November 4, 2022'
 
     try
     {
@@ -61,31 +61,14 @@ function Publish-SQLOpMonthlyAggregate
             $Year--
         }
 
-        #What is T-SQL Doing?
-        if ($Type -eq 'Databases')
-        {
-            $TSQL = "EXEC History.AggregateDatabases @Month=$Month, @Year=$Year"
-        }
-        elseif ($Type -eq 'DiskVolumes')
-        {
-        
-            $TSQL = "EXEC History.AggregateDiskVolumes @Month=$Month, @Year=$Year"
-        }
+        $TSQL = "EXEC History.CreateAggregate @Month=$Month, @Year=$Year"
         Write-StatusUpdate -Message $TSQL
 
-        $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
-							     -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
-						 		 -Query $TSQL
+        Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
+				      -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
+					  -Query $TSQL
         
-        # If no result sets are returned return an error; unless return the appropriate resultset.
-        if (!($Results))
-        {
-            Write-Output $Global:Error_FailedToComplete
-        }
-        else
-        {
-            Write-Output $Results
-        }
+        Write-Output $Global:Error_Successful
     }
     catch [System.Data.SqlClient.SqlException]
     {
