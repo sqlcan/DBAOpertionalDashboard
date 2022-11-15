@@ -148,6 +148,7 @@
 	# Snapshot, Aggregrate, Cleanup Modules
 	'.\Modules\Publish-SQLOpMonthlyAggregate.psm1';
     '.\Modules\Publish-SQLOpTreadData.psm1';
+	'.\Modules\Publish-SQLOpSnapshot.psm1';
 	'.\Modules\Clear-SQLOpData.psm1';
     # Support Modules
     '.\Modules\Split-Parts.psm1';

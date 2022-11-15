@@ -42,7 +42,7 @@ BEGIN
 
 	ALTER TABLE [dbo].[Databases] ADD  CONSTRAINT [DF_Databases_LastUpdated]  DEFAULT (getdate()) FOR [LastUpdated]
 
-	ALTER TABLE [dbo].[Databases] ADD  CONSTRAINT [DF_Databases_ApplicationID]  DEFAULT (1) FOR [LastUpdated]
+	ALTER TABLE [dbo].[Databases] ADD  CONSTRAINT [DF_Databases_ApplicationID]  DEFAULT (1) FOR [ApplicationID]
 
 	ALTER TABLE [dbo].[Databases]  WITH CHECK ADD  CONSTRAINT [FK_Databases_SQLInstances] FOREIGN KEY([SQLInstanceID])
 	REFERENCES [dbo].[SQLInstances] ([SQLInstanceID])

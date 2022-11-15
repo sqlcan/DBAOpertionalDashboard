@@ -653,9 +653,12 @@ ForEach ($SQLServerRC in $SQLServers)
 }
 #endregion
 
+#Phase 3: Create Daily Snapshot
+Write-StatusUpdate -Message "Phase 3: Create Daily Snapshot"
+Publish-SQLOpSnapshot | Out-Null
 
-#Phase 3: Aggregation for Disk Space & Database Space
-Write-StatusUpdate -Message "Phase 3: Aggregation for Disk Space & Database Space"
+#Phase 4: Utility Functions (Cleanup, Aggregate, Truncate, etc.)
+Write-StatusUpdate -Message "Phase 4: Utility Functions (Cleanup, Aggregate, Truncate, etc.)"
 
     $CurrentDate = Get-Date
     $FirstDayOfMonth = Get-Date -Year $CurrentDate.Year -Month $CurrentDate.Month -Day 1
@@ -663,11 +666,11 @@ Write-StatusUpdate -Message "Phase 3: Aggregation for Disk Space & Database Spac
     $FirstDayOfMonth = $FirstDayOfMonth.ToString('yyyyMMdd')
 
     #Phase 3.1: Clean Up Expired Data
-    Write-StatusUpdate -Message "Phase 3.1: Clean Up Expired Data"
+    Write-StatusUpdate -Message "Phase 4.1: Clean Up Expired Data"
 	Clear-SQLOpData -DataSet Expired | Out-Null
 
     #Phase 3.2: Aggregate Data for Disk Space and Database Space
-    Write-StatusUpdate -Message "Phase 3.2: Aggregate Data for Disk Space and Database Space"
+    Write-StatusUpdate -Message "Phase 4.2: Aggregate Data for Disk Space and Database Space"
     if ($Today -eq $FirstDayOfMonth)
     {
         Publish-SQLOpMonthlyAggregate | Out-Null
@@ -675,11 +678,11 @@ Write-StatusUpdate -Message "Phase 3: Aggregation for Disk Space & Database Spac
     }
 
     #Phase 3.3: Truncate Raw Data for Disk Space and Database Space
-    Write-StatusUpdate -Message "Phase 3.3: Truncate Raw Data for Disk Space and Database Space"
+    Write-StatusUpdate -Message "Phase 4.3: Truncate Raw Data for Disk Space and Database Space"
 	Clear-SQLOpData -DataSet RawData | Out-Null
 
     #Phase 3.4: Build Trending Data, Truncate Aggregate Data
-    Write-StatusUpdate -Message "Phase 3.4: Build Trending Data, Truncate Aggregate Data"
+    Write-StatusUpdate -Message "Phase 4.4: Build Trending Data, Truncate Aggregate Data"
     if ($Today -eq $FirstDayOfMonth)
     {
         Publish-SQLOpTreadData | Out-Null
@@ -687,15 +690,15 @@ Write-StatusUpdate -Message "Phase 3: Aggregation for Disk Space & Database Spac
     }
 
     #Phase 3.5: Clean Up Expired Data
-    Write-StatusUpdate -Message "Phase 3.5: Clean Up SQL Logs"
+    Write-StatusUpdate -Message "Phase 4.5: Clean Up SQL Logs"
 	Clear-SQLOpData -DataSet SQL_ErrorLog | Out-Null
 
     #Phase 3.6: Clean Up Expired Data
-    Write-StatusUpdate -Message "Phase 3.6: Clean Up SQL Agent Logs"
+    Write-StatusUpdate -Message "Phase 4.6: Clean Up SQL Agent Logs"
 	Clear-SQLOpData -DataSet SQL_JobHistory | Out-Null
 
     #Phase 3.7: Clean Up CMDB Log Data
-    Write-StatusUpdate -Message "Phase 3.7: Clean Up CMDB Log Data"
+    Write-StatusUpdate -Message "Phase 4.7: Clean Up CMDB Log Data"
 
     if ($Today -eq $FirstDayOfMonth)
     {
