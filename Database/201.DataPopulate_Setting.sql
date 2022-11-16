@@ -28,6 +28,8 @@ INSERT INTO @Setting (SettingName,SettingValue)
 			('ErrorLog_CleanUp_Retention_Days','90'),
 			('SQLAgent_Jobs_CleanUp_Enabled','1'),
 			('SQLAgent_Jobs_CleanUp_Retention_Days','180'),
+			('PolicyResult_CleanUp_Enabled','1'),
+			('PolicyResult_CleanUp_Retention_Days','7'),
 			('Default_DomainName','Contoso.lab.com')
 
 

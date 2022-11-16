@@ -1,15 +1,10 @@
-﻿<!DOCTYPE HTML>
-<!DOCTYPE html PUBLIC "" ""><HTML><HEAD>
-<META http-equiv="Content-Type" content="text/html; charset=utf-8"></HEAD>
-<BODY>
-<PRE># Evaluate specific Policies against a Server List
+﻿# Evaluate specific Policies against a Server List
 # Uses the Invoke-PolicyEvaluation Cmdlet
 
-#SAMPLE: #.\EPM_EnterpriseEvaluation_5.ps1 -ConfigurationGroup "DEV" -PolicyCategoryFilter "Name Pattern" �EvalMode �Check�
+#SAMPLE: #.\EPM_EnterpriseEvaluation_5.ps1 -ConfigurationGroup "DEV" -PolicyCategoryFilter "Name Pattern" –EvalMode “Check”
 
-&lt;#
+<#
 Run Powershell ISE as Admin
-
 https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-ps-module
 
 #https://www.powershellgallery.com/packages/PowerShellGet/
@@ -17,10 +12,24 @@ Install-Module -Name PowerShellGet -Force
 
 #https://www.powershellgallery.com/packages/SqlServer/
 Install-Module -Name SqlServer -Force -AllowClobber
+#>
 
-#&gt;
+<# Comments from Mohit
 
-param([string]$ConfigurationGroup=$(Throw `
+This script is provided as is from https://github.com/Microsoft/sql-server-samples/tree/master/samples/features/epm-framework/
+Minor updated made:
+* CentralManagementSever value must be supplied at execution.
+* Database defaults to SQLOpsDB
+* Log path defaults to Logs folder under where this script resides.
+* Call summarize routine to get summary of current state.
+
+#>
+
+
+
+param([string]$CentralManagementServer=$(Throw `
+"Parameter missing: -CentralManagementServer SQLCMS"),
+[string]$ConfigurationGroup=$(Throw `
 "Parameter missing: -ConfigurationGroup ConfigGroup"),`
 [string]$PolicyCategoryFilter=$(Throw "Parameter missing: `
 -PolicyCategoryFilter Category"), `
@@ -29,57 +38,57 @@ param([string]$ConfigurationGroup=$(Throw `
 Remove-Module SQLPS -Force -ErrorAction SilentlyContinue
 Import-Module SqlServer -DisableNameChecking -MinimumVersion "21.0.171.78"
 
-# Parameter -ConfigurationGroup specifies the 
+# Parameter -ConfigurationGroup specifies the
 # Central Management Server group to evaluate
-# Parameter -PolicyCategoryFilter specifies the 
+# Parameter -PolicyCategoryFilter specifies the
 # category of policies to evaluate
 # Parameter -EvalMode accepts "Check" to report policy
-# results, "Configure" to reconfigure any violations 
+# results, "Configure" to reconfigure any violations
 
 # Declare variables to define the central warehouse
 # in which to write the output, store the policies
-$CentralManagementServer = "Win2012"
-$HistoryDatabase = "MDW"
+
+$HistoryDatabase = "SQLOpsDB"
 # Define the location to write the results of the policy evaluation
-$ResultDir = "E:\Results\"
+$ResultDir = Join-Path $PSScriptRoot ".\Logs\"
 # End of variables
 
 #Function to insert policy evaluation results into SQL Server - table policy.PolicyHistory
-function PolicyHistoryInsert($sqlServerVariable, $sqlDatabaseVariable, $EvaluatedServer, $EvaluatedPolicy, $EvaluationResults) 
+function PolicyHistoryInsert($sqlServerVariable, $sqlDatabaseVariable, $EvaluatedServer, $EvaluatedPolicy, $EvaluationResults)
 {
-   &amp;{
-	$sqlQueryText = "INSERT INTO policy.PolicyHistory (EvaluatedServer, EvaluatedPolicy, EvaluationResults) VALUES(N'$EvaluatedServer', N'$EvaluatedPolicy', N'$EvaluationResults')"
-	Invoke-Sqlcmd -ServerInstance $sqlServerVariable -Database $sqlDatabaseVariable -Query $sqlQueryText -ErrorAction Stop
-	}
-	trap
-	{
-	  $ExceptionText = $_.Exception.Message -replace "'", "" 
-	}
+   &{
+    $sqlQueryText = "INSERT INTO policy.PolicyHistory (EvaluatedServer, EvaluatedPolicy, EvaluationResults) VALUES(N'$EvaluatedServer', N'$EvaluatedPolicy', N'$EvaluationResults')"
+    Invoke-Sqlcmd -ServerInstance $sqlServerVariable -Database $sqlDatabaseVariable -Query $sqlQueryText -ErrorAction Stop
+    }
+    trap
+    {
+      $ExceptionText = $_.Exception.Message -replace "'", ""
+    }
 }
 
 #Function to insert policy evaluation errors into SQL Server - table policy.EvaluationErrorHistory
-function PolicyErrorInsert($sqlServerVariable, $sqlDatabaseVariable, $EvaluatedServer, $EvaluatedPolicy, $EvaluationResultsEscape) 
+function PolicyErrorInsert($sqlServerVariable, $sqlDatabaseVariable, $EvaluatedServer, $EvaluatedPolicy, $EvaluationResultsEscape)
 {
-	&amp;{
-	$sqlQueryText = "INSERT INTO policy.EvaluationErrorHistory (EvaluatedServer, EvaluatedPolicy, EvaluationResults) VALUES(N'$EvaluatedServer', N'$EvaluatedPolicy', N'$EvaluationResultsEscape')"
-	Invoke-Sqlcmd -ServerInstance $sqlServerVariable -Database $sqlDatabaseVariable -Query $sqlQueryText -ErrorAction Stop
-	}
-	trap
-	{
-	  $ExceptionText = $_.Exception.Message -replace "'", ""
-	}
+    &{
+    $sqlQueryText = "INSERT INTO policy.EvaluationErrorHistory (EvaluatedServer, EvaluatedPolicy, EvaluationResults) VALUES(N'$EvaluatedServer', N'$EvaluatedPolicy', N'$EvaluationResultsEscape')"
+    Invoke-Sqlcmd -ServerInstance $sqlServerVariable -Database $sqlDatabaseVariable -Query $sqlQueryText -ErrorAction Stop
+    }
+    trap
+    {
+      $ExceptionText = $_.Exception.Message -replace "'", ""
+    }
 }
 
 #Function to delete files from this policy only
-function PolicyFileDelete($File) 
+function PolicyFileDelete($File)
 {
-	# Delete evaluation files in the directory.
-	Remove-Item -Path $File
-	# ugly but moves on...
-	trap
-	{
-	  continue;
-	}
+    # Delete evaluation files in the directory.
+    Remove-Item -Path $File
+    # ugly but moves on...
+    trap
+    {
+      continue;
+    }
 }
 
 # Connection to the policy store
@@ -99,37 +108,39 @@ $dr = $cmd.ExecuteReader();
 # the policies. For each server and policy,
 # call cmdlet to evaluate policy on server and delete xml file afterwards
 
-while ($dr.Read()) { 
-	$ServerName = $dr.GetValue(0);
-	foreach ($Policy in $PolicyStore.Policies)
+while ($dr.Read()) {
+    $ServerName = $dr.GetValue(0);
+    foreach ($Policy in $PolicyStore.Policies)
    {
-		if (($Policy.PolicyCategory -eq $PolicyCategoryFilter)-or ($PolicyCategoryFilter -eq ""))
-	{
-		&amp;{
-			$OutputFile = $ResultDir + ("{0}_{1}.xml" -f (Encode-SqlName $ServerName ), ($Policy.Name));
-			Invoke-PolicyEvaluation -Policy $Policy -TargetServerName $ServerName -AdHocPolicyEvaluationMode $EvalMode -OutputXML &gt; $OutputFile;
-			$PolicyResult = Get-Content $OutputFile -encoding UTF8;
-			$PolicyResult = $PolicyResult -replace "'", "" 
-			PolicyHistoryInsert $CentralManagementServer $HistoryDatabase $ServerName $Policy.Name $PolicyResult;
-			$File = $ResultDir + ("*_{0}.xml" -f ($Policy.Name));
-			PolicyFileDelete $File;
-	 	}
-			trap [Exception]
-			{ 
-				  $File = $ResultDir + ("*_{0}.xml" -f ($Policy.Name));
-				  PolicyFileDelete $File;
-				  $ExceptionText = $_.Exception.Message -replace "'", "" 
-				  $ExceptionMessage = $_.Exception.GetType().FullName + ", " + $ExceptionText
-				  PolicyErrorInsert $CentralManagementServer $HistoryDatabase $ServerName $Policy.Name $ExceptionMessage;
-				  continue;   
-			}		
-	}
-   } 
- }
+        if (($Policy.PolicyCategory -eq $PolicyCategoryFilter)-or ($PolicyCategoryFilter -eq ""))
+    {
+        &{
+            $OutputFile = $ResultDir + ("{0}_{1}.xml" -f (Encode-SqlName $ServerName ), ($Policy.Name));
+            Invoke-PolicyEvaluation -Policy $Policy -TargetServerName $ServerName -AdHocPolicyEvaluationMode $EvalMode -OutputXML > $OutputFile;
+            $PolicyResult = Get-Content $OutputFile -encoding UTF8;
+            $PolicyResult = $PolicyResult -replace "'", ""
+            PolicyHistoryInsert $CentralManagementServer $HistoryDatabase $ServerName $Policy.Name $PolicyResult;
+            $File = $ResultDir + ("*_{0}.xml" -f ($Policy.Name));
+            PolicyFileDelete $File;
+         }
+            trap [Exception]
+            {
+                  $File = $ResultDir + ("*_{0}.xml" -f ($Policy.Name));
+                  PolicyFileDelete $File;
+                  $ExceptionText = $_.Exception.Message -replace "'", ""
+                  $ExceptionMessage = $_.Exception.GetType().FullName + ", " + $ExceptionText
+                  PolicyErrorInsert $CentralManagementServer $HistoryDatabase $ServerName $Policy.Name $ExceptionMessage;
+                  continue;   
+            }        
+    }
+   }
+}
 
 $dr.Close()
 $sconn.Close()
 
 #Shred the XML results to PolicyHistoryDetails
-Invoke-Sqlcmd -ServerInstance $CentralManagementServer -Database $HistoryDatabase -Query "EXEC policy.epm_LoadPolicyHistoryDetail `$(PolicyCategory)" -Variable "PolicyCategory='${PolicyCategoryFilter}'" -QueryTimeout 65535 -Verbose -ErrorAction Stop
-</PRE></BODY></HTML>
+Invoke-Sqlcmd -ServerInstance $CentralManagementServer -Database $HistoryDatabase -Query "EXEC Policy.epm_LoadPolicyHistoryDetail `$(PolicyCategory)" -Variable "PolicyCategory='${PolicyCategoryFilter}'" -QueryTimeout 65535 -Verbose -ErrorAction Stop
+
+#Summarize the policy results for reporting
+Invoke-Sqlcmd -ServerInstance $CentralManagementServer -Database $HistoryDatabase -Query "EXEC Policy.SummarizePolicyResults" -ErrorAction Stop

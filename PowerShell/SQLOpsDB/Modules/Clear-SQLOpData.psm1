@@ -56,7 +56,8 @@ function Clear-SQLOpData
 				 'Aggregate',						# Clean up History.* Tables
 				 'RawData',							# Clean Up dbo.DatabaseSize and dbo.DiskVolumeSize
 				 'SQL_ErrorLog',					# Clean Up dbo.SQLErrorLogs
-				 'SQL_JobHistory')					# Clean Up dbo.SQLJobHistory
+				 'SQL_JobHistory',					# Clean Up dbo.SQLJobHistory
+				 'Policy_Results')					# Clean Up Policy.* Data Tables.
 	] [string]$DataSet	
     )
 
@@ -124,6 +125,13 @@ function Clear-SQLOpData
 				if ($Global:SQLAgent_Jobs_CleanUp_Enabled)
 				{
 					$TSQL = "EXEC dbo.CleanData_SQLJobHistory @NumberOfDaysToKeep = $Global:SQLAgent_Jobs_CleanUp_Retention_Days"	
+				}
+			}
+			'Policy_Results'
+			{
+				if ($Global:PolicyResult_CleanUp_Enabled)
+				{
+					$TSQL = "EXEC dbo.CleanData_PolicyResults @NumberOfDaysToKeep = $Global:PolicyResult_CleanUp_Retention_Days"	
 				}
 			}
         }

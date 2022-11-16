@@ -5,6 +5,8 @@
 #
 # 2022.10.30 Removed all the old settings, only global settings that are populated by JSON file
 #			 will be consumed.
+#
+# 2022.11.15 Added setting for Policy Results Clean up.
 
 # By default connection information will be loaded from JSON File.
 $Global:JSONSettingsFile = '\..\Config\SQLOpsDB.json'
@@ -39,6 +41,9 @@ $Global:SQLOpsDBInitialized = $false
 
 [Bool]$Global:SQLAgent_Jobs_CleanUp_Enabled = $true
 [Int]$Global:SQLAgent_Jobs_CleanUp_Retention_Days = 180          # Number of Days before clean up; valid range 30 - 180 Days.
+
+[Bool]$Global:PolicyResult_CleanUp_Enabled = $true
+[Int]$Global:PolicyResult_CleanUp_Retention_Days = 7          # Number of Days before clean up; valid range 1 - 15 Days.
 
 [String]$Global:Default_DomainName = $null # Loaded from dbo.Setting.
 

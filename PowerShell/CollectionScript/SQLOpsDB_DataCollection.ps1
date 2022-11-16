@@ -665,11 +665,11 @@ Write-StatusUpdate -Message "Phase 4: Utility Functions (Cleanup, Aggregate, Tru
     $Today = $CurrentDate.ToString('yyyyMMdd')
     $FirstDayOfMonth = $FirstDayOfMonth.ToString('yyyyMMdd')
 
-    #Phase 3.1: Clean Up Expired Data
+    #Phase 4.1: Clean Up Expired Data
     Write-StatusUpdate -Message "Phase 4.1: Clean Up Expired Data"
 	Clear-SQLOpData -DataSet Expired | Out-Null
 
-    #Phase 3.2: Aggregate Data for Disk Space and Database Space
+    #Phase 4.2: Aggregate Data for Disk Space and Database Space
     Write-StatusUpdate -Message "Phase 4.2: Aggregate Data for Disk Space and Database Space"
     if ($Today -eq $FirstDayOfMonth)
     {
@@ -677,7 +677,7 @@ Write-StatusUpdate -Message "Phase 4: Utility Functions (Cleanup, Aggregate, Tru
 		Clear-SQLOpData -DataSet Aggregate | Out-Null
     }
 
-    #Phase 3.3: Truncate Raw Data for Disk Space and Database Space
+    #Phase 4.3: Truncate Raw Data for Disk Space and Database Space
     Write-StatusUpdate -Message "Phase 4.3: Truncate Raw Data for Disk Space and Database Space"
 	Clear-SQLOpData -DataSet RawData | Out-Null
 
@@ -689,16 +689,20 @@ Write-StatusUpdate -Message "Phase 4: Utility Functions (Cleanup, Aggregate, Tru
         Clear-SQLOpData -DataSet Trending | Out-Null
     }
 
-    #Phase 3.5: Clean Up Expired Data
+    #Phase 4.5: Clean Up Expired Data
     Write-StatusUpdate -Message "Phase 4.5: Clean Up SQL Logs"
 	Clear-SQLOpData -DataSet SQL_ErrorLog | Out-Null
 
-    #Phase 3.6: Clean Up Expired Data
+    #Phase 4.6: Clean Up Expired Data
     Write-StatusUpdate -Message "Phase 4.6: Clean Up SQL Agent Logs"
 	Clear-SQLOpData -DataSet SQL_JobHistory | Out-Null
 
-    #Phase 3.7: Clean Up CMDB Log Data
-    Write-StatusUpdate -Message "Phase 4.7: Clean Up CMDB Log Data"
+    #Phase 4.7: Clean Up Policy Result History
+    Write-StatusUpdate -Message "Phase 4.7: Clean Up Policy Results Data"
+	Clear-SQLOpData -DataSet Policy_Results | Out-Null
+
+    #Phase 4.8: Clean Up SQLOpsDB Log Data
+    Write-StatusUpdate -Message "Phase 4.8: Clean Up SQLOpDB Log Data"
 
     if ($Today -eq $FirstDayOfMonth)
     {

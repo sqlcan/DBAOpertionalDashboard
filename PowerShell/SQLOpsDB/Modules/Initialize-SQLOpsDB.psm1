@@ -35,15 +35,13 @@ Date       Version Comments
 2020.02.05 0.00.08 Fixed bugs with how string value for "0" was being translated to $true.
                    Fixed multiple configuration mis-spelling. Made sure they match the database.
 2021.11.27 0.00.10 Added two additional settings for Error Logs and SQL Agent Logs.
+2022.11.15 0.00.12 Added  additional setting for Policy Result clean up.
+				   Updated error handling routine.
 #>
 function Initialize-SQLOpsDB
 {
     [CmdletBinding()] 
     param()
-
-    $ModuleName = 'Initialize-SQLOpsDB'
-    $ModuleVersion = '0.00.10'
-    $ModuleLastUpdated = 'Nov. 27, 2021'
 
     # Only initialize module if it is first execution.
     if ($Global:SQLOpsDBInitialized)
@@ -51,6 +49,10 @@ function Initialize-SQLOpsDB
         Write-Output $Global:Error_Successful 
         return
     }
+
+    $ModuleName = 'Initialize-SQLOpsDB'
+    $ModuleVersion = '0.00.12'
+    $ModuleLastUpdated = 'November 15, 2022'
 
     try
     {
@@ -110,6 +112,8 @@ function Initialize-SQLOpsDB
 					"ErrorLog_CleanUp_Retention_Days" {[Int]$Global:ErrorLog_CleanUp_Retention_Days = [Int]$Setting.SettingValue}
 					"SQLAgent_Jobs_CleanUp_Enabled" {[Bool]$Global:SQLAgent_Jobs_CleanUp_Enabled = [Bool]([Int]$Setting.SettingValue)}
 					"SQLAgent_Jobs_CleanUp_Retention_Days" {[Int]$Global:SQLAgent_Jobs_CleanUp_Retention_Days = [Int]$Setting.SettingValue}
+					"PolicyResult_CleanUp_Enabled" {[Bool]$Global:PolicyResult_CleanUp_Enabled = [Bool]([Int]$Setting.SettingValue)}
+					"PolicyResult_CleanUp_Retention_Days" {[Int]$Global:PolicyResult_CleanUp_Retention_Days = [Int]$Setting.SettingValue}
                     "Default_DomainName" {$Global:Default_DomainName = [String]$Setting.SettingValue}
                 }
 
@@ -165,11 +169,30 @@ function Initialize-SQLOpsDB
             $Global:SQLAgent_Jobs_CleanUp_Retention_Days = 180
         }
 
+		if (($Global:PolicyResult_CleanUp_Retention_Days -le 0) -or ($Global:PolicyResult_CleanUp_Retention_Days -ge 16))
+		{
+            Write-StatusUpdate -Message "PolicyResult_CleanUp_Retention_Days threshold out of valid range (1 - 15) days. Defaulting to 7." -WriteToDB
+            $Global:PolicyResult_CleanUp_Retention_Days = 7
+		}
+
+    }
+    catch [System.Data.SqlClient.SqlException]
+    {
+        if ($($_.Exception.Message) -like '*Could not open a connection to SQL Server*')
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Cannot connect to SQLOpsDB." -WriteToDB
+        }
+        else
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - SQL Expectation" -WriteToDB
+            Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
+        }
+        Write-Output $Global:Error_FailedToComplete
     }
     catch
     {
-        Write-Error "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Exception"
-        Write-Error "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)"
+        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Expectation" -WriteToDB
+        Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
         Write-Output $Global:Error_FailedToComplete
     }
 }
