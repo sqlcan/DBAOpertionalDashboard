@@ -11,11 +11,11 @@ SQL Server DBA Opertional Dashboard collects information from all versions of Wi
 
 # Deployment Requirements
 - Solution requires access to following databases:
-  -- SQLOpsDB - Stores all the data collected with PowerShell Solution.
-  -- PolicyBasedManagement - Stores all the Policy Evaluation Data -- Alternatively this can be stored in SQLOpsDB.
+  -- SQLOpsDB - Stores all the data collected with PowerShell Solution for both SQLOpsDB and EPM framework.
   -- MSDB - Stores CMS Servers and Groups.
-- Ideally all three databases should be accessible from same SQL Server instance.  If not some of the code will have be modified for getting and managing CMS Server List and Groups.
+- Must deploy SQLOpsDB / EPM Framework to CMS Server.
+- Must deploy all the policies to the same CMS Server.
 
 # Out of Support
-- SQL Server 2000
-- Windows Server 2000
+- SQL Server 6.5, 7.0, and 2000
+- Windows Server 2000, 2003, and 2003 R2
