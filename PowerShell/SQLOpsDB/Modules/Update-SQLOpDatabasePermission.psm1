@@ -25,6 +25,7 @@ Update-SQLOpDatabasePermission -ServerInstance Contoso -Data $Data
 Date        Version Comments
 ----------  ------- ------------------------------------------------------------------
 2020.11.03  0.00.01 Initial version.
+2022.11.17	0.00.02 Updated logic for passive AG replica that are not readable.
 #>
 function Update-SQLOpDatabasePermission
 {
@@ -41,8 +42,8 @@ function Update-SQLOpDatabasePermission
     }
     
     $ModuleName = 'Update-SQLOpDatabasePermission'
-    $ModuleVersion = '0.01'
-    $ModuleLastUpdated = 'November 3, 2022'
+    $ModuleVersion = '0.00.02'
+    $ModuleLastUpdated = 'November 17, 2022'
 
     # Validate sql instance exists.
     $ServerInstanceObj = Get-SqlOpSQLInstance -ServerInstance $ServerInstance
@@ -78,6 +79,17 @@ function Update-SQLOpDatabasePermission
 
 		$ProcessID = $PID
 
+		# The code segment has gotten a bit ugly to handle databases in Availability Group
+		# 
+		# Databases on passive instances do not get reported by the EXEC sp_MSForEachDB.  Therefore
+		# these databases security records get marked archived.  When they "might" not be.
+		#
+		# Get-SIDatabasePermission creates records for databses that are part of AG and secondary
+		# replica that have no records in the security tables.
+		#
+		# Therefore if Staging.DatabasePermission has null records for GranteeName it means this
+		# database is a secondary database that has allow readable secondary turned off.
+
 		$TSQL = "MERGE Security.DatabasePermission AS TARGET
 				USING (SELECT DP.SQLInstanceID, DatabaseID, GranteeSP.PrincipalID AS GranteeID, GrantorSP.PrincipalID AS GrantorID,
 								ObjectType, ObjectName, Access, PermissionName
@@ -91,7 +103,8 @@ function Update-SQLOpDatabasePermission
 					LEFT JOIN dbo.Databases D
 							ON D.DatabaseName = DP.DatabaseName
 							AND D.SQLInstanceID = DP.SQLInstanceID
-				WHERE ProcessID = $ProcessID) AS Source (SQLInstanceID, DatabaseID, GranteeID, GrantorID, ObjectType, ObjectName, Access, PermissionName)
+				WHERE ProcessID = $ProcessID
+				  AND DP.GranteeName IS NOT NULL) AS Source (SQLInstanceID, DatabaseID, GranteeID, GrantorID, ObjectType, ObjectName, Access, PermissionName)
 				ON (Target.DatabaseID = Source.DatabaseID AND 
 					Target.GranteeID = Source.GranteeID AND 
 					Target.GrantorID = Source.GrantorID AND
@@ -109,7 +122,11 @@ function Update-SQLOpDatabasePermission
 				 UPDATE Security.DatabasePermission
 					SET IsArchived = 1
 				  WHERE IsArchived = 0
-					AND LastUpdated < CAST(GETDATE() AS DATE)"
+					AND LastUpdated < CAST(GETDATE() AS DATE)
+					AND DatabaseID IN (SELECT DatabaseID FROM Staging.DatabasePermission DP JOIN dbo.Databases D
+							ON D.DatabaseName = DP.DatabaseName
+							AND D.SQLInstanceID = DP.SQLInstanceID
+							WHERE DP.GranteeName IS NOT NULL)"
 
 		Write-StatusUpdate -Message $TSQL -IsTSQL
 

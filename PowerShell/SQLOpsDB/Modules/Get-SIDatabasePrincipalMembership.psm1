@@ -23,6 +23,7 @@ Get-SIDatabasePrincipalMembership -ServerInstance ContosSQL
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2022.11.02 0.00.01 Initial Version
+2022.11.17 0.00.02 Updated logic for passive AG replica that are not readable.
 #>
 function Get-SIDatabasePrincipalMembership
 {
@@ -38,8 +39,8 @@ function Get-SIDatabasePrincipalMembership
     }
     
     $ModuleName = 'Get-SIDatabasePrincipalMembership'
-    $ModuleVersion = '0.00.01'
-    $ModuleLastUpdated = 'October 31, 2022'
+    $ModuleVersion = '0.00.02'
+    $ModuleLastUpdated = 'November 17, 2022'
 
     try
     {
@@ -85,19 +86,30 @@ function Get-SIDatabasePrincipalMembership
 				WHERE DP.type IN (''U'',''S'') 
 				AND DP.name NOT IN (''sys'',''INFORMATION_SCHEMA'')'
 				
+				INSERT INTO #DatabaseMembership (DatabaseName)
+				SELECT name AS DatabaseName
+  				  FROM sys.databases d
+  				  JOIN sys.dm_hadr_availability_replica_states rs
+    				ON d.replica_id = rs.replica_id
+ 				 WHERE d.replica_id IS NOT NULL
+   				   AND rs.role_desc = 'SECONDARY'
+				   AND d.name NOT IN (SELECT DISTINCT DatabaseName FROM #DatabaseMembership)
+				   AND d.name NOT IN ('master','model','msdb','SSISDB')		
+
 				  SELECT $(IF ($Internal) { "$ProcessID AS ProcessID, " })
 						 $(IF ($Internal) { "$($SQLInstanceObj.SQLInstanceID) AS InstanceID, " })
 						 '$ServerInstance' AS ServerInstance, *
 					FROM #DatabaseMembership
-				WHERE UserName NOT IN ('sa','public','##MS_SQLResourceSigningCertificate##','##MS_SQLReplicationSigningCertificate##',
-															'##MS_SQLAuthenticatorCertificate##','##MS_PolicySigningCertificate##','##MS_SmoExtendedSigningCertificate##',
-														'##MS_PolicyTsqlExecutionLogin##','NT AUTHORITY\SYSTEM','NT SERVICE\SQLSERVERAGENT','NT SERVICE\ReportServer',
-														'NT Service\MSSQLSERVER','NT SERVICE\SQLWriter','NT SERVICE\Winmgmt','##MS_AgentSigningCertificate##',
-														'##MS_PolicyEventProcessingLogin##','NT SERVICE\SQLTELEMETRY','NT SERVICE\PowerBIReportServer','NT Service\HealthService',
-														'##MS_SSISServerCleanupJobLogin##','##MS_SSISServerCleanupJobUser##','MS_DataCollectorInternalUser',
-														'AllSchemaOwner')
+				WHERE ((UserName NOT IN ('sa','public','##MS_SQLResourceSigningCertificate##','##MS_SQLReplicationSigningCertificate##',
+										'##MS_SQLAuthenticatorCertificate##','##MS_PolicySigningCertificate##','##MS_SmoExtendedSigningCertificate##',
+										'##MS_PolicyTsqlExecutionLogin##','NT AUTHORITY\SYSTEM','NT SERVICE\SQLSERVERAGENT','NT SERVICE\ReportServer',
+										'NT Service\MSSQLSERVER','NT SERVICE\SQLWriter','NT SERVICE\Winmgmt','##MS_AgentSigningCertificate##',
+										'##MS_PolicyEventProcessingLogin##','NT SERVICE\SQLTELEMETRY','NT SERVICE\PowerBIReportServer','NT Service\HealthService',
+										'##MS_SSISServerCleanupJobLogin##','##MS_SSISServerCleanupJobUser##','MS_DataCollectorInternalUser',
+										'AllSchemaOwner')
 					AND UserName NOT LIKE 'NT SERVICE\MSSQL$%'
-					AND UserName NOT LIKE 'NT SERVICE\SQLAGENT$%'
+					AND UserName NOT LIKE 'NT SERVICE\SQLAGENT$%')
+					OR (UserName IS NULL))
 					AND DatabaseName NOT IN ('master','model','msdb','SSISDB')"		
 		
 

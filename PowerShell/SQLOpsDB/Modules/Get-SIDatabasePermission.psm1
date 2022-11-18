@@ -21,6 +21,7 @@ Get-SIDatabasePermission -ServerInstance ContosSQL
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2022.11.03 0.00.01 Initial Version
+2022.11.17 0.00.02 Updated logic for passive AG replica that are not readable.
 #>
 function Get-SIDatabasePermission
 {
@@ -36,8 +37,8 @@ function Get-SIDatabasePermission
     }
     
     $ModuleName = 'Get-SIDatabasePermission'
-    $ModuleVersion = '0.00.01'
-    $ModuleLastUpdated = 'November 3, 2022'
+    $ModuleVersion = '0.00.02'
+    $ModuleLastUpdated = 'November 17, 2022'
 
     try
     {
@@ -83,6 +84,16 @@ function Get-SIDatabasePermission
 				AND DP.name NOT IN (''PolicyAdministratorRole'',''SQLAgentOperatorRole'',''PolicyAdministratorRole'',''UtilityIMRWriter'',''UtilityCMRReader'',
 									''UtilityIMRReader'',''TargetServersRole'',''SQLAgentUserRole'',''dc_operator'',''dc_proxy'',''dc_admin'',''ServerGroupReaderRole'',
 									''db_ssisadmin'',''db_ssisltduser'',''db_ssisoperator'',''ServerGroupAdministratorRole'',''DatabaseMailUserRole'',''RSExecRole'')'
+
+				INSERT INTO #DatabasePermissions (DatabaseName)
+				SELECT name AS DatabaseName
+  				  FROM sys.databases d
+  				  JOIN sys.dm_hadr_availability_replica_states rs
+    				ON d.replica_id = rs.replica_id
+ 				 WHERE d.replica_id IS NOT NULL
+   				   AND rs.role_desc = 'SECONDARY'
+				   AND d.name NOT IN (SELECT DISTINCT DatabaseName FROM #DatabasePermissions)
+				   AND d.name NOT IN ('master','model','msdb','SSISDB')
 
 				SELECT $(IF ($Internal) { "$ProcessID AS ProcessID, " })
 				$(IF ($Internal) { "$($SQLInstanceObj.SQLInstanceID) AS InstanceID, " })
