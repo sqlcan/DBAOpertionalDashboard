@@ -32,6 +32,8 @@ Change default domain name.
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2021.11.27 1.00.00 Initial version.
+2022.11.18 1.00.02 Added new settings for Policy Result clean up.
+                   Updated error handling.
 #>
 function Set-SQLOpSetting
 {
@@ -43,7 +45,8 @@ function Set-SQLOpSetting
 														'Trend_Creation_CleanUp_Enabled','Trend_Creation_CleanUp_Retention_Months','Aggregate_CleanUp_Enabled',
 														'Aggregate_CleanUp_Retention_Months','RawData_CleanUp_Enabled','RawData_CleanUp_Retention_Days',
 														'ErrorLog_CleanUp_Enabled','ErrorLog_CleanUp_Retention_Days','SQLAgent_Jobs_CleanUp_Enabled',
-														'SQLAgent_Jobs_CleanUp_Retention_Days','Default_DomainName')] [string]$SettingName,
+														'SQLAgent_Jobs_CleanUp_Retention_Days','PolicyResult_CleanUp_Enabled','PolicyResult_CleanUp_Retention_Days',
+														'Default_DomainName')] [string]$SettingName,
     [Parameter(Position=1, Mandatory=$true)] $Value
     )
 
@@ -54,8 +57,8 @@ function Set-SQLOpSetting
     }
 
     $ModuleName = 'Set-SQLOpSettings'
-    $ModuleVersion = '1.00.00'
-    $ModuleLastUpdated = 'Nov. 27, 2021'
+    $ModuleVersion = '1.00.02'
+    $ModuleLastUpdated = 'November 18, 2022'
 
     try
     {
@@ -162,6 +165,18 @@ function Set-SQLOpSetting
 					$Value = 180
 				}
 			}
+			"PolicyResult_CleanUp_Enabled" {
+				[Bool]$Global:PolicyResult_CleanUp_Enabled = [Bool]([Int]$Value)
+			}
+			"PolicyResult_CleanUp_Retention_Days" {
+				[Int]$Global:PolicyResult_CleanUp_Retention_Days = [Int]$Value
+				if (($Global:PolicyResult_CleanUp_Retention_Days -le 0) -or ($Global:PolicyResult_CleanUp_Retention_Days -ge 16))
+				{
+					Write-StatusUpdate -Message "PolicyResult_CleanUp_Retention_Days threshold out of valid range (1 - 15) days. Defaulting to 7." -WriteToDB
+					$Global:SQLAgent_Jobs_CleanUp_Retention_Days = 7
+					$Value = 7
+				}
+			}
 			"Default_DomainName" {
 				$Global:Default_DomainName = [String]$Value				
 			}
@@ -198,9 +213,22 @@ function Set-SQLOpSetting
             Write-Output $Results
         }
 	}
+    catch [System.Data.SqlClient.SqlException]
+    {
+        if ($($_.Exception.Message) -like '*Could not open a connection to SQL Server*')
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Cannot connect to $ServerInstance." -WriteToDB
+        }
+        else
+        {
+            Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - SQL Expectation" -WriteToDB
+            Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
+        }
+        Write-Output $Global:Error_FailedToComplete
+    }
     catch
     {
-        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Exception" -WriteToDB
+        Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated) - Unhandled Expectation" -WriteToDB
         Write-StatusUpdate -Message "[$($_.Exception.GetType().FullName)]: $($_.Exception.Message)" -WriteToDB
         Write-Output $Global:Error_FailedToComplete
     }

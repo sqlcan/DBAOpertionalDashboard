@@ -9,7 +9,7 @@ SET NOCOUNT ON
 DECLARE @Setting AS TABLE (SettingName VARCHAR(50), SettingValue VARCHAR(255))
 
 INSERT INTO @Setting (SettingName,SettingValue) 
-     VALUES ('DebugModeEnabled','1'),
+     VALUES ('DebugMode_Enabled','1'),
 			('DebugMode_WriteToDB','0'),
 	        ('DebugMode_OutputTSQL','0'),
 			('SQLOpsDB_Logs_Enabled','1'),
