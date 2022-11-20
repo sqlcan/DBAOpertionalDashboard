@@ -1,4 +1,14 @@
-CREATE OR ALTER PROC Snapshot.CreateDashboardSnapshot
+USE [SQLOpsDB]
+GO
+
+/****** Object:  StoredProcedure [Snapshot].[CreateDashboardSnapshot]    Script Date: 11/20/2022 5:45:06 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE OR ALTER     PROC [Snapshot].[CreateDashboardSnapshot]
 AS
 BEGIN
 
@@ -51,7 +61,7 @@ BEGIN
 		  FROM dbo.DiskVolumeSpace DVS1
 		 WHERE SpaceHistoryID = (SELECT MAX(SpaceHistoryID) FROM dbo.DiskVolumeSpace DVS2 WHERE DVS1.DiskVolumeID = DVS2.DiskVolumeID))
 
-	   SELECT TOP 15 CASE WHEN S.ServerName IS NULL THEN SC.SQLClusterName ELSE S.ServerName END AS ServerVCOName,
+	   SELECT TOP 15 CASE WHEN S.ServerName IS NULL THEN SC.SQLClusterName ELSE S.ServerName END AS ComputerName,
 			  DV.DiskVolumeID, 
 			  DV.DiskVolumeName,
 			  DVSA.SpaceUsed_mb AS AvgSpaceUsed_mb,
@@ -78,8 +88,8 @@ BEGIN
 	LEFT JOIN dbo.SQLClusters SC
 		   ON DV.SQLClusterID = SC.SQLClusterID
 		  AND DV.ServerID IS NULL
-		WHERE DV.IsMonitored = 1
-	 ORDER BY DaysUntilOutOfSpace, ServerVCOName, DiskVolumeName;
+		WHERE DiskVolumeName NOT LIKE '\\?\%'
+	 ORDER BY DaysUntilOutOfSpace, ComputerName, DiskVolumeName;
 
 	WITH CTE AS (
 	  SELECT SQLJobID, Max(ExecutionDateTime) AS LastExecution
@@ -173,3 +183,5 @@ BEGIN
 
 END
 GO
+
+

@@ -150,6 +150,8 @@
     '.\Modules\Publish-SQLOpTreadData.psm1';
 	'.\Modules\Publish-SQLOpSnapshot.psm1';
 	'.\Modules\Clear-SQLOpData.psm1';
+	# Reporting Modules
+	'.\Modules\Set-SQLOpReportLogo.psm1';
     # Support Modules
     '.\Modules\Split-Parts.psm1';
 	'.\Modules\Get-SQLOpErrorDetails.psm1';

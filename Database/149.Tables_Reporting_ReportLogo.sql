@@ -1,0 +1,23 @@
+USE [SQLOpsDB]
+GO
+
+/****** Object:  Table [Reporting].[ReportLogo]    Script Date: 11/18/2022 7:01:54 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [Reporting].[ReportLogo](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[LogoFileName] [varchar](50) NOT NULL,
+	[LogoFile] [varbinary](max) NOT NULL,
+	[LogoFileType] [varchar](10) NOT NULL,
+ CONSTRAINT [PK_ReportLogo] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+

@@ -1,0 +1,616 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report MustUnderstand="df" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:df="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition/defaultfontfamily">
+  <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="dsMain">
+      <DataSourceReference>dsMain</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>02f01f6a-baac-40ca-bf8d-019423c7b7e0</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="InstanceDetails">
+      <Query>
+        <DataSourceName>dsMain</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@CategoryName">
+            <Value>=Parameters!CategoryName.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>WITH DBSizeData AS (
+SELECT SI.SQLInstanceID, DS.DateCaptured, SUM(DS.FileSize_MB/1.0) AS TotalDBSize_mb
+  FROM dbo.vSQLInstances SI
+  JOIN dbo.Databases D
+    ON SI.SQLInstanceID = D.SQLInstanceID
+  JOIN dbo.DatabaseSize DS
+    ON D.DatabaseID = DS.DatabaseID
+   AND DS.DateCaptured &gt;= CAST(DATEADD(Day,-1,GETDATE()) AS DATE)
+GROUP BY SI.SQLInstanceID, DS.DateCaptured),
+SQLInstanceVolumeChange AS (
+SELECT D1.SQLInstanceID, ABS((D2.TotalDBSize_mb - D1.TotalDBSize_mb)/1024.) AS ChangeDoD_GB
+  FROM DBSizeData D1
+  JOIN DBSizeData D2
+    ON D1.SQLInstanceID = D2.SQLInstanceID
+   AND D2.DateCaptured = CAST(GETDATE() AS DATE)
+ WHERE D1.DateCaptured = CAST(DATEADD(Day,-1,GETDATE()) AS DATE)),
+ CategoryOfChange AS (
+SELECT CASE WHEN ChangeDoD_GB &gt; 50 THEN '50GB+ Change'
+            WHEN ChangeDoD_GB &gt; 25 AND ChangeDoD_GB &lt;=50 THEN '25GB to 50GB Change'
+			WHEN ChangeDoD_GB &gt; 15 AND ChangeDoD_GB &lt;=25 THEN '15GB to 25GB Change'
+			WHEN ChangeDoD_GB &gt; 10 AND ChangeDoD_GB &lt;=15 THEN '10GB to 15GB Change'
+			WHEN ChangeDoD_GB &gt; 5 AND ChangeDoD_GB &lt;=10 THEN '5GB to 10GB Change'
+			ELSE 'Less Than 5GB Change' END AS VolumeOfChangeCategory,
+			SI.SQLInstanceID,
+			SI.ComputerName,
+			SI.SQLInstanceName,
+			ChangeDoD_GB
+FROM SQLInstanceVolumeChange VC
+JOIN vSQLInstances SI
+  ON VC.SQLInstanceID = SI.SQLInstanceID
+WHERE ChangeDoD_GB &gt; 0)
+SELECT *
+  FROM CategoryOfChange
+WHERE VolumeOfChangeCategory = @CategoryName</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="VolumeOfChangeCategory">
+          <DataField>VolumeOfChangeCategory</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="SQLInstanceID">
+          <DataField>SQLInstanceID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ComputerName">
+          <DataField>ComputerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="SQLInstanceName">
+          <DataField>SQLInstanceName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ChangeDoD_GB">
+          <DataField>ChangeDoD_GB</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="ReportLogo">
+      <SharedDataSet>
+        <SharedDataSetReference>ReportLogo</SharedDataSetReference>
+      </SharedDataSet>
+      <Fields>
+        <Field Name="LogoFile">
+          <DataField>LogoFile</DataField>
+          <rd:TypeName>System.Byte[]</rd:TypeName>
+        </Field>
+        <Field Name="LogoFileType">
+          <DataField>LogoFileType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Tablix Name="table1">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>2.1493in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.36805in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.9618in</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.22in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox2">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Computer Name</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox2</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox3">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>SQLInstance Name</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox3</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox4">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Change Data on Last One Day(GB)</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <FontFamily />
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox4</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.21in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="ComputerName">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!ComputerName.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>ComputerName</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>=IIF(RowNumber("table1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="SQLInstanceName">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!SQLInstanceName.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>SQLInstanceName</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>=IIF(RowNumber("table1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="ChangeDoD_GB">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!ChangeDoD_GB.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>ChangeDoD_GB</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>=IIF(RowNumber("table1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                  <RepeatOnNewPage>true</RepeatOnNewPage>
+                  <KeepTogether>true</KeepTogether>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="table1_Details_Group">
+                    <DataElementName>Detail</DataElementName>
+                  </Group>
+                  <TablixMembers>
+                    <TablixMember />
+                  </TablixMembers>
+                  <DataElementName>Detail_Collection</DataElementName>
+                  <DataElementOutput>Output</DataElementOutput>
+                  <KeepTogether>true</KeepTogether>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>InstanceDetails</DataSetName>
+            <Top>0.24499in</Top>
+            <Left>0.00695in</Left>
+            <Height>0.43in</Height>
+            <Width>7.47916in</Width>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+              <FontFamily />
+            </Style>
+          </Tablix>
+          <Textbox Name="Textbox6">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>="Instance List for " &amp; Parameters!CategoryName.Value</Value>
+                    <Style>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Left</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox5</rd:DefaultName>
+            <Left>0.00695in</Left>
+            <Height>0.22555in</Height>
+            <Width>7.48611in</Width>
+            <ZIndex>1</ZIndex>
+            <Style>
+              <Border>
+                <Style>Dashed</Style>
+              </Border>
+              <TopBorder>
+                <Style>None</Style>
+              </TopBorder>
+              <BottomBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </BottomBorder>
+              <LeftBorder>
+                <Style>None</Style>
+              </LeftBorder>
+              <RightBorder>
+                <Style>None</Style>
+              </RightBorder>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+        </ReportItems>
+        <Height>0.72458in</Height>
+        <Style />
+      </Body>
+      <Width>7.5in</Width>
+      <Page>
+        <PageHeader>
+          <Height>0.41597in</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <ReportItems>
+            <Image Name="ReportLogo">
+              <Source>Database</Source>
+              <Value>=First(Fields!LogoFile.Value, "ReportLogo")</Value>
+              <MIMEType>="image/" &amp; First(Fields!LogoFileType.Value, "ReportLogo")</MIMEType>
+              <Sizing>FitProportional</Sizing>
+              <Height>0.41305in</Height>
+              <Width>1.82292in</Width>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+              </Style>
+            </Image>
+            <Textbox Name="Textbox11">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>SQL Opertional Dashboard</Value>
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Right</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox10</rd:DefaultName>
+              <Left>5.67708in</Left>
+              <Height>0.21528in</Height>
+              <Width>1.82292in</Width>
+              <ZIndex>1</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox13">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=FormatDateTime(Now(),DateFormat.GeneralDate)</Value>
+                      <Style>
+                        <Format>f</Format>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Right</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox10</rd:DefaultName>
+              <Top>0.24598in</Top>
+              <Left>5.66319in</Left>
+              <Height>0.16999in</Height>
+              <Width>1.82292in</Width>
+              <ZIndex>2</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox5">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>Large Database Size Change Details</Value>
+                      <Style>
+                        <FontSize>12pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                        <Color>White</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox5</rd:DefaultName>
+              <Left>1.82292in</Left>
+              <Height>0.41305in</Height>
+              <Width>3.84027in</Width>
+              <ZIndex>3</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <BackgroundColor>DimGray</BackgroundColor>
+                <VerticalAlign>Middle</VerticalAlign>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+          </ReportItems>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageHeader>
+        <LeftMargin>1in</LeftMargin>
+        <RightMargin>1in</RightMargin>
+        <TopMargin>1in</TopMargin>
+        <BottomMargin>1in</BottomMargin>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="CategoryName">
+      <DataType>String</DataType>
+      <Prompt>CategoryName</Prompt>
+      <Hidden>true</Hidden>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>4</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>CategoryName</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <EmbeddedImages>
+    <EmbeddedImage Name="headerLogo">
+      <MIMEType>image/gif</MIMEType>
+      <ImageData>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</ImageData>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <Language>en-US</Language>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>f7ec76fd-65b7-45be-9b8e-bafa7c11fc81</rd:ReportID>
+</Report>
