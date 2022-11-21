@@ -1246,7 +1246,7 @@ LEFT JOIN CTE2
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>Daily Database Growth History</Value>
+                                <Value>Monthly Database Growth History</Value>
                                 <Style>
                                   <FontWeight>Bold</FontWeight>
                                 </Style>

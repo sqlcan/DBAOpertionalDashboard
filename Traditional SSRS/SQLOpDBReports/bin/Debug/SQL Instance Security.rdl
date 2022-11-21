@@ -10,15 +10,12 @@
     </DataSource>
   </DataSources>
   <DataSets>
-    <DataSet Name="DatabaseMembershipsAndUsers">
+    <DataSet Name="ServerMembershipsAndLogins">
       <Query>
         <DataSourceName>dsMain</DataSourceName>
         <QueryParameters>
-          <QueryParameter Name="@DatabaseID">
-            <Value>=Parameters!DatabaseID.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@UserName">
-            <Value>=Parameters!UserName.Value</Value>
+          <QueryParameter Name="@LoginName">
+            <Value>=Parameters!LoginName.Value</Value>
           </QueryParameter>
           <QueryParameter Name="@SQLInstanceID">
             <Value>=Parameters!SQLInstanceID.Value</Value>
@@ -27,48 +24,37 @@
             <Value>=Parameters!Status.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>   SELECT SI.ServerInstance, D.DatabaseName, DBRole.PrincipalName AS DatabaseRoleName, DBUser.PrincipalName AS DatabaseUserName, DBUser.PrincipalType AS DatabaseUserType, DPM.IsOrphaned, DPM.IsArchived, DPM.DiscoveryOn, DPM.LastUpdated
-     FROM Security.DatabasePrincipalMembership DPM
-LEFT JOIN Security.DatabasePrincipal DBRole
-       ON DPM.DatabaseRoleID = DBRole.PrincipalID
-LEFT JOIN Security.DatabasePrincipal DBUser
-       ON DPM.DatabaseUserID = DBUser.PrincipalID
-LEFT JOIN dbo.Databases D
-       ON DPM.DatabaseID = D.DatabaseID
+        <CommandText>   SELECT SI.ServerInstance, ServerRole.PrincipalName AS ServerRoleName, ServerLogin.PrincipalName AS ServerLoginName, ServerLogin.PrincipalType AS ServerLoginType, SPM.IsArchived, SPM.DiscoveryOn, SPM.LastUpdated
+     FROM Security.ServerPrincipalMembership SPM
+LEFT JOIN Security.ServerPrincipal ServerRole
+       ON SPM.ServerRoleID = ServerRole.PrincipalID
+LEFT JOIN Security.ServerPrincipal ServerLogin
+       ON SPM.ServerLoginID = ServerLogin.PrincipalID
 LEFT JOIN dbo.vSQLInstances SI
-       ON D.SQLInstanceID = SI.SQLInstanceID
-    WHERE ((DPM.DatabaseID =@DatabaseID) OR (@DatabaseID = -1))
- AND ((@UserName IS NULL) OR (DBUser.PrincipalName LIKE @UserName))
+       ON SPM.SQLInstanceID = SI.SQLInstanceID
+WHERE ((@LoginName IS NULL) OR (ServerLogin.PrincipalName LIKE @LoginName))
 AND ((SI.SQLInstanceID = @SQLInstanceID) OR (@SQLInstanceID = -1))
-AND (((DPM.IsArchived = 1) AND (@Status = 'Audit')) OR
-          ((DPM.IsArchived = 0) AND (@Status = 'Active')) OR
+AND (((SPM.IsArchived = 1) AND (@Status = 'Audit')) OR
+          ((SPM.IsArchived = 0) AND (@Status = 'Active')) OR
           (@Status = 'Both'))
-AND DBUser.PrincipalName NOT IN ('dbo','guest')</CommandText>
+AND ServerLogin.PrincipalName NOT IN ('sa')</CommandText>
       </Query>
       <Fields>
         <Field Name="ServerInstance">
           <DataField>ServerInstance</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="DatabaseName">
-          <DataField>DatabaseName</DataField>
+        <Field Name="ServerRoleName">
+          <DataField>ServerRoleName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="DatabaseRoleName">
-          <DataField>DatabaseRoleName</DataField>
+        <Field Name="ServerLoginName">
+          <DataField>ServerLoginName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="DatabaseUserName">
-          <DataField>DatabaseUserName</DataField>
+        <Field Name="ServerLoginType">
+          <DataField>ServerLoginType</DataField>
           <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="DatabaseUserType">
-          <DataField>DatabaseUserType</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="IsOrphaned">
-          <DataField>IsOrphaned</DataField>
-          <rd:TypeName>System.Boolean</rd:TypeName>
         </Field>
         <Field Name="IsArchived">
           <DataField>IsArchived</DataField>
@@ -88,11 +74,8 @@ AND DBUser.PrincipalName NOT IN ('dbo','guest')</CommandText>
       <Query>
         <DataSourceName>dsMain</DataSourceName>
         <QueryParameters>
-          <QueryParameter Name="@DatabaseID">
-            <Value>=Parameters!DatabaseID.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@UserName">
-            <Value>=Parameters!UserName.Value</Value>
+          <QueryParameter Name="@LoginName">
+            <Value>=Parameters!LoginName.Value</Value>
           </QueryParameter>
           <QueryParameter Name="@SQLInstanceID">
             <Value>=Parameters!SQLInstanceID.Value</Value>
@@ -101,21 +84,18 @@ AND DBUser.PrincipalName NOT IN ('dbo','guest')</CommandText>
             <Value>=Parameters!Status.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>   SELECT SI.ServerInstance, Grantee.PrincipalName AS DatabaseUserName, Grantee.PrincipalName AS GranteeName, D.DatabaseName, DP.ObjectName, DP.Access, DP.PermissionName, DP.IsArchived, DP.DiscoveryOn, DP.LastUpdated
-     FROM Security.DatabasePermission DP
-LEFT JOIN Security.DatabasePrincipal Grantor
-       ON DP.GrantorID = Grantor.PrincipalID
-LEFT JOIN Security.DatabasePrincipal Grantee
-       ON DP.GranteeID = Grantee.PrincipalID
-LEFT JOIN dbo.Databases D
-       ON DP.DatabaseID = D.DatabaseID
+        <CommandText>   SELECT SI.ServerInstance, Grantee.PrincipalName AS DatabaseUserName, Grantee.PrincipalName AS GranteeName, SP.ObjectID, SP.ObjectType, SP.Access, SP.PermissionName, SP.IsArchived, SP.DiscoveryOn, SP.LastUpdated
+     FROM Security.ServerPermission SP
+LEFT JOIN Security.ServerPrincipal Grantor
+       ON SP.GrantorID = Grantor.PrincipalID
+LEFT JOIN Security.ServerPrincipal Grantee
+       ON SP.GranteeID = Grantee.PrincipalID
 LEFT JOIN dbo.vSQLInstances SI
-       ON D.SQLInstanceID = SI.SQLInstanceID
-    WHERE ((DP.DatabaseID =@DatabaseID) OR (@DatabaseID = -1))
- AND ((@UserName IS NULL) OR (Grantee.PrincipalName LIKE @UserName))
+       ON SP.SQLInstanceID = SI.SQLInstanceID
+    WHERE ((@LoginName IS NULL) OR (Grantee.PrincipalName LIKE @LoginName))
 AND ((SI.SQLInstanceID = @SQLInstanceID) OR (@SQLInstanceID = -1))
-AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
-          ((DP.IsArchived = 0) AND (@Status = 'Active')) OR
+AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
+          ((SP.IsArchived = 0) AND (@Status = 'Active')) OR
           (@Status = 'Both'))</CommandText>
       </Query>
       <Fields>
@@ -131,12 +111,12 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
           <DataField>GranteeName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="DatabaseName">
-          <DataField>DatabaseName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+        <Field Name="ObjectID">
+          <DataField>ObjectID</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
-        <Field Name="ObjectName">
-          <DataField>ObjectName</DataField>
+        <Field Name="ObjectType">
+          <DataField>ObjectType</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Access">
@@ -188,7 +168,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>="Database Users &amp; Role Membership"</Value>
+                    <Value>="Server Logins, Role Membership and Explicit Permissions"</Value>
                     <Style>
                       <FontWeight>Bold</FontWeight>
                     </Style>
@@ -202,7 +182,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
             <rd:DefaultName>Textbox5</rd:DefaultName>
             <Top>0.01736in</Top>
             <Height>0.22555in</Height>
-            <Width>12.91676in</Width>
+            <Width>10.58343in</Width>
             <Style>
               <Border>
                 <Style>Dashed</Style>
@@ -237,9 +217,6 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                   <Width>1.08155in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.86974in</Width>
-                </TablixColumn>
-                <TablixColumn>
                   <Width>0.81766in</Width>
                 </TablixColumn>
                 <TablixColumn>
@@ -262,7 +239,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>User</Value>
+                                  <Value>Login</Value>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
@@ -300,38 +277,6 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox3</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox7">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Orphaned</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox7</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -454,21 +399,21 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="DatabaseUserName">
+                        <Textbox Name="ServerLoginName">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!DatabaseUserName.Value</Value>
+                                  <Value>=Fields!ServerLoginName.Value</Value>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>DatabaseUserName</rd:DefaultName>
+                          <rd:DefaultName>ServerLoginName</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -485,53 +430,20 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="DatabaseUserType">
+                        <Textbox Name="ServerLoginType">
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!DatabaseUserType.Value</Value>
+                                  <Value>=Fields!ServerLoginType.Value</Value>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>DatabaseUserType</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BackgroundColor>=IIF(RowNumber("DBUserMembership") MOD 2,"White","WhiteSmoke")</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="IsOrphaned">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!IsOrphaned.Value</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>IsOrphaned</rd:DefaultName>
+                          <rd:DefaultName>ServerLoginType</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -664,7 +576,6 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
-                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
@@ -708,14 +619,14 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                       <TablixHeader>
                         <Size>2.33333in</Size>
                         <CellContents>
-                          <Textbox Name="Textbox19">
+                          <Textbox Name="Textbox9">
                             <CanGrow>true</CanGrow>
                             <KeepTogether>true</KeepTogether>
                             <Paragraphs>
                               <Paragraph>
                                 <TextRuns>
                                   <TextRun>
-                                    <Value>Database</Value>
+                                    <Value>Server Role</Value>
                                     <Style>
                                       <FontFamily>Arial</FontFamily>
                                     </Style>
@@ -724,7 +635,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                                 <Style />
                               </Paragraph>
                             </Paragraphs>
-                            <rd:DefaultName>Textbox19</rd:DefaultName>
+                            <rd:DefaultName>Textbox9</rd:DefaultName>
                             <Style>
                               <Border>
                                 <Color>LightGrey</Color>
@@ -739,44 +650,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                         </CellContents>
                       </TablixHeader>
                       <TablixMembers>
-                        <TablixMember>
-                          <TablixHeader>
-                            <Size>2.33333in</Size>
-                            <CellContents>
-                              <Textbox Name="Textbox9">
-                                <CanGrow>true</CanGrow>
-                                <KeepTogether>true</KeepTogether>
-                                <Paragraphs>
-                                  <Paragraph>
-                                    <TextRuns>
-                                      <TextRun>
-                                        <Value>Database Role</Value>
-                                        <Style>
-                                          <FontFamily>Arial</FontFamily>
-                                        </Style>
-                                      </TextRun>
-                                    </TextRuns>
-                                    <Style />
-                                  </Paragraph>
-                                </Paragraphs>
-                                <rd:DefaultName>Textbox9</rd:DefaultName>
-                                <Style>
-                                  <Border>
-                                    <Color>LightGrey</Color>
-                                    <Style>Solid</Style>
-                                  </Border>
-                                  <PaddingLeft>2pt</PaddingLeft>
-                                  <PaddingRight>2pt</PaddingRight>
-                                  <PaddingTop>2pt</PaddingTop>
-                                  <PaddingBottom>2pt</PaddingBottom>
-                                </Style>
-                              </Textbox>
-                            </CellContents>
-                          </TablixHeader>
-                          <TablixMembers>
-                            <TablixMember />
-                          </TablixMembers>
-                        </TablixMember>
+                        <TablixMember />
                       </TablixMembers>
                     </TablixMember>
                   </TablixMembers>
@@ -829,27 +703,27 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                   </TablixHeader>
                   <TablixMembers>
                     <TablixMember>
-                      <Group Name="DatabaseName">
+                      <Group Name="ServerRoleName">
                         <GroupExpressions>
-                          <GroupExpression>=Fields!DatabaseName.Value</GroupExpression>
+                          <GroupExpression>=Fields!ServerRoleName.Value</GroupExpression>
                         </GroupExpressions>
                       </Group>
                       <SortExpressions>
                         <SortExpression>
-                          <Value>=Fields!DatabaseName.Value</Value>
+                          <Value>=Fields!ServerRoleName.Value</Value>
                         </SortExpression>
                       </SortExpressions>
                       <TablixHeader>
                         <Size>2.33333in</Size>
                         <CellContents>
-                          <Textbox Name="DatabaseName">
+                          <Textbox Name="ServerRoleName">
                             <CanGrow>true</CanGrow>
                             <KeepTogether>true</KeepTogether>
                             <Paragraphs>
                               <Paragraph>
                                 <TextRuns>
                                   <TextRun>
-                                    <Value>=Fields!DatabaseName.Value</Value>
+                                    <Value>=Fields!ServerRoleName.Value</Value>
                                     <Style>
                                       <FontFamily>Arial</FontFamily>
                                     </Style>
@@ -858,7 +732,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                                 <Style />
                               </Paragraph>
                             </Paragraphs>
-                            <rd:DefaultName>DatabaseName</rd:DefaultName>
+                            <rd:DefaultName>ServerRoleName</rd:DefaultName>
                             <Style>
                               <Border>
                                 <Color>LightGrey</Color>
@@ -875,61 +749,13 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                       </TablixHeader>
                       <TablixMembers>
                         <TablixMember>
-                          <Group Name="DatabaseRoleName">
-                            <GroupExpressions>
-                              <GroupExpression>=Fields!DatabaseRoleName.Value</GroupExpression>
-                            </GroupExpressions>
-                          </Group>
+                          <Group Name="Details" />
                           <SortExpressions>
                             <SortExpression>
-                              <Value>=Fields!DatabaseRoleName.Value</Value>
+                              <Value>=Fields!LastUpdated.Value</Value>
+                              <Direction>Descending</Direction>
                             </SortExpression>
                           </SortExpressions>
-                          <TablixHeader>
-                            <Size>2.33333in</Size>
-                            <CellContents>
-                              <Textbox Name="DatabaseRoleName">
-                                <CanGrow>true</CanGrow>
-                                <KeepTogether>true</KeepTogether>
-                                <Paragraphs>
-                                  <Paragraph>
-                                    <TextRuns>
-                                      <TextRun>
-                                        <Value>=Fields!DatabaseRoleName.Value</Value>
-                                        <Style>
-                                          <FontFamily>Arial</FontFamily>
-                                        </Style>
-                                      </TextRun>
-                                    </TextRuns>
-                                    <Style />
-                                  </Paragraph>
-                                </Paragraphs>
-                                <rd:DefaultName>DatabaseRoleName</rd:DefaultName>
-                                <Style>
-                                  <Border>
-                                    <Color>LightGrey</Color>
-                                    <Style>Solid</Style>
-                                  </Border>
-                                  <BackgroundColor>=IIF(RowNumber("DBUserMembership") MOD 2,"White","WhiteSmoke")</BackgroundColor>
-                                  <PaddingLeft>2pt</PaddingLeft>
-                                  <PaddingRight>2pt</PaddingRight>
-                                  <PaddingTop>2pt</PaddingTop>
-                                  <PaddingBottom>2pt</PaddingBottom>
-                                </Style>
-                              </Textbox>
-                            </CellContents>
-                          </TablixHeader>
-                          <TablixMembers>
-                            <TablixMember>
-                              <Group Name="Details" />
-                              <SortExpressions>
-                                <SortExpression>
-                                  <Value>=Fields!LastUpdated.Value</Value>
-                                  <Direction>Descending</Direction>
-                                </SortExpression>
-                              </SortExpressions>
-                            </TablixMember>
-                          </TablixMembers>
                         </TablixMember>
                       </TablixMembers>
                     </TablixMember>
@@ -937,14 +763,11 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                 </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
-            <DataSetName>DatabaseMembershipsAndUsers</DataSetName>
-            <PageBreak>
-              <BreakLocation>End</BreakLocation>
-            </PageBreak>
+            <DataSetName>ServerMembershipsAndLogins</DataSetName>
             <Top>0.26695in</Top>
             <Left>0.0125in</Left>
             <Height>0.5in</Height>
-            <Width>12.90426in</Width>
+            <Width>9.70119in</Width>
             <ZIndex>1</ZIndex>
             <Style>
               <Border>
@@ -956,7 +779,10 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>2.33333in</Width>
+                  <Width>0.84375in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.49583in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.08155in</Width>
@@ -987,7 +813,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Object</Value>
+                                  <Value>Object ID</Value>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
@@ -995,6 +821,36 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox19">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Object Type</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox19</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1186,7 +1042,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!ObjectName.Value</Value>
+                                  <Value>=Fields!ObjectID.Value</Value>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
@@ -1194,6 +1050,37 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>DatabaseUserName</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=IIF(RowNumber("DBUserExplicitPermissions") MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="ObjectType">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!ObjectType.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>ObjectType</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1390,6 +1277,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
+                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
@@ -1433,14 +1321,14 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                       <TablixHeader>
                         <Size>2.33333in</Size>
                         <CellContents>
-                          <Textbox Name="Textbox20">
+                          <Textbox Name="Textbox10">
                             <CanGrow>true</CanGrow>
                             <KeepTogether>true</KeepTogether>
                             <Paragraphs>
                               <Paragraph>
                                 <TextRuns>
                                   <TextRun>
-                                    <Value>Database</Value>
+                                    <Value>Login</Value>
                                     <Style>
                                       <FontFamily>Arial</FontFamily>
                                     </Style>
@@ -1449,7 +1337,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                                 <Style />
                               </Paragraph>
                             </Paragraphs>
-                            <rd:DefaultName>Textbox19</rd:DefaultName>
+                            <rd:DefaultName>Textbox9</rd:DefaultName>
                             <Style>
                               <Border>
                                 <Color>LightGrey</Color>
@@ -1464,44 +1352,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                         </CellContents>
                       </TablixHeader>
                       <TablixMembers>
-                        <TablixMember>
-                          <TablixHeader>
-                            <Size>2.33333in</Size>
-                            <CellContents>
-                              <Textbox Name="Textbox10">
-                                <CanGrow>true</CanGrow>
-                                <KeepTogether>true</KeepTogether>
-                                <Paragraphs>
-                                  <Paragraph>
-                                    <TextRuns>
-                                      <TextRun>
-                                        <Value>User</Value>
-                                        <Style>
-                                          <FontFamily>Arial</FontFamily>
-                                        </Style>
-                                      </TextRun>
-                                    </TextRuns>
-                                    <Style />
-                                  </Paragraph>
-                                </Paragraphs>
-                                <rd:DefaultName>Textbox9</rd:DefaultName>
-                                <Style>
-                                  <Border>
-                                    <Color>LightGrey</Color>
-                                    <Style>Solid</Style>
-                                  </Border>
-                                  <PaddingLeft>2pt</PaddingLeft>
-                                  <PaddingRight>2pt</PaddingRight>
-                                  <PaddingTop>2pt</PaddingTop>
-                                  <PaddingBottom>2pt</PaddingBottom>
-                                </Style>
-                              </Textbox>
-                            </CellContents>
-                          </TablixHeader>
-                          <TablixMembers>
-                            <TablixMember />
-                          </TablixMembers>
-                        </TablixMember>
+                        <TablixMember />
                       </TablixMembers>
                     </TablixMember>
                   </TablixMembers>
@@ -1554,27 +1405,27 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                   </TablixHeader>
                   <TablixMembers>
                     <TablixMember>
-                      <Group Name="pmDatabaseName">
+                      <Group Name="LoginName">
                         <GroupExpressions>
-                          <GroupExpression>=Fields!DatabaseName.Value</GroupExpression>
+                          <GroupExpression>=Fields!GranteeName.Value</GroupExpression>
                         </GroupExpressions>
                       </Group>
                       <SortExpressions>
                         <SortExpression>
-                          <Value>=Fields!DatabaseName.Value</Value>
+                          <Value>=Fields!GranteeName.Value</Value>
                         </SortExpression>
                       </SortExpressions>
                       <TablixHeader>
                         <Size>2.33333in</Size>
                         <CellContents>
-                          <Textbox Name="DatabaseName2">
+                          <Textbox Name="DatabaseRoleName2">
                             <CanGrow>true</CanGrow>
                             <KeepTogether>true</KeepTogether>
                             <Paragraphs>
                               <Paragraph>
                                 <TextRuns>
                                   <TextRun>
-                                    <Value>=Fields!DatabaseName.Value</Value>
+                                    <Value>=Fields!GranteeName.Value</Value>
                                     <Style>
                                       <FontFamily>Arial</FontFamily>
                                     </Style>
@@ -1583,7 +1434,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                                 <Style />
                               </Paragraph>
                             </Paragraphs>
-                            <rd:DefaultName>DatabaseName</rd:DefaultName>
+                            <rd:DefaultName>DatabaseRoleName</rd:DefaultName>
                             <Style>
                               <Border>
                                 <Color>LightGrey</Color>
@@ -1600,61 +1451,13 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                       </TablixHeader>
                       <TablixMembers>
                         <TablixMember>
-                          <Group Name="DatabaseUserName">
-                            <GroupExpressions>
-                              <GroupExpression>=Fields!DatabaseUserName.Value</GroupExpression>
-                            </GroupExpressions>
-                          </Group>
+                          <Group Name="pmDetails" />
                           <SortExpressions>
                             <SortExpression>
-                              <Value>=Fields!DatabaseUserName.Value</Value>
+                              <Value>=Fields!LastUpdated.Value</Value>
+                              <Direction>Descending</Direction>
                             </SortExpression>
                           </SortExpressions>
-                          <TablixHeader>
-                            <Size>2.33333in</Size>
-                            <CellContents>
-                              <Textbox Name="DatabaseRoleName2">
-                                <CanGrow>true</CanGrow>
-                                <KeepTogether>true</KeepTogether>
-                                <Paragraphs>
-                                  <Paragraph>
-                                    <TextRuns>
-                                      <TextRun>
-                                        <Value>=Fields!DatabaseUserName.Value</Value>
-                                        <Style>
-                                          <FontFamily>Arial</FontFamily>
-                                        </Style>
-                                      </TextRun>
-                                    </TextRuns>
-                                    <Style />
-                                  </Paragraph>
-                                </Paragraphs>
-                                <rd:DefaultName>DatabaseRoleName</rd:DefaultName>
-                                <Style>
-                                  <Border>
-                                    <Color>LightGrey</Color>
-                                    <Style>Solid</Style>
-                                  </Border>
-                                  <BackgroundColor>=IIF(RowNumber("DBUserExplicitPermissions") MOD 2,"White","WhiteSmoke")</BackgroundColor>
-                                  <PaddingLeft>2pt</PaddingLeft>
-                                  <PaddingRight>2pt</PaddingRight>
-                                  <PaddingTop>2pt</PaddingTop>
-                                  <PaddingBottom>2pt</PaddingBottom>
-                                </Style>
-                              </Textbox>
-                            </CellContents>
-                          </TablixHeader>
-                          <TablixMembers>
-                            <TablixMember>
-                              <Group Name="pmDetails" />
-                              <SortExpressions>
-                                <SortExpression>
-                                  <Value>=Fields!LastUpdated.Value</Value>
-                                  <Direction>Descending</Direction>
-                                </SortExpression>
-                              </SortExpressions>
-                            </TablixMember>
-                          </TablixMembers>
                         </TablixMember>
                       </TablixMembers>
                     </TablixMember>
@@ -1667,10 +1470,10 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
             <PageBreak>
               <BreakLocation>Start</BreakLocation>
             </PageBreak>
-            <Top>1.04521in</Top>
+            <Top>0.79521in</Top>
             <Left>0.00625in</Left>
             <Height>0.5in</Height>
-            <Width>12.90426in</Width>
+            <Width>10.57718in</Width>
             <ZIndex>2</ZIndex>
             <Style>
               <Border>
@@ -1678,59 +1481,11 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
               </Border>
             </Style>
           </Tablix>
-          <Textbox Name="Textbox23">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>="Database Users Explicit Permissions"</Value>
-                    <Style>
-                      <FontWeight>Bold</FontWeight>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style>
-                  <TextAlign>Left</TextAlign>
-                </Style>
-              </Paragraph>
-            </Paragraphs>
-            <rd:DefaultName>Textbox5</rd:DefaultName>
-            <Top>0.79494in</Top>
-            <Left>0in</Left>
-            <Height>0.22555in</Height>
-            <Width>12.91676in</Width>
-            <ZIndex>3</ZIndex>
-            <Style>
-              <Border>
-                <Style>Dashed</Style>
-              </Border>
-              <TopBorder>
-                <Style>None</Style>
-              </TopBorder>
-              <BottomBorder>
-                <Color>Black</Color>
-                <Style>Solid</Style>
-                <Width>1pt</Width>
-              </BottomBorder>
-              <LeftBorder>
-                <Style>None</Style>
-              </LeftBorder>
-              <RightBorder>
-                <Style>None</Style>
-              </RightBorder>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
         </ReportItems>
-        <Height>1.59875in</Height>
+        <Height>1.33834in</Height>
         <Style />
       </Body>
-      <Width>12.91676in</Width>
+      <Width>10.61468in</Width>
       <Page>
         <PageHeader>
           <Height>0.46513in</Height>
@@ -1767,7 +1522,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
-              <Left>11.09384in</Left>
+              <Left>8.76051in</Left>
               <Height>0.21528in</Height>
               <Width>1.82292in</Width>
               <ZIndex>1</ZIndex>
@@ -1801,7 +1556,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
               <Top>0.24098in</Top>
-              <Left>11.09384in</Left>
+              <Left>8.76051in</Left>
               <Height>0.16999in</Height>
               <Width>1.82292in</Width>
               <ZIndex>2</ZIndex>
@@ -1822,7 +1577,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Database Security</Value>
+                      <Value>SQL Instance Security</Value>
                       <Style>
                         <FontSize>12pt</FontSize>
                         <FontWeight>Bold</FontWeight>
@@ -1838,7 +1593,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
               <rd:DefaultName>Textbox5</rd:DefaultName>
               <Left>1.82292in</Left>
               <Height>0.41305in</Height>
-              <Width>9.27092in</Width>
+              <Width>6.93759in</Width>
               <ZIndex>3</ZIndex>
               <Style>
                 <Border>
@@ -1870,17 +1625,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
     </ReportSection>
   </ReportSections>
   <ReportParameters>
-    <ReportParameter Name="DatabaseID">
-      <DataType>Integer</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>-1</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>DatabaseID</Prompt>
-      <Hidden>true</Hidden>
-    </ReportParameter>
-    <ReportParameter Name="UserName">
+    <ReportParameter Name="LoginName">
       <DataType>String</DataType>
       <Nullable>true</Nullable>
       <DefaultValue>
@@ -1889,17 +1634,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
         </Values>
       </DefaultValue>
       <AllowBlank>true</AllowBlank>
-      <Prompt>User Name</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="SQLInstanceID">
-      <DataType>String</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>-1</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>SQLInstance ID</Prompt>
-      <Hidden>true</Hidden>
+      <Prompt>Login Name</Prompt>
     </ReportParameter>
     <ReportParameter Name="Status">
       <DataType>String</DataType>
@@ -1926,6 +1661,16 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
         </ParameterValues>
       </ValidValues>
     </ReportParameter>
+    <ReportParameter Name="SQLInstanceID">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>-1</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>SQLInstance ID</Prompt>
+      <Hidden>true</Hidden>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
@@ -1935,20 +1680,15 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>DatabaseID</ParameterName>
+          <ParameterName>LoginName</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>UserName</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>2</ColumnIndex>
+          <ColumnIndex>3</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>SQLInstanceID</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>3</ColumnIndex>
+          <ColumnIndex>1</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>Status</ParameterName>
         </CellDefinition>

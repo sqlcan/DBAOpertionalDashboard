@@ -1,0 +1,715 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="dsMain">
+      <DataSourceReference>dsMain</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>27d6c120-bb09-4256-8855-507f54b3cb8a</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="SQLInstanceErrorLogSummary">
+      <Query>
+        <DataSourceName>dsMain</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@Environment">
+            <Value>=Parameters!Environment.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@NumOfErrors">
+            <Value>=Parameters!NumOfErrors.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>WITH CTE AS (
+SELECT SEL.SQLInstanceID, COUNT(*) AS ErrorLogCount
+  FROM dbo.SQLErrorLog SEL
+ WHERE DateTime &gt;= dateadd(day,-1,cast(GetDate() as date))
+GROUP BY SEL.SQLInstanceID)
+SELECT CASE WHEN SI.SQLInstanceName = 'MSSQLServer' THEN 
+          SI.ComputerName
+	   ELSE
+	      SI.ComputerName + '\' +  SI.SQLInstanceName
+	   END AS SQLInstanceName, SI.SQLInstanceEnviornment, SI.SQLInstanceID, ISNULL(CTE.ErrorLogCount,0) AS ErrorLogCount, SIT.ErrorLog_LastDateTimeCaptured AS LastUpdate 
+  FROM dbo.SQLInstances SIT
+  LEFT JOIN dbo.vSQLInstances SI
+    ON SIT.SQLInstanceID = SI.SQLInstanceID
+  LEFT JOIN CTE 
+    ON SIT.SQLInstanceID = CTE.SQLInstanceID
+WHERE SI.SQLInstanceEnviornment = @Environment
+AND (((@NumOfErrors =0) AND (CTE.ErrorLogCount IS NULL)) OR
+((@NumOfErrors &gt;0) AND (CTE.ErrorLogCount &gt;0)))</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="SQLInstanceName">
+          <DataField>SQLInstanceName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="SQLInstanceEnviornment">
+          <DataField>SQLInstanceEnviornment</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="SQLInstanceID">
+          <DataField>SQLInstanceID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ErrorLogCount">
+          <DataField>ErrorLogCount</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="LastUpdate">
+          <DataField>LastUpdate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Tablix Name="table1">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>3.04985in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.63914in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.35193in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.91444in</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.4575in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox2">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Server Instance</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox2</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox3">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Environment</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox3</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox8">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value># of Errors
+(Last 30 Hr)</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox8</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox9">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Last Collection
+Date Time</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox9</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.21in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="SQLInstanceName">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!SQLInstanceName.Value</Value>
+                                  <Style>
+                                    <TextDecoration>None</TextDecoration>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>SQLInstanceName</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=IIF(RowNumber(NOTHING) MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="SQLInstanceEnviornment">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!SQLInstanceEnviornment.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>SQLInstanceEnviornment</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <TopBorder>
+                              <Width>1pt</Width>
+                            </TopBorder>
+                            <BottomBorder>
+                              <Width>1pt</Width>
+                            </BottomBorder>
+                            <LeftBorder>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <RightBorder>
+                              <Width>1pt</Width>
+                            </RightBorder>
+                            <BackgroundColor>=IIF(RowNumber(NOTHING) MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="ErrorLogCount">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!ErrorLogCount.Value</Value>
+                                  <Style>
+                                    <TextDecoration>=IIF(Fields!ErrorLogCount.Value=0,"None","Underline")</TextDecoration>
+                                    <Color>=IIF(Fields!ErrorLogCount.Value=0,"Black","CornflowerBlue")</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>ErrorLogCount</rd:DefaultName>
+                          <ActionInfo>
+                            <Actions>
+                              <Action>
+                                <Drillthrough>
+                                  <ReportName>=IIF(Fields!ErrorLogCount.Value=0,NOTHING,"Errorlog Detail")</ReportName>
+                                  <Parameters>
+                                    <Parameter Name="SQLInstanceID">
+                                      <Value>=Fields!SQLInstanceID.Value</Value>
+                                    </Parameter>
+                                  </Parameters>
+                                </Drillthrough>
+                              </Action>
+                            </Actions>
+                          </ActionInfo>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=IIF(RowNumber(NOTHING) MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="LastUpdate">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!LastUpdate.Value</Value>
+                                  <Style>
+                                    <Format>yyyy-MM-dd HH:mm</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>LastUpdate</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <TopBorder>
+                              <Width>1pt</Width>
+                            </TopBorder>
+                            <BottomBorder>
+                              <Width>1pt</Width>
+                            </BottomBorder>
+                            <LeftBorder>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <RightBorder>
+                              <Width>1pt</Width>
+                            </RightBorder>
+                            <BackgroundColor>=IIF(RowNumber(NOTHING) MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                  <RepeatOnNewPage>true</RepeatOnNewPage>
+                  <KeepTogether>true</KeepTogether>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="table1_Details_Group">
+                    <DataElementName>Detail</DataElementName>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!ErrorLogCount.Value</Value>
+                      <Direction>Descending</Direction>
+                    </SortExpression>
+                    <SortExpression>
+                      <Value>=Fields!SQLInstanceName.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <TablixMembers>
+                    <TablixMember />
+                  </TablixMembers>
+                  <DataElementName>Detail_Collection</DataElementName>
+                  <DataElementOutput>Output</DataElementOutput>
+                  <KeepTogether>true</KeepTogether>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>SQLInstanceErrorLogSummary</DataSetName>
+            <Top>0.25167in</Top>
+            <Left>0.0125in</Left>
+            <Height>0.6675in</Height>
+            <Width>8.95536in</Width>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+            </Style>
+          </Tablix>
+          <Textbox Name="Textbox6">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>="Error Log Details for " &amp; Parameters!Environment.Value</Value>
+                    <Style>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Left</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox5</rd:DefaultName>
+            <Height>0.22555in</Height>
+            <Width>8.96786in</Width>
+            <ZIndex>1</ZIndex>
+            <Style>
+              <Border>
+                <Style>Dashed</Style>
+              </Border>
+              <TopBorder>
+                <Style>None</Style>
+              </TopBorder>
+              <BottomBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </BottomBorder>
+              <LeftBorder>
+                <Style>None</Style>
+              </LeftBorder>
+              <RightBorder>
+                <Style>None</Style>
+              </RightBorder>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+        </ReportItems>
+        <Height>0.95459in</Height>
+        <Style />
+      </Body>
+      <Width>8.96786in</Width>
+      <Page>
+        <PageHeader>
+          <Height>0.4375in</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <ReportItems>
+            <Image Name="ReportLogo">
+              <Source>Embedded</Source>
+              <Value>SQLCanadaLogo</Value>
+              <Sizing>FitProportional</Sizing>
+              <Height>0.41305in</Height>
+              <Width>1.82292in</Width>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+              </Style>
+            </Image>
+            <Textbox Name="Textbox5">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value># of Errors Recorded on SQL Server Instances</Value>
+                      <Style>
+                        <FontSize>12pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                        <Color>White</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox5</rd:DefaultName>
+              <Left>1.82292in</Left>
+              <Height>0.41305in</Height>
+              <Width>5.31666in</Width>
+              <ZIndex>1</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <BackgroundColor>DimGray</BackgroundColor>
+                <VerticalAlign>Middle</VerticalAlign>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox11">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>SQL Opertional Dashboard</Value>
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Right</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox10</rd:DefaultName>
+              <Left>7.13958in</Left>
+              <Height>0.21528in</Height>
+              <Width>1.82292in</Width>
+              <ZIndex>2</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox13">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=FormatDateTime(Now(),DateFormat.GeneralDate)</Value>
+                      <Style>
+                        <Format>f</Format>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Right</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox10</rd:DefaultName>
+              <Top>0.24306in</Top>
+              <Left>7.13958in</Left>
+              <Height>0.16999in</Height>
+              <Width>1.80903in</Width>
+              <ZIndex>3</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+          </ReportItems>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+            <BottomBorder>
+              <Color>LightGrey</Color>
+              <Style>Solid</Style>
+              <Width>1pt</Width>
+            </BottomBorder>
+          </Style>
+        </PageHeader>
+        <PageHeight>8.5in</PageHeight>
+        <PageWidth>11in</PageWidth>
+        <LeftMargin>1in</LeftMargin>
+        <RightMargin>1in</RightMargin>
+        <TopMargin>0.5in</TopMargin>
+        <BottomMargin>0.5in</BottomMargin>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="Environment">
+      <DataType>String</DataType>
+      <Prompt>ReportParameter1</Prompt>
+      <Hidden>true</Hidden>
+    </ReportParameter>
+    <ReportParameter Name="NumOfErrors">
+      <DataType>Integer</DataType>
+      <Prompt>Number of Errors</Prompt>
+      <Hidden>true</Hidden>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>4</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Environment</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>NumOfErrors</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <EmbeddedImages>
+    <EmbeddedImage Name="headerLogo">
+      <MIMEType>image/gif</MIMEType>
+      <ImageData>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</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="SQLCanadaLogo">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>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</ImageData>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <Language>en-US</Language>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>d7261c33-1141-4db8-a834-13f58d1c9f11</rd:ReportID>
+</Report>

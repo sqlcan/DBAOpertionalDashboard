@@ -365,32 +365,15 @@ SELECT OS.OperatingSystemShortName AS OSName,
                         <Style />
                         <UseValueAsLabel>true</UseValueAsLabel>
                         <Visible>true</Visible>
-                        <ActionInfo>
-                          <Actions>
-                            <Action>
-                              <Drillthrough>
-                                <ReportName>SQL Instances</ReportName>
-                                <Parameters>
-                                  <Parameter Name="SQLServerVersion">
-                                    <Value>=Fields!SQLVersion.Value</Value>
-                                  </Parameter>
-                                  <Parameter Name="Environment">
-                                    <Value>=Fields!SQLInstanceEnviornment.Value</Value>
-                                  </Parameter>
-                                </Parameters>
-                              </Drillthrough>
-                            </Action>
-                          </Actions>
-                        </ActionInfo>
                       </ChartDataLabel>
                       <ActionInfo>
                         <Actions>
                           <Action>
                             <Drillthrough>
-                              <ReportName>SQL Instances</ReportName>
+                              <ReportName>SQLCMDB SQL Instances Summary</ReportName>
                               <Parameters>
                                 <Parameter Name="SQLServerVersion">
-                                  <Value>=First(Fields!SQLVersion.Value, "gSQLInstanceSummary")</Value>
+                                  <Value>="Microsoft SQL Server " &amp; Fields!SQLVersion.Value &amp; "%"</Value>
                                 </Parameter>
                                 <Parameter Name="Environment">
                                   <Value>=Fields!SQLInstanceEnviornment.Value</Value>

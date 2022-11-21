@@ -604,7 +604,7 @@ WHERE        (DiskVolumeID = @DiskVolumeID)</CommandText>
             <Top>5.97186in</Top>
             <Left>0.01253in</Left>
             <Height>0.66666in</Height>
-            <Width>7.98749in</Width>
+            <Width>7.98748in</Width>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -1385,7 +1385,7 @@ WHERE        (DiskVolumeID = @DiskVolumeID)</CommandText>
             <Top>2.75326in</Top>
             <Left>0.01253in</Left>
             <Height>0.67in</Height>
-            <Width>7.98608in</Width>
+            <Width>7.98607in</Width>
             <ZIndex>3</ZIndex>
             <Style>
               <Border>
@@ -1771,7 +1771,6 @@ WHERE        (DiskVolumeID = @DiskVolumeID)</CommandText>
               <Value>=First(Fields!LogoFile.Value, "ReportLogo")</Value>
               <MIMEType>="image/" &amp; First(Fields!LogoFileType.Value, "ReportLogo")</MIMEType>
               <Sizing>FitProportional</Sizing>
-              <Top>0in</Top>
               <Height>0.41305in</Height>
               <Width>1.82292in</Width>
               <Style>
@@ -1866,7 +1865,6 @@ WHERE        (DiskVolumeID = @DiskVolumeID)</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox5</rd:DefaultName>
-              <Top>0in</Top>
               <Left>1.82292in</Left>
               <Height>0.41305in</Height>
               <Width>4.35416in</Width>

@@ -129,29 +129,18 @@
   JOIN dbo.AGDatabases AGD
     ON AGI.AGInstanceID = AGD.AGInstanceID)
  GROUP BY D.SQLInstanceID, D.DatabaseState)
-, SQLServerVersions AS (
- SELECT SV.SQLVersionID, CASE WHEN SV.SQLVersion &lt;&gt; 'Unknown' THEN
-	       CASE WHEN CHARINDEX(' Service Pack',SV.SQLVersion) = 0 THEN
-			   REPLACE(SUBSTRING(SV.SQLVersion,1,CHARINDEX(' RTM',SV.SQLVersion)),'Microsoft SQL Server ','')
-		   ELSE
-		       REPLACE(SUBSTRING(SV.SQLVersion,1,CHARINDEX(' Service Pack',SV.SQLVersion)),'Microsoft SQL Server ','')
-		   END
-		ELSE
-		   SV.SQLVersion
-		END AS SQLVersion
-   FROM dbo.SQLVersions SV)
-   SELECT SI.SQLInstanceEnviornment, REPLACE(REPLACE(REPLACE(SI.SQLInstanceEdition,' (64-bit)',''),': Core-based Licensing',''),' with Advanced Services','') AS SQLEdition, SV.SQLVersion, DC.DatabaseState, SUM(DC.DBCount) AS DBCount
+   SELECT SI.SQLInstanceEnviornment, REPLACE(REPLACE(REPLACE(SI.SQLInstanceEdition,' (64-bit)',''),': Core-based Licensing',''),' with Advanced Services','') AS SQLEdition, SV.SQLVersionShortName AS SQLVersion, DC.DatabaseState, SUM(DC.DBCount) AS DBCount
      FROM dbo.SQLInstances SI
 LEFT JOIN DatabaseCounts DC
        ON DC.SQLInstanceID = SI.SQLInstanceID
-LEFT JOIN SQLServerVersions SV
+LEFT JOIN dbo.SQLVersions SV
        ON SI.SQLInstanceVersionID = SV.SQLVersionID
     WHERE DBCount IS NOT NULL
 	  AND DatabaseState = 'Online'
 	  AND SI.SQLInstanceEdition NOT LIKE 'Express Edition%'
                     AND SI.LastUpdated &gt;= DATEADD(DAY,-1,GETDATE())
- GROUP BY SI.SQLInstanceEnviornment, SI.SQLInstanceEdition, SV.SQLVersion, DC.DatabaseState
- ORDER BY SQLVersion, SQLInstanceEnviornment</CommandText>
+ GROUP BY SI.SQLInstanceEnviornment, SI.SQLInstanceEdition, SV.SQLVersionShortName, DC.DatabaseState
+ ORDER BY SQLVersionShortName, SQLInstanceEnviornment</CommandText>
       </Query>
       <Fields>
         <Field Name="SQLInstanceEnviornment">
@@ -203,27 +192,16 @@ LEFT JOIN SQLServerVersions SV
 			ON AGI.AGInstanceID = AGD.AGInstanceID)
        AND DS.DateCaptured = CAST(GETDATE() AS DATE)
  GROUP BY D.SQLInstanceID, D.DatabaseID)
-, SQLServerVersions AS (
- SELECT SV.SQLVersionID, CASE WHEN SV.SQLVersion &lt;&gt; 'Unknown' THEN
-	       CASE WHEN CHARINDEX(' Service Pack',SV.SQLVersion) = 0 THEN
-			   REPLACE(SUBSTRING(SV.SQLVersion,1,CHARINDEX(' RTM',SV.SQLVersion)),'Microsoft SQL Server ','')
-		   ELSE
-		       REPLACE(SUBSTRING(SV.SQLVersion,1,CHARINDEX(' Service Pack',SV.SQLVersion)),'Microsoft SQL Server ','')
-		   END
-		ELSE
-		   SV.SQLVersion
-		END AS SQLVersion
-   FROM dbo.SQLVersions SV)
-   SELECT SI.SQLInstanceEnviornment, SV.SQLVersion, ISNULL(SUM(DBSize_mb)/1024./1024.,0) AS DBSize_tb
+   SELECT SI.SQLInstanceEnviornment, SV.SQLVersionShortName AS SQLVersion, ISNULL(SUM(DBSize_mb)/1024./1024.,0) AS DBSize_tb
      FROM dbo.SQLInstances SI
 LEFT JOIN DatabaseSizes DS
        ON DS.SQLInstanceID = SI.SQLInstanceID
-LEFT JOIN SQLServerVersions SV
+LEFT JOIN dbo.SQLVersions SV
        ON SI.SQLInstanceVersionID = SV.SQLVersionID
     WHERE DBSize_mb IS NOT NULL
   AND SI.SQLInstanceEdition NOT LIKE 'Express Edition%'
   AND SI.LastUpdated &gt;= DATEADD(DAY,-1,GETDATE())
- GROUP BY SI.SQLInstanceEnviornment, SV.SQLVersion
+ GROUP BY SI.SQLInstanceEnviornment, SV.SQLVersionShortName
  ORDER BY SQLVersion, SQLInstanceEnviornment</CommandText>
       </Query>
       <Fields>
@@ -866,7 +844,7 @@ SELECT OS.OperatingSystemShortName AS OSName,
                                 <TextRun>
                                   <Value>=Fields!SQLVersion.Value</Value>
                                   <Style>
-                                    <TextDecoration>Underline</TextDecoration>
+                                    <TextDecoration>None</TextDecoration>
                                     <Color>White</Color>
                                   </Style>
                                 </TextRun>
@@ -875,20 +853,6 @@ SELECT OS.OperatingSystemShortName AS OSName,
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>SQLVersion</rd:DefaultName>
-                          <ActionInfo>
-                            <Actions>
-                              <Action>
-                                <Drillthrough>
-                                  <ReportName>SQLCMDB SQL Instances Summary</ReportName>
-                                  <Parameters>
-                                    <Parameter Name="SQLServerVersion">
-                                      <Value>=Fields!SQLVersion.Value</Value>
-                                    </Parameter>
-                                  </Parameters>
-                                </Drillthrough>
-                              </Action>
-                            </Actions>
-                          </ActionInfo>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1096,17 +1060,34 @@ SELECT OS.OperatingSystemShortName AS OSName,
                         </Style>
                         <UseValueAsLabel>true</UseValueAsLabel>
                         <Visible>true</Visible>
+                        <ActionInfo>
+                          <Actions>
+                            <Action>
+                              <Drillthrough>
+                                <ReportName>Databases</ReportName>
+                                <Parameters>
+                                  <Parameter Name="SQLVersion">
+                                    <Value>=Fields!SQLVersion.Value</Value>
+                                  </Parameter>
+                                  <Parameter Name="SQLInstanceEnviornment">
+                                    <Value>=Fields!SQLInstanceEnviornment.Value</Value>
+                                  </Parameter>
+                                </Parameters>
+                              </Drillthrough>
+                            </Action>
+                          </Actions>
+                        </ActionInfo>
                       </ChartDataLabel>
                       <ActionInfo>
                         <Actions>
                           <Action>
                             <Drillthrough>
-                              <ReportName>SQLCMDB Database List by Version and Enviornment</ReportName>
+                              <ReportName>Databases</ReportName>
                               <Parameters>
                                 <Parameter Name="SQLVersion">
                                   <Value>=Fields!SQLVersion.Value</Value>
                                 </Parameter>
-                                <Parameter Name="SQLEnviornment">
+                                <Parameter Name="SQLInstanceEnviornment">
                                   <Value>=Fields!SQLInstanceEnviornment.Value</Value>
                                 </Parameter>
                               </Parameters>
@@ -1361,7 +1342,7 @@ SELECT OS.OperatingSystemShortName AS OSName,
             <ChartCategoryHierarchy>
               <ChartMembers>
                 <ChartMember>
-                  <Group Name="Chart2_CategoryGroup2">
+                  <Group Name="Chart3_CategoryGroup">
                     <GroupExpressions>
                       <GroupExpression>=Fields!SQLVersion.Value</GroupExpression>
                     </GroupExpressions>
@@ -1378,7 +1359,7 @@ SELECT OS.OperatingSystemShortName AS OSName,
             <ChartSeriesHierarchy>
               <ChartMembers>
                 <ChartMember>
-                  <Group Name="Chart2_SeriesGroup2">
+                  <Group Name="Chart3_SeriesGroup">
                     <GroupExpressions>
                       <GroupExpression>=Fields!SQLInstanceEnviornment.Value</GroupExpression>
                     </GroupExpressions>
@@ -1406,17 +1387,34 @@ SELECT OS.OperatingSystemShortName AS OSName,
                         </Style>
                         <UseValueAsLabel>true</UseValueAsLabel>
                         <Visible>true</Visible>
+                        <ActionInfo>
+                          <Actions>
+                            <Action>
+                              <Drillthrough>
+                                <ReportName>Databases</ReportName>
+                                <Parameters>
+                                  <Parameter Name="SQLVersion">
+                                    <Value>=Fields!SQLVersion.Value</Value>
+                                  </Parameter>
+                                  <Parameter Name="SQLInstanceEnviornment">
+                                    <Value>=Fields!SQLInstanceEnviornment.Value</Value>
+                                  </Parameter>
+                                </Parameters>
+                              </Drillthrough>
+                            </Action>
+                          </Actions>
+                        </ActionInfo>
                       </ChartDataLabel>
                       <ActionInfo>
                         <Actions>
                           <Action>
                             <Drillthrough>
-                              <ReportName>SQLCMDB Database List by Version and Enviornment</ReportName>
+                              <ReportName>Databases</ReportName>
                               <Parameters>
                                 <Parameter Name="SQLVersion">
                                   <Value>=Fields!SQLVersion.Value</Value>
                                 </Parameter>
-                                <Parameter Name="SQLEnviornment">
+                                <Parameter Name="SQLInstanceEnviornment">
                                   <Value>=Fields!SQLInstanceEnviornment.Value</Value>
                                 </Parameter>
                               </Parameters>
@@ -1654,15 +1652,6 @@ SELECT OS.OperatingSystemShortName AS OSName,
               </Style>
             </ChartNoDataMessage>
             <DataSetName>gDatabaseSizeSummary</DataSetName>
-            <Filters>
-              <Filter>
-                <FilterExpression>=Fields!SQLVersion.Value</FilterExpression>
-                <Operator>NotEqual</Operator>
-                <FilterValues>
-                  <FilterValue>2000</FilterValue>
-                </FilterValues>
-              </Filter>
-            </Filters>
             <Top>3.10444in</Top>
             <Left>5.45625in</Left>
             <Height>3.22916in</Height>
@@ -1713,7 +1702,35 @@ SELECT OS.OperatingSystemShortName AS OSName,
                         <Style />
                         <UseValueAsLabel>true</UseValueAsLabel>
                         <Visible>true</Visible>
+                        <ActionInfo>
+                          <Actions>
+                            <Action>
+                              <Drillthrough>
+                                <ReportName>Servers</ReportName>
+                                <Parameters>
+                                  <Parameter Name="OSName">
+                                    <Value>=Fields!OSName.Value</Value>
+                                  </Parameter>
+                                </Parameters>
+                              </Drillthrough>
+                            </Action>
+                          </Actions>
+                        </ActionInfo>
                       </ChartDataLabel>
+                      <ActionInfo>
+                        <Actions>
+                          <Action>
+                            <Drillthrough>
+                              <ReportName>Servers</ReportName>
+                              <Parameters>
+                                <Parameter Name="OSName">
+                                  <Value>=Fields!OSName.Value</Value>
+                                </Parameter>
+                              </Parameters>
+                            </Drillthrough>
+                          </Action>
+                        </Actions>
+                      </ActionInfo>
                       <Style>
                         <BackgroundGradientType>None</BackgroundGradientType>
                         <BackgroundGradientEndColor>Black</BackgroundGradientEndColor>

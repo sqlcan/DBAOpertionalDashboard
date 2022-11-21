@@ -53,33 +53,35 @@
     <DataSource Include="dsMain.rds" />
   </ItemGroup>
   <ItemGroup>
+    <Report Include="Configuration Health Details.rdl" />
+    <Report Include="Configuration Health Overview.rdl" />
+    <Report Include="Configuration Policy Info.rdl" />
     <Report Include="Database Growth History.rdl" />
     <Report Include="Database Security.rdl" />
+    <Report Include="Databases.rdl" />
+    <Report Include="Errorlog Detail.rdl" />
+    <Report Include="Errorlog Summary.rdl" />
+    <Report Include="Extended Properties.rdl" />
     <Report Include="Large Database Size Change Details.rdl" />
-    <Report Include="Server Details.rdl" />
-    <Report Include="Server Volumes.rdl" />
-    <Report Include="SQL Configuration Health Details.rdl" />
-    <Report Include="SQL Configuration Health Overview.rdl" />
-    <Report Include="SQL Configuration Policy Info.rdl" />
-    <Report Include="SQL Databases.rdl" />
-    <Report Include="SQL Instances Errorlog Detail.rdl" />
-    <Report Include="SQL Instances Errorlog Summary.rdl" />
-    <Report Include="SQL Instances Jobs History.rdl" />
-    <Report Include="SQL Server Infrastructure Overview.rdl" />
+    <Report Include="Security - User Lookup.rdl" />
+    <Report Include="Server Detail.rdl" />
+    <Report Include="Servers.rdl" />
+    <Report Include="SQL Infrastructure Historical Trend.rdl" />
+    <Report Include="SQL Infrastructure Overview.rdl" />
+    <Report Include="SQL Instance Security.rdl" />
+    <Report Include="SQL Instances by Support Life Cycle.rdl" />
+    <Report Include="SQL Instances.rdl" />
+    <Report Include="SQL Jobs History.rdl" />
+    <Report Include="SQL License Detail.rdl" />
+    <Report Include="SQL License Overview.rdl" />
     <Report Include="SQL Services.rdl" />
-    <Report Include="SQLCMDB (EPM) Databases Missing Full-Diff Backup.rdl" />
-    <Report Include="SQLCMDB (EPM) Databases Missing T-Log Backup.rdl" />
-    <Report Include="SQLCMDB AHS Dashboard Trending.rdl" />
-    <Report Include="SQLCMDB Database List by Version and Enviornment.rdl" />
-    <Report Include="SQLCMDB Expired Objects Dashboard.rdl" />
-    <Report Include="SQLCMDB Expired Objects.rdl" />
-    <Report Include="SQLCMDB Instance Breakdown by Support Date.rdl" />
-    <Report Include="SQLCMDB Inventory Dump by Sever by Instance by Databases.rdl" />
-    <Report Include="SQLCMDB SQL Instances Summary.rdl" />
     <Report Include="SQLOpDB Dashboard.rdl" />
     <Report Include="SQLOpDB Logs.rdl" />
+    <Report Include="SQLOpDB STB Deleleted Details.rdl" />
+    <Report Include="SQLOpDB STB Deleleted Overview.rdl" />
     <Report Include="Template.rdl" />
     <Report Include="Volume Growth History.rdl" />
+    <Report Include="Volumes.rdl" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Reporting Services\Microsoft.ReportingServices.MSBuilder.targets" />
 </Project>
