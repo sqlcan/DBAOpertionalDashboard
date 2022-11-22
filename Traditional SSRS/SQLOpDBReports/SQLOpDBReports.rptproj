@@ -53,6 +53,7 @@
     <DataSource Include="dsMain.rds" />
   </ItemGroup>
   <ItemGroup>
+    <Report Include="Applications.rdl" />
     <Report Include="Configuration Health Details.rdl" />
     <Report Include="Configuration Health Overview.rdl" />
     <Report Include="Configuration Policy Info.rdl" />
@@ -61,6 +62,7 @@
     <Report Include="Databases.rdl" />
     <Report Include="Errorlog Detail.rdl" />
     <Report Include="Errorlog Summary.rdl" />
+    <Report Include="Extended Properties Details.rdl" />
     <Report Include="Extended Properties.rdl" />
     <Report Include="Large Database Size Change Details.rdl" />
     <Report Include="Security - User Lookup.rdl" />

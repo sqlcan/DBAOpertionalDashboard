@@ -94,6 +94,9 @@ AND DiskVolumeName NOT LIKE '\\?\%'
           <DataField>DaysUntilOutOfSpace</DataField>
           <rd:TypeName>System.Double</rd:TypeName>
         </Field>
+        <Field Name="LastFreeSpace_mb">
+          <Value>=Fields!LastTotalSpace_mb.Value-Fields!LastSpaceUsed_mb.Value</Value>
+        </Field>
       </Fields>
     </DataSet>
     <DataSet Name="pComputerName">
@@ -191,6 +194,9 @@ SELECT 'Default',0,'&lt;ALL&gt;'</CommandText>
                 <TablixColumn>
                   <Width>1.6493in</Width>
                 </TablixColumn>
+                <TablixColumn>
+                  <Width>1.6493in</Width>
+                </TablixColumn>
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
@@ -215,6 +221,40 @@ SELECT 'Default',0,'&lt;ALL&gt;'</CommandText>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox2">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Free (MB)</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox2</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -419,6 +459,41 @@ SELECT 'Default',0,'&lt;ALL&gt;'</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
+                        <Textbox Name="LastFreeSpace_mb">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!LastFreeSpace_mb.Value</Value>
+                                  <Style>
+                                    <Format>#,0.00;(#,0.00)</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>LastFreeSpace_mb</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=IIF(RowNumber("T1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
                         <Textbox Name="LastSpaceUsed_mb">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -568,6 +643,7 @@ SELECT 'Default',0,'&lt;ALL&gt;'</CommandText>
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
+                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
@@ -688,7 +764,7 @@ SELECT 'Default',0,'&lt;ALL&gt;'</CommandText>
             <Top>0.0125in</Top>
             <Left>0.0125in</Left>
             <Height>0.5in</Height>
-            <Width>10.58333in</Width>
+            <Width>12.2326in</Width>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -699,7 +775,7 @@ SELECT 'Default',0,'&lt;ALL&gt;'</CommandText>
         <Height>0.54611in</Height>
         <Style />
       </Body>
-      <Width>10.61666in</Width>
+      <Width>12.2451in</Width>
       <Page>
         <PageHeader>
           <Height>0.41305in</Height>
@@ -711,7 +787,6 @@ SELECT 'Default',0,'&lt;ALL&gt;'</CommandText>
               <Value>=First(Fields!LogoFile.Value, "ReportLogo")</Value>
               <MIMEType>="image/" &amp; First(Fields!LogoFileType.Value, "ReportLogo")</MIMEType>
               <Sizing>FitProportional</Sizing>
-              <Top>0in</Top>
               <Height>0.41305in</Height>
               <Width>1.82292in</Width>
               <Style>
@@ -741,10 +816,9 @@ SELECT 'Default',0,'&lt;ALL&gt;'</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox5</rd:DefaultName>
-              <Top>0in</Top>
               <Left>1.82292in</Left>
               <Height>0.41305in</Height>
-              <Width>6.89582in</Width>
+              <Width>8.59926in</Width>
               <ZIndex>1</ZIndex>
               <Style>
                 <Border>
@@ -775,7 +849,7 @@ SELECT 'Default',0,'&lt;ALL&gt;'</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
-              <Left>8.76041in</Left>
+              <Left>10.42218in</Left>
               <Height>0.21528in</Height>
               <Width>1.82292in</Width>
               <ZIndex>2</ZIndex>
@@ -809,7 +883,7 @@ SELECT 'Default',0,'&lt;ALL&gt;'</CommandText>
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
               <Top>0.24306in</Top>
-              <Left>8.74652in</Left>
+              <Left>10.40829in</Left>
               <Height>0.16999in</Height>
               <Width>1.82292in</Width>
               <ZIndex>3</ZIndex>

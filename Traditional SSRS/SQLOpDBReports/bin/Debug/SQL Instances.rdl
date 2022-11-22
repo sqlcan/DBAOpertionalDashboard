@@ -972,7 +972,7 @@
                             <Actions>
                               <Action>
                                 <Drillthrough>
-                                  <ReportName>Extended Properties</ReportName>
+                                  <ReportName>Extended Properties Details</ReportName>
                                   <Parameters>
                                     <Parameter Name="SQLInstanceID">
                                       <Value>=Fields!SQLInstanceID.Value</Value>

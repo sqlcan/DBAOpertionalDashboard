@@ -10,137 +10,6 @@
     </DataSource>
   </DataSources>
   <DataSets>
-    <DataSet Name="ServerMembershipsAndLogins">
-      <Query>
-        <DataSourceName>dsMain</DataSourceName>
-        <QueryParameters>
-          <QueryParameter Name="@LoginName">
-            <Value>=Parameters!LoginName.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@SQLInstanceID">
-            <Value>=Parameters!SQLInstanceID.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@Status">
-            <Value>=Parameters!Status.Value</Value>
-          </QueryParameter>
-        </QueryParameters>
-        <CommandText>   SELECT SI.ServerInstance, ServerRole.PrincipalName AS ServerRoleName, ServerLogin.PrincipalName AS ServerLoginName, ServerLogin.PrincipalType AS ServerLoginType, SPM.IsArchived, SPM.DiscoveryOn, SPM.LastUpdated
-     FROM Security.ServerPrincipalMembership SPM
-LEFT JOIN Security.ServerPrincipal ServerRole
-       ON SPM.ServerRoleID = ServerRole.PrincipalID
-LEFT JOIN Security.ServerPrincipal ServerLogin
-       ON SPM.ServerLoginID = ServerLogin.PrincipalID
-LEFT JOIN dbo.vSQLInstances SI
-       ON SPM.SQLInstanceID = SI.SQLInstanceID
-WHERE ((@LoginName IS NULL) OR (ServerLogin.PrincipalName LIKE @LoginName))
-AND ((SI.SQLInstanceID = @SQLInstanceID) OR (@SQLInstanceID = 0))
-AND (((SPM.IsArchived = 1) AND (@Status = 'Audit')) OR
-          ((SPM.IsArchived = 0) AND (@Status = 'Active')) OR
-          (@Status = 'Both'))
-AND ServerLogin.PrincipalName NOT IN ('sa')</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="ServerInstance">
-          <DataField>ServerInstance</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="ServerRoleName">
-          <DataField>ServerRoleName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="ServerLoginName">
-          <DataField>ServerLoginName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="ServerLoginType">
-          <DataField>ServerLoginType</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="IsArchived">
-          <DataField>IsArchived</DataField>
-          <rd:TypeName>System.Boolean</rd:TypeName>
-        </Field>
-        <Field Name="DiscoveryOn">
-          <DataField>DiscoveryOn</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="LastUpdated">
-          <DataField>LastUpdated</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
-    <DataSet Name="DatabaseExplicitPermissions">
-      <Query>
-        <DataSourceName>dsMain</DataSourceName>
-        <QueryParameters>
-          <QueryParameter Name="@LoginName">
-            <Value>=Parameters!LoginName.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@SQLInstanceID">
-            <Value>=Parameters!SQLInstanceID.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@Status">
-            <Value>=Parameters!Status.Value</Value>
-          </QueryParameter>
-        </QueryParameters>
-        <CommandText>   SELECT SI.ServerInstance, Grantee.PrincipalName AS DatabaseUserName, Grantee.PrincipalName AS GranteeName, SP.ObjectID, SP.ObjectType, SP.Access, SP.PermissionName, SP.IsArchived, SP.DiscoveryOn, SP.LastUpdated
-     FROM Security.ServerPermission SP
-LEFT JOIN Security.ServerPrincipal Grantor
-       ON SP.GrantorID = Grantor.PrincipalID
-LEFT JOIN Security.ServerPrincipal Grantee
-       ON SP.GranteeID = Grantee.PrincipalID
-LEFT JOIN dbo.vSQLInstances SI
-       ON SP.SQLInstanceID = SI.SQLInstanceID
-    WHERE ((@LoginName IS NULL) OR (Grantee.PrincipalName LIKE @LoginName))
-AND ((SI.SQLInstanceID = @SQLInstanceID) OR (@SQLInstanceID = 0))
-AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
-          ((SP.IsArchived = 0) AND (@Status = 'Active')) OR
-          (@Status = 'Both'))</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="ServerInstance">
-          <DataField>ServerInstance</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="DatabaseUserName">
-          <DataField>DatabaseUserName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="GranteeName">
-          <DataField>GranteeName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="ObjectID">
-          <DataField>ObjectID</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="ObjectType">
-          <DataField>ObjectType</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Access">
-          <DataField>Access</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="PermissionName">
-          <DataField>PermissionName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="IsArchived">
-          <DataField>IsArchived</DataField>
-          <rd:TypeName>System.Boolean</rd:TypeName>
-        </Field>
-        <Field Name="DiscoveryOn">
-          <DataField>DiscoveryOn</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="LastUpdated">
-          <DataField>LastUpdated</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
     <DataSet Name="ReportLogo">
       <SharedDataSet>
         <SharedDataSetReference>ReportLogo</SharedDataSetReference>
@@ -156,110 +25,82 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="ExtendedPropertiesByInstance">
+      <Query>
+        <DataSourceName>dsMain</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@ExtendedPropertyID">
+            <Value>=Parameters!ExtendedPropertyID.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@SQLInstanceID">
+            <Value>=Parameters!SQLInstanceID.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT EPV.SQLInstanceID, SI.ServerInstance, EP.ExtendedPropertyID, EP.ExtendedPropertyName, EPV.ExtendedPropertyValue, EPV.DiscoveryOn, EPV.LastUpdated
+  FROM dbo.ExtendedProperty EP
+  JOIN dbo.ExtendedPropertyValues EPV
+    ON EP.ExtendedPropertyID = EPV.ExtendedPropertyID
+  JOIN dbo.vSQLInstances SI
+    ON EPV.SQLInstanceID = SI.SQLInstanceID
+WHERE ((EP.ExtendedPropertyID = @ExtendedPropertyID) OR (@ExtendedPropertyID IS NULL))
+AND ((@SQLInstanceID IS NULL) OR (SI.SQLInstanceID = @SQLInstanceID))</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="SQLInstanceID">
+          <DataField>SQLInstanceID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ServerInstance">
+          <DataField>ServerInstance</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ExtendedPropertyID">
+          <DataField>ExtendedPropertyID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ExtendedPropertyName">
+          <DataField>ExtendedPropertyName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ExtendedPropertyValue">
+          <DataField>ExtendedPropertyValue</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="DiscoveryOn">
+          <DataField>DiscoveryOn</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="LastUpdated">
+          <DataField>LastUpdated</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
       <Body>
         <ReportItems>
-          <Textbox Name="Textbox6">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>="Server Logins &amp; Role Membership"</Value>
-                    <Style>
-                      <FontWeight>Bold</FontWeight>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style>
-                  <TextAlign>Left</TextAlign>
-                </Style>
-              </Paragraph>
-            </Paragraphs>
-            <rd:DefaultName>Textbox5</rd:DefaultName>
-            <Top>0.01736in</Top>
-            <Height>0.22555in</Height>
-            <Width>12.91676in</Width>
-            <Style>
-              <Border>
-                <Style>Dashed</Style>
-              </Border>
-              <TopBorder>
-                <Style>None</Style>
-              </TopBorder>
-              <BottomBorder>
-                <Color>Black</Color>
-                <Style>Solid</Style>
-                <Width>1pt</Width>
-              </BottomBorder>
-              <LeftBorder>
-                <Style>None</Style>
-              </LeftBorder>
-              <RightBorder>
-                <Style>None</Style>
-              </RightBorder>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
-          <Tablix Name="DBUserMembership">
+          <Tablix Name="Tablix1">
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>2.79091in</Width>
+                  <Width>2.18753in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.53913in</Width>
+                  <Width>2.27089in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.27524in</Width>
+                  <Width>1.02433in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.52524in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.52524in</Width>
+                  <Width>1.02433in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
-                  <Height>0.25in</Height>
+                  <Height>0.21486in</Height>
                   <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox1">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Login</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox1</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
                     <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox3">
@@ -269,8 +110,10 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>User Type</Value>
-                                  <Style />
+                                  <Value>Extended Property</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
@@ -292,25 +135,23 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox12">
+                        <Textbox Name="Textbox6">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Status</Value>
+                                  <Value>Value</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox12</rd:DefaultName>
+                          <rd:DefaultName>Textbox6</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -326,7 +167,7 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox15">
+                        <Textbox Name="Textbox8">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -336,6 +177,7 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                                   <Value>Discovery On</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -344,7 +186,7 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox15</rd:DefaultName>
+                          <rd:DefaultName>Textbox8</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -360,7 +202,7 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox17">
+                        <Textbox Name="Textbox10">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -370,6 +212,7 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                                   <Value>Last Updated</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -378,7 +221,7 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox17</rd:DefaultName>
+                          <rd:DefaultName>Textbox10</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -395,31 +238,30 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.25in</Height>
+                  <Height>0.23569in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="ServerLoginName">
+                        <Textbox Name="ExtendedPropertyName">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!ServerLoginName.Value</Value>
+                                  <Value>=Fields!ExtendedPropertyName.Value</Value>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>ServerLoginName</rd:DefaultName>
+                          <rd:DefaultName>ExtendedPropertyName</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>=IIF(RowNumber("DBUserMembership") MOD 2,"White","WhiteSmoke")</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -430,61 +272,26 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="ServerLoginType">
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!ServerLoginType.Value</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>ServerLoginType</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BackgroundColor>=IIF(RowNumber("DBUserMembership") MOD 2,"White","WhiteSmoke")</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="IsArchived">
+                        <Textbox Name="ExtendedPropertyValue">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=IIF(Fields!IsArchived.Value=True,"Audit","Active")</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
+                                  <Value>=Fields!ExtendedPropertyValue.Value</Value>
+                                  <Style />
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>IsArchived</rd:DefaultName>
+                          <rd:DefaultName>ExtendedPropertyValue</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>=IIF(RowNumber("DBUserMembership") MOD 2,"White","WhiteSmoke")</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -520,7 +327,6 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>=IIF(RowNumber("DBUserMembership") MOD 2,"White","WhiteSmoke")</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -556,7 +362,6 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>=IIF(RowNumber("DBUserMembership") MOD 2,"White","WhiteSmoke")</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -575,16 +380,15 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
-                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
               <TablixMembers>
                 <TablixMember>
                   <TablixHeader>
-                    <Size>1.45758in</Size>
+                    <Size>1.51042in</Size>
                     <CellContents>
-                      <Textbox Name="Textbox21">
+                      <Textbox Name="Textbox14">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
@@ -594,13 +398,14 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                                 <Value>Server Instance</Value>
                                 <Style>
                                   <FontFamily>Arial</FontFamily>
+                                  <FontWeight>Bold</FontWeight>
                                 </Style>
                               </TextRun>
                             </TextRuns>
                             <Style />
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>Textbox21</rd:DefaultName>
+                        <rd:DefaultName>Textbox14</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
@@ -615,44 +420,7 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                     </CellContents>
                   </TablixHeader>
                   <TablixMembers>
-                    <TablixMember>
-                      <TablixHeader>
-                        <Size>2.79091in</Size>
-                        <CellContents>
-                          <Textbox Name="Textbox9">
-                            <CanGrow>true</CanGrow>
-                            <KeepTogether>true</KeepTogether>
-                            <Paragraphs>
-                              <Paragraph>
-                                <TextRuns>
-                                  <TextRun>
-                                    <Value>Server Role</Value>
-                                    <Style>
-                                      <FontFamily>Arial</FontFamily>
-                                    </Style>
-                                  </TextRun>
-                                </TextRuns>
-                                <Style />
-                              </Paragraph>
-                            </Paragraphs>
-                            <rd:DefaultName>Textbox9</rd:DefaultName>
-                            <Style>
-                              <Border>
-                                <Color>LightGrey</Color>
-                                <Style>Solid</Style>
-                              </Border>
-                              <PaddingLeft>2pt</PaddingLeft>
-                              <PaddingRight>2pt</PaddingRight>
-                              <PaddingTop>2pt</PaddingTop>
-                              <PaddingBottom>2pt</PaddingBottom>
-                            </Style>
-                          </Textbox>
-                        </CellContents>
-                      </TablixHeader>
-                      <TablixMembers>
-                        <TablixMember />
-                      </TablixMembers>
-                    </TablixMember>
+                    <TablixMember />
                   </TablixMembers>
                   <KeepWithGroup>After</KeepWithGroup>
                 </TablixMember>
@@ -668,9 +436,9 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
-                    <Size>1.45758in</Size>
+                    <Size>1.51042in</Size>
                     <CellContents>
-                      <Textbox Name="ServerInstance">
+                      <Textbox Name="ServerInstance1">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
@@ -686,13 +454,12 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                             <Style />
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>ServerInstance</rd:DefaultName>
+                        <rd:DefaultName>ServerInstance1</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
                             <Style>Solid</Style>
                           </Border>
-                          <BackgroundColor>=IIF(RowNumber("DBUserMembership") MOD 2,"White","WhiteSmoke")</BackgroundColor>
                           <PaddingLeft>2pt</PaddingLeft>
                           <PaddingRight>2pt</PaddingRight>
                           <PaddingTop>2pt</PaddingTop>
@@ -703,840 +470,36 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                   </TablixHeader>
                   <TablixMembers>
                     <TablixMember>
-                      <Group Name="ServerRoleName">
-                        <GroupExpressions>
-                          <GroupExpression>=Fields!ServerRoleName.Value</GroupExpression>
-                        </GroupExpressions>
-                      </Group>
+                      <Group Name="Details" />
                       <SortExpressions>
                         <SortExpression>
-                          <Value>=Fields!ServerRoleName.Value</Value>
+                          <Value>=Fields!ExtendedPropertyName.Value</Value>
                         </SortExpression>
                       </SortExpressions>
-                      <TablixHeader>
-                        <Size>2.79091in</Size>
-                        <CellContents>
-                          <Textbox Name="ServerRoleName">
-                            <CanGrow>true</CanGrow>
-                            <KeepTogether>true</KeepTogether>
-                            <Paragraphs>
-                              <Paragraph>
-                                <TextRuns>
-                                  <TextRun>
-                                    <Value>=Fields!ServerRoleName.Value</Value>
-                                    <Style>
-                                      <FontFamily>Arial</FontFamily>
-                                    </Style>
-                                  </TextRun>
-                                </TextRuns>
-                                <Style />
-                              </Paragraph>
-                            </Paragraphs>
-                            <rd:DefaultName>ServerRoleName</rd:DefaultName>
-                            <Style>
-                              <Border>
-                                <Color>LightGrey</Color>
-                                <Style>Solid</Style>
-                              </Border>
-                              <BackgroundColor>=IIF(RowNumber("DBUserMembership") MOD 2,"White","WhiteSmoke")</BackgroundColor>
-                              <PaddingLeft>2pt</PaddingLeft>
-                              <PaddingRight>2pt</PaddingRight>
-                              <PaddingTop>2pt</PaddingTop>
-                              <PaddingBottom>2pt</PaddingBottom>
-                            </Style>
-                          </Textbox>
-                        </CellContents>
-                      </TablixHeader>
-                      <TablixMembers>
-                        <TablixMember>
-                          <Group Name="Details" />
-                          <SortExpressions>
-                            <SortExpression>
-                              <Value>=Fields!LastUpdated.Value</Value>
-                              <Direction>Descending</Direction>
-                            </SortExpression>
-                          </SortExpressions>
-                        </TablixMember>
-                      </TablixMembers>
                     </TablixMember>
                   </TablixMembers>
                 </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
-            <DataSetName>ServerMembershipsAndLogins</DataSetName>
-            <PageBreak>
-              <BreakLocation>End</BreakLocation>
-            </PageBreak>
-            <Top>0.26695in</Top>
+            <DataSetName>ExtendedPropertiesByInstance</DataSetName>
+            <Top>0.02737in</Top>
             <Left>0.0125in</Left>
-            <Height>0.5in</Height>
-            <Width>12.90426in</Width>
-            <ZIndex>1</ZIndex>
+            <Height>0.45055in</Height>
+            <Width>8.0175in</Width>
             <Style>
               <Border>
                 <Style>Solid</Style>
               </Border>
             </Style>
           </Tablix>
-          <Tablix Name="DBUserExplicitPermissions">
-            <TablixBody>
-              <TablixColumns>
-                <TablixColumn>
-                  <Width>1.10301in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.75509in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.34081in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.129in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.07692in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.32692in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.32692in</Width>
-                </TablixColumn>
-              </TablixColumns>
-              <TablixRows>
-                <TablixRow>
-                  <Height>0.25in</Height>
-                  <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox2">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Object ID</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox1</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox19">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Object Type</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox19</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox4">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Access</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox3</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox8">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Permission</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox7</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox14">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Status</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox12</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox16">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Discovery On</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox15</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox18">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Last Updated</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox17</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                  </TablixCells>
-                </TablixRow>
-                <TablixRow>
-                  <Height>0.25in</Height>
-                  <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="DatabaseUserName2">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!ObjectID.Value</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>DatabaseUserName</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BackgroundColor>=IIF(RowNumber("DBUserExplicitPermissions") MOD 2,"White","WhiteSmoke")</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="ObjectType">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!ObjectType.Value</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>ObjectType</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BackgroundColor>=IIF(RowNumber("DBUserExplicitPermissions") MOD 2,"White","WhiteSmoke")</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="DatabaseUserType2">
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!Access.Value</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>DatabaseUserType</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BackgroundColor>=IIF(RowNumber("DBUserExplicitPermissions") MOD 2,"White","WhiteSmoke")</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="IsOrphaned2">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!PermissionName.Value</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>IsOrphaned</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BackgroundColor>=IIF(RowNumber("DBUserExplicitPermissions") MOD 2,"White","WhiteSmoke")</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="IsArchived2">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=IIF(Fields!IsArchived.Value = True, "Audit", "Active")</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>IsArchived</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BackgroundColor>=IIF(RowNumber("DBUserExplicitPermissions") MOD 2,"White","WhiteSmoke")</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="DiscoveryOn2">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!DiscoveryOn.Value</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <Format>yyyy-MM-dd</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>DiscoveryOn</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BackgroundColor>=IIF(RowNumber("DBUserExplicitPermissions") MOD 2,"White","WhiteSmoke")</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="LastUpdated2">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!LastUpdated.Value</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <Format>yyyy-MM-dd</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>LastUpdated</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BackgroundColor>=IIF(RowNumber("DBUserExplicitPermissions") MOD 2,"White","WhiteSmoke")</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                  </TablixCells>
-                </TablixRow>
-              </TablixRows>
-            </TablixBody>
-            <TablixColumnHierarchy>
-              <TablixMembers>
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-              </TablixMembers>
-            </TablixColumnHierarchy>
-            <TablixRowHierarchy>
-              <TablixMembers>
-                <TablixMember>
-                  <TablixHeader>
-                    <Size>1.25926in</Size>
-                    <CellContents>
-                      <Textbox Name="Textbox22">
-                        <CanGrow>true</CanGrow>
-                        <KeepTogether>true</KeepTogether>
-                        <Paragraphs>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value>Server Instance</Value>
-                                <Style>
-                                  <FontFamily>Arial</FontFamily>
-                                </Style>
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                        </Paragraphs>
-                        <rd:DefaultName>Textbox21</rd:DefaultName>
-                        <Style>
-                          <Border>
-                            <Color>LightGrey</Color>
-                            <Style>Solid</Style>
-                          </Border>
-                          <PaddingLeft>2pt</PaddingLeft>
-                          <PaddingRight>2pt</PaddingRight>
-                          <PaddingTop>2pt</PaddingTop>
-                          <PaddingBottom>2pt</PaddingBottom>
-                        </Style>
-                      </Textbox>
-                    </CellContents>
-                  </TablixHeader>
-                  <TablixMembers>
-                    <TablixMember>
-                      <TablixHeader>
-                        <Size>2.59259in</Size>
-                        <CellContents>
-                          <Textbox Name="Textbox10">
-                            <CanGrow>true</CanGrow>
-                            <KeepTogether>true</KeepTogether>
-                            <Paragraphs>
-                              <Paragraph>
-                                <TextRuns>
-                                  <TextRun>
-                                    <Value>Login</Value>
-                                    <Style>
-                                      <FontFamily>Arial</FontFamily>
-                                    </Style>
-                                  </TextRun>
-                                </TextRuns>
-                                <Style />
-                              </Paragraph>
-                            </Paragraphs>
-                            <rd:DefaultName>Textbox9</rd:DefaultName>
-                            <Style>
-                              <Border>
-                                <Color>LightGrey</Color>
-                                <Style>Solid</Style>
-                              </Border>
-                              <PaddingLeft>2pt</PaddingLeft>
-                              <PaddingRight>2pt</PaddingRight>
-                              <PaddingTop>2pt</PaddingTop>
-                              <PaddingBottom>2pt</PaddingBottom>
-                            </Style>
-                          </Textbox>
-                        </CellContents>
-                      </TablixHeader>
-                      <TablixMembers>
-                        <TablixMember />
-                      </TablixMembers>
-                    </TablixMember>
-                  </TablixMembers>
-                  <KeepWithGroup>After</KeepWithGroup>
-                </TablixMember>
-                <TablixMember>
-                  <Group Name="pmServerInstance">
-                    <GroupExpressions>
-                      <GroupExpression>=Fields!ServerInstance.Value</GroupExpression>
-                    </GroupExpressions>
-                  </Group>
-                  <SortExpressions>
-                    <SortExpression>
-                      <Value>=Fields!ServerInstance.Value</Value>
-                    </SortExpression>
-                  </SortExpressions>
-                  <TablixHeader>
-                    <Size>1.25926in</Size>
-                    <CellContents>
-                      <Textbox Name="ServerInstance2">
-                        <CanGrow>true</CanGrow>
-                        <KeepTogether>true</KeepTogether>
-                        <Paragraphs>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value>=Fields!ServerInstance.Value</Value>
-                                <Style>
-                                  <FontFamily>Arial</FontFamily>
-                                </Style>
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                        </Paragraphs>
-                        <rd:DefaultName>ServerInstance</rd:DefaultName>
-                        <Style>
-                          <Border>
-                            <Color>LightGrey</Color>
-                            <Style>Solid</Style>
-                          </Border>
-                          <BackgroundColor>=IIF(RowNumber("DBUserExplicitPermissions") MOD 2,"White","WhiteSmoke")</BackgroundColor>
-                          <PaddingLeft>2pt</PaddingLeft>
-                          <PaddingRight>2pt</PaddingRight>
-                          <PaddingTop>2pt</PaddingTop>
-                          <PaddingBottom>2pt</PaddingBottom>
-                        </Style>
-                      </Textbox>
-                    </CellContents>
-                  </TablixHeader>
-                  <TablixMembers>
-                    <TablixMember>
-                      <Group Name="LoginName">
-                        <GroupExpressions>
-                          <GroupExpression>=Fields!GranteeName.Value</GroupExpression>
-                        </GroupExpressions>
-                      </Group>
-                      <SortExpressions>
-                        <SortExpression>
-                          <Value>=Fields!GranteeName.Value</Value>
-                        </SortExpression>
-                      </SortExpressions>
-                      <TablixHeader>
-                        <Size>2.59259in</Size>
-                        <CellContents>
-                          <Textbox Name="DatabaseRoleName2">
-                            <CanGrow>true</CanGrow>
-                            <KeepTogether>true</KeepTogether>
-                            <Paragraphs>
-                              <Paragraph>
-                                <TextRuns>
-                                  <TextRun>
-                                    <Value>=Fields!GranteeName.Value</Value>
-                                    <Style>
-                                      <FontFamily>Arial</FontFamily>
-                                    </Style>
-                                  </TextRun>
-                                </TextRuns>
-                                <Style />
-                              </Paragraph>
-                            </Paragraphs>
-                            <rd:DefaultName>DatabaseRoleName</rd:DefaultName>
-                            <Style>
-                              <Border>
-                                <Color>LightGrey</Color>
-                                <Style>Solid</Style>
-                              </Border>
-                              <BackgroundColor>=IIF(RowNumber("DBUserExplicitPermissions") MOD 2,"White","WhiteSmoke")</BackgroundColor>
-                              <PaddingLeft>2pt</PaddingLeft>
-                              <PaddingRight>2pt</PaddingRight>
-                              <PaddingTop>2pt</PaddingTop>
-                              <PaddingBottom>2pt</PaddingBottom>
-                            </Style>
-                          </Textbox>
-                        </CellContents>
-                      </TablixHeader>
-                      <TablixMembers>
-                        <TablixMember>
-                          <Group Name="pmDetails" />
-                          <SortExpressions>
-                            <SortExpression>
-                              <Value>=Fields!LastUpdated.Value</Value>
-                              <Direction>Descending</Direction>
-                            </SortExpression>
-                          </SortExpressions>
-                        </TablixMember>
-                      </TablixMembers>
-                    </TablixMember>
-                  </TablixMembers>
-                </TablixMember>
-              </TablixMembers>
-            </TablixRowHierarchy>
-            <RepeatRowHeaders>true</RepeatRowHeaders>
-            <DataSetName>DatabaseExplicitPermissions</DataSetName>
-            <Top>1.05771in</Top>
-            <Left>0.00625in</Left>
-            <Height>0.5in</Height>
-            <Width>12.91051in</Width>
-            <ZIndex>2</ZIndex>
-            <Style>
-              <Border>
-                <Style>Solid</Style>
-              </Border>
-            </Style>
-          </Tablix>
-          <Textbox Name="Textbox7">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>="Server Logins Explicit Permissions"</Value>
-                    <Style>
-                      <FontWeight>Bold</FontWeight>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style>
-                  <TextAlign>Left</TextAlign>
-                </Style>
-              </Paragraph>
-            </Paragraphs>
-            <rd:DefaultName>Textbox5</rd:DefaultName>
-            <Top>0.8064in</Top>
-            <Left>0.01562in</Left>
-            <Height>0.22555in</Height>
-            <Width>12.90114in</Width>
-            <ZIndex>3</ZIndex>
-            <Style>
-              <Border>
-                <Style>Dashed</Style>
-              </Border>
-              <TopBorder>
-                <Style>None</Style>
-              </TopBorder>
-              <BottomBorder>
-                <Color>Black</Color>
-                <Style>Solid</Style>
-                <Width>1pt</Width>
-              </BottomBorder>
-              <LeftBorder>
-                <Style>None</Style>
-              </LeftBorder>
-              <RightBorder>
-                <Style>None</Style>
-              </RightBorder>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
         </ReportItems>
-        <Height>1.58834in</Height>
+        <Height>0.51542in</Height>
         <Style />
       </Body>
-      <Width>12.91676in</Width>
+      <Width>8.07167in</Width>
       <Page>
         <PageHeader>
-          <Height>0.46513in</Height>
+          <Height>0.41305in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -1570,7 +533,7 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
-              <Left>11.09384in</Left>
+              <Left>6.20708in</Left>
               <Height>0.21528in</Height>
               <Width>1.82292in</Width>
               <ZIndex>1</ZIndex>
@@ -1603,8 +566,8 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
-              <Top>0.24098in</Top>
-              <Left>11.09384in</Left>
+              <Top>0.24306in</Top>
+              <Left>6.19319in</Left>
               <Height>0.16999in</Height>
               <Width>1.82292in</Width>
               <ZIndex>2</ZIndex>
@@ -1625,7 +588,7 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>SQL Instance Security</Value>
+                      <Value>Extended Property Details</Value>
                       <Style>
                         <FontSize>12pt</FontSize>
                         <FontWeight>Bold</FontWeight>
@@ -1641,7 +604,7 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
               <rd:DefaultName>Textbox5</rd:DefaultName>
               <Left>1.82292in</Left>
               <Height>0.41305in</Height>
-              <Width>9.27092in</Width>
+              <Width>4.38416in</Width>
               <ZIndex>3</ZIndex>
               <Style>
                 <Border>
@@ -1662,10 +625,8 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
             </Border>
           </Style>
         </PageHeader>
-        <PageHeight>8.5in</PageHeight>
-        <PageWidth>11in</PageWidth>
-        <LeftMargin>0.25in</LeftMargin>
-        <RightMargin>0.25in</RightMargin>
+        <LeftMargin>1in</LeftMargin>
+        <RightMargin>1in</RightMargin>
         <TopMargin>1in</TopMargin>
         <BottomMargin>1in</BottomMargin>
         <Style />
@@ -1673,50 +634,26 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
     </ReportSection>
   </ReportSections>
   <ReportParameters>
-    <ReportParameter Name="LoginName">
-      <DataType>String</DataType>
+    <ReportParameter Name="ExtendedPropertyID">
+      <DataType>Integer</DataType>
       <Nullable>true</Nullable>
       <DefaultValue>
         <Values>
           <Value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true" />
         </Values>
       </DefaultValue>
-      <AllowBlank>true</AllowBlank>
-      <Prompt>Login Name</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="Status">
-      <DataType>String</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>Active</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>Status</Prompt>
-      <ValidValues>
-        <ParameterValues>
-          <ParameterValue>
-            <Value>Audit</Value>
-            <Label>Audit</Label>
-          </ParameterValue>
-          <ParameterValue>
-            <Value>Active</Value>
-            <Label>Active</Label>
-          </ParameterValue>
-          <ParameterValue>
-            <Value>Both</Value>
-            <Label>Both</Label>
-          </ParameterValue>
-        </ParameterValues>
-      </ValidValues>
+      <Prompt>Extended Property ID</Prompt>
+      <Hidden>true</Hidden>
     </ReportParameter>
     <ReportParameter Name="SQLInstanceID">
-      <DataType>String</DataType>
+      <DataType>Integer</DataType>
+      <Nullable>true</Nullable>
       <DefaultValue>
         <Values>
-          <Value>0</Value>
+          <Value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true" />
         </Values>
       </DefaultValue>
-      <Prompt>SQLInstance ID</Prompt>
+      <Prompt>SQLInstanceID</Prompt>
       <Hidden>true</Hidden>
     </ReportParameter>
   </ReportParameters>
@@ -1728,17 +665,12 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>LoginName</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>3</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>SQLInstanceID</ParameterName>
+          <ParameterName>ExtendedPropertyID</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>Status</ParameterName>
+          <ParameterName>SQLInstanceID</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>

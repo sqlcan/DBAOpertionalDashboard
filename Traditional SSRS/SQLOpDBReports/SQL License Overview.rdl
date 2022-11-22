@@ -814,7 +814,7 @@
               <Actions>
                 <Action>
                   <Drillthrough>
-                    <ReportName>SQL Server License Detail</ReportName>
+                    <ReportName>SQL License Detail</ReportName>
                   </Drillthrough>
                 </Action>
               </Actions>
