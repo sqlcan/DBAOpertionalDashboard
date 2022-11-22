@@ -280,8 +280,6 @@ SELECT cte2.SQLVersion, cte2.InstCount, cte2.SupportEndDate AS BuildSupportEndDa
                                   <Value>=Fields!SQLVersion.Value</Value>
                                   <Style>
                                     <TextDecoration>None</TextDecoration>
-                                    <Color>=IIF(Fields!BuildSupportEndDate.Value &lt;= NOW() AND Fields!SQLVersionSupportEndDate.Value &lt;= NOW(),
-    "LightGrey","DimGray")</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>

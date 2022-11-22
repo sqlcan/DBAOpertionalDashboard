@@ -153,7 +153,7 @@ OR @Status = 'Both')</CommandText>
         </Field>
       </Fields>
     </DataSet>
-    <DataSet Name="DiskVolumeOverview">
+    <DataSet Name="InstanceDBSizeChangeOverview">
       <Query>
         <DataSourceName>dsMain</DataSourceName>
         <CommandText>SELECT [VolumeOfChangeCategory]
@@ -187,45 +187,61 @@ OR @Status = 'Both')</CommandText>
           <DataField>ComputerName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="ServerID">
+          <DataField>ServerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="SQLClusterID">
+          <DataField>SQLClusterID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
         <Field Name="DiskVolumeID">
           <DataField>DiskVolumeID</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="IsPhysical">
+          <DataField>IsPhysical</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
         </Field>
         <Field Name="DiskVolumeName">
           <DataField>DiskVolumeName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="AvgSpaceUsed_mb">
-          <DataField>AvgSpaceUsed_mb</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="AvgTotalSpace_mb">
-          <DataField>AvgTotalSpace_mb</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="LastSpaceUsed_mb">
-          <DataField>LastSpaceUsed_mb</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="LastTotalSpace_mb">
-          <DataField>LastTotalSpace_mb</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="FreeSpace_mb">
-          <DataField>FreeSpace_mb</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="SpaceUsedInPercent">
-          <DataField>SpaceUsedInPercent</DataField>
+        <Field Name="TotalSpace_gb">
+          <DataField>TotalSpace_gb</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="AvgGrowthInPercent">
-          <DataField>AvgGrowthInPercent</DataField>
+        <Field Name="SpaceUsed_gb">
+          <DataField>SpaceUsed_gb</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="DaysUntilOutOfSpace">
-          <DataField>DaysUntilOutOfSpace</DataField>
-          <rd:TypeName>System.Double</rd:TypeName>
+        <Field Name="FreeSpace_gb">
+          <DataField>FreeSpace_gb</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="SpaceUsed_Percent">
+          <DataField>SpaceUsed_Percent</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Daily_AvgChange_mb">
+          <DataField>Daily_AvgChange_mb</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="DaysHistory">
+          <DataField>DaysHistory</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Est_90Days_gb">
+          <DataField>Est_90Days_gb</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="Est_180Days_gb">
+          <DataField>Est_180Days_gb</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="DaysUntil_OutOfSpace">
+          <DataField>DaysUntil_OutOfSpace</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -2693,7 +2709,7 @@ OR @Status = 'Both')</CommandText>
                 <VerticalAlign>Top</VerticalAlign>
               </Style>
             </ChartNoDataMessage>
-            <DataSetName>DiskVolumeOverview</DataSetName>
+            <DataSetName>InstanceDBSizeChangeOverview</DataSetName>
             <Top>2.21368in</Top>
             <Left>5.04444in</Left>
             <Height>1.80066in</Height>
@@ -2717,13 +2733,16 @@ OR @Status = 'Both')</CommandText>
                   <Width>1.59212in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.39202in</Width>
+                  <Width>0.88543in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.19514in</Width>
+                  <Width>0.88543in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.27639in</Width>
+                  <Width>0.88543in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.20726in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -2763,9 +2782,10 @@ OR @Status = 'Both')</CommandText>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <ColSpan>5</ColSpan>
+                        <ColSpan>6</ColSpan>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell />
                     <TablixCell />
                     <TablixCell />
                     <TablixCell />
@@ -2773,7 +2793,7 @@ OR @Status = 'Both')</CommandText>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.25in</Height>
+                  <Height>0.42708in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -2802,6 +2822,7 @@ OR @Status = 'Both')</CommandText>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2837,6 +2858,7 @@ OR @Status = 'Both')</CommandText>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2872,6 +2894,7 @@ OR @Status = 'Both')</CommandText>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2889,14 +2912,14 @@ OR @Status = 'Both')</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Free Space(MB)</Value>
+                                  <Value>Free Space (GB)</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -2907,6 +2930,56 @@ OR @Status = 'Both')</CommandText>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox18">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Space Est</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>90 Days (GB)</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox18</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2942,6 +3015,7 @@ OR @Status = 'Both')</CommandText>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3052,14 +3126,14 @@ OR @Status = 'Both')</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="SpaceUsedInPercent">
+                        <Textbox Name="SpaceUsed_Percent">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!SpaceUsedInPercent.Value</Value>
+                                  <Value>=Fields!SpaceUsed_Percent.Value</Value>
                                   <Style>
                                     <Format>0.00 %</Format>
                                   </Style>
@@ -3070,7 +3144,7 @@ OR @Status = 'Both')</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>SpaceUsedInPercent</rd:DefaultName>
+                          <rd:DefaultName>SpaceUsed_Percent</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -3087,16 +3161,16 @@ OR @Status = 'Both')</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="FreeSpace_mb">
+                        <Textbox Name="FreeSpace_gb">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!FreeSpace_mb.Value</Value>
+                                  <Value>=Fields!FreeSpace_gb.Value</Value>
                                   <Style>
-                                    <Format>#,0;(#,0)</Format>
+                                    <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -3105,7 +3179,42 @@ OR @Status = 'Both')</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>FreeSpace_mb</rd:DefaultName>
+                          <rd:DefaultName>FreeSpace_gb</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=IIF(RowNumber("Top15Volumes") MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Est_90Days_gb">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Est_90Days_gb.Value</Value>
+                                  <Style>
+                                    <Format>#,0.00;(#,0.00)</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Est_90Days_gb</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -3129,7 +3238,7 @@ OR @Status = 'Both')</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=IIF(Fields!DaysUntilOutOfSpace.Value=9999999,"INF",Fields!DaysUntilOutOfSpace.Value)</Value>
+                                  <Value>=IIF(Fields!DaysUntil_OutOfSpace.Value=99999,"INF",Fields!DaysUntil_OutOfSpace.Value)</Value>
                                   <Style>
                                     <Format>0.00;(0.00)</Format>
                                   </Style>
@@ -3166,6 +3275,7 @@ OR @Status = 'Both')</CommandText>
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
+                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
@@ -3184,7 +3294,7 @@ OR @Status = 'Both')</CommandText>
             <DataSetName>TopOffendingDiskOverview</DataSetName>
             <Top>4.08378in</Top>
             <Left>0.10277in</Left>
-            <Height>0.75in</Height>
+            <Height>0.92708in</Height>
             <Width>7.32709in</Width>
             <ZIndex>7</ZIndex>
             <Style>
@@ -3838,7 +3948,7 @@ OR @Status = 'Both')</CommandText>
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>4.90069in</Height>
+        <Height>5.01086in</Height>
         <Style>
           <Border>
             <Style>None</Style>
