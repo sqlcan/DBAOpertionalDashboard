@@ -37,6 +37,8 @@ Date       Version Comments
 2021.11.27 0.00.10 Added two additional settings for Error Logs and SQL Agent Logs.
 2022.11.15 0.00.12 Added  additional setting for Policy Result clean up.
 				   Updated error handling routine.
+2022.11.22 0.00.13 Removed the CMS Server connection string, as all is expected to be in same
+                    SQL instance now.
 #>
 function Initialize-SQLOpsDB
 {
@@ -51,8 +53,8 @@ function Initialize-SQLOpsDB
     }
 
     $ModuleName = 'Initialize-SQLOpsDB'
-    $ModuleVersion = '0.00.12'
-    $ModuleLastUpdated = 'November 15, 2022'
+    $ModuleVersion = '0.00.13'
+    $ModuleLastUpdated = 'November 22, 2022'
 
     try
     {
@@ -63,16 +65,6 @@ function Initialize-SQLOpsDB
         $Global:SQLOpsDBConnections = (Get-Content $JSONFileToLoad | ConvertFrom-Json)
 
         Write-Verbose $("SQLOpsDB Connect Settings (SQL: {0} Database: {1})" -f $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance, $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database)
-        Write-Verbose $("CMS Connect Settings (SQL: {0} Database: {1})" -f $Global:SQLOpsDBConnections.Connections.CMSServer.SQLInstance, $Global:SQLOpsDBConnections.Connections.CMSServer.Database)
-
-        #Test connections.
-        $TSQL = 'SELECT @@ServerName'
-        Write-Verbose $TSQL
-        $Results = Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.CMSServer.SQLInstance `
-                                    -Database $Global:SQLOpsDBConnections.Connections.CMSServer.Database `
-                                    -Query $TSQL
-        
-        # We don't care about results from CMS server, we are just confirming connectivity.
 
         $TSQL = 'SELECT * FROM dbo.Setting'
         Write-Verbose $TSQL

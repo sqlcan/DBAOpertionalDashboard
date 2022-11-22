@@ -118,6 +118,7 @@ function Update-SQLOpDatabasePrincipalMembership
 					    ON D.DatabaseName = SPM.DatabaseName
 					   AND D.SQLInstanceID = SPM.SQLInstanceID
 					WHERE ProcessID = $ProcessID
+					  AND D.IsMonitored = 1
 					  AND SPM.RoleName IS NOT NULL) AS Source (DatabaseID, DatabaseRoleID, DatabaseUserID,IsOrphaned)
 					ON (Target.DatabaseID = Source.DatabaseID AND Target.DatabaseRoleID = Source.DatabaseRoleID AND Target.DatabaseUserID = Source.DatabaseUserID AND Target.IsArchived = 0)
 					WHEN MATCHED THEN

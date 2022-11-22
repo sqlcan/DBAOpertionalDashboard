@@ -1,8 +1,5 @@
 {
     "Connections":[
-        { "CMSServer":
-            {"SQLInstance":"SQLCMS",
-             "Database":"msdb"}},
         {"SQLOpsDBServer":
             {"SQLInstance":"SQLCMS",
             "Database":"SQLOpsDB"}}]

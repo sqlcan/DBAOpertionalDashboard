@@ -412,7 +412,7 @@ ForEach ($SQLServerRC in $SQLServers)
             }
         }
 
-        if ($DCS_DiscoverSQLServices)
+        if (($DCS_DiscoverSQLServices) -and ($ServerIsMonitored))
         {
             $SQLServices = Get-SISQLService -ComputerName $ServerName -Internal
 
@@ -434,219 +434,220 @@ ForEach ($SQLServerRC in $SQLServers)
     #endregion
 
     #region Phase 2: SQL Instances, Availability Groups, and Databases Process
-    $Results = Get-SqlOpSQLInstance -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
+	IF (($ServerIsMonitored) -OR ($ClusterIsMonitored))
+	{
+		$Results = Get-SqlOpSQLInstance -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
 
-    switch ($Results)
-    {
-        $Global:Error_ObjectsNotFound
-        {
-            Write-StatusUpdate -Message "New Instance."
-            $InnerResults = Add-SQLOpSQLInstance -ServerInstance $SQLServerRC.ServerInstanceConnectionString `
-			                                     -SQLVersion $SQLVersion -SQLServer_Build $SQLServer_Build `
-												 -SQLEdition $SQLEdition -ServerType $ServerType `
-												 -EnvironmentType $EnvironmentType
-
-            switch ($InnerResults)
-            {
-                $Global:Error_Duplicate
-                {
-                    Write-StatusUpdate -Message "Failed to Add-SQLOpSQLInstance, duplicate object for [$($SQLServerRC.ServerInstance)]." -WriteToDB
-                    break;
-                }
-                $Global:Error_FailedToComplete
-                {
-                    $SQLInstanceAccessible = $false
-                    break;
-                }
-                default
-                {
-                    $InnerResults = Get-SqlOpSQLInstance -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
-                    $ServerInstanceIsMonitored = $InnerResults.IsMonitored
-                    $SQLInstanceID = $InnerResults.SQLInstanceID
-                    break;
-                }
-            }
-            break;
-        }
-        $Global:Error_FailedToComplete
-        {
-            $SQLInstanceAccessible = $false
-            break;
-        }
-        default
-        {
-		
-			Update-SQLOpSQLInstance -ServerInstance $SQLServerRC.ServerInstanceConnectionString `
-									-SQLVersion $SQLVersion -SQLServer_Build $SQLServer_Build `
-									-SQLEdition $SQLEdition -ServerType $ServerType `
-									-ServerEnviornment $EnvironmentType | Out-Null
-
-            Write-StatusUpdate -Message "Existing Instance."
-            $ServerInstanceIsMonitored = $Results.IsMonitored
-            $SQLInstanceID = $Results.SQLInstanceID
-            break;
-        }
-    }
-
-    # Currently IsInstanceAccessible means that it exists with in CMDB.
-    if (($ServerInstanceIsMonitored) -and ($SQLInstanceAccessible) -and ($IsServerAccessible))
-    {
-        Write-StatusUpdate -Message "Instance is monitored."
-
-        #Instance is monitored; before we collect the database information; we need to check for any
-        #existing AG configuration.  AG is only possible on SQL Server version 2012+.
-		if ($SQLServer_Major -ge 11)
+		switch ($Results)
 		{
-			#Request all the AG and their replica details for current instance.                   
-			$Results = Get-SIAvailabilityGroups -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
-
-			# If result set is empty this instance has no AG on it right now.
-			If ($Results -ne $Global:Error_ObjectsNotFound)
+			$Global:Error_ObjectsNotFound
 			{
-				Update-SQLOpAvailabilityGroup -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+				Write-StatusUpdate -Message "New Instance."
+				$InnerResults = Add-SQLOpSQLInstance -ServerInstance $SQLServerRC.ServerInstanceConnectionString `
+													-SQLVersion $SQLVersion -SQLServer_Build $SQLServer_Build `
+													-SQLEdition $SQLEdition -ServerType $ServerType `
+													-EnvironmentType $EnvironmentType
+
+				switch ($InnerResults)
+				{
+					$Global:Error_Duplicate
+					{
+						Write-StatusUpdate -Message "Failed to Add-SQLOpSQLInstance, duplicate object for [$($SQLServerRC.ServerInstance)]." -WriteToDB
+						break;
+					}
+					$Global:Error_FailedToComplete
+					{
+						$SQLInstanceAccessible = $false
+						break;
+					}
+					default
+					{
+						$InnerResults = Get-SqlOpSQLInstance -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
+						$ServerInstanceIsMonitored = $InnerResults.IsMonitored
+						break;
+					}
+				}
+				break;
+			}
+			$Global:Error_FailedToComplete
+			{
+				$SQLInstanceAccessible = $false
+				break;
+			}
+			default
+			{
+			
+				Update-SQLOpSQLInstance -ServerInstance $SQLServerRC.ServerInstanceConnectionString `
+										-SQLVersion $SQLVersion -SQLServer_Build $SQLServer_Build `
+										-SQLEdition $SQLEdition -ServerType $ServerType `
+										-ServerEnviornment $EnvironmentType | Out-Null
+
+				Write-StatusUpdate -Message "Existing Instance."
+				$ServerInstanceIsMonitored = $Results.IsMonitored
+				break;
 			}
 		}
 
-
-		Write-StatusUpdate -Message "Getting list of databases"
-
-		$Results = Get-SIDatabases -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal			
-
-		if ($Results)
+		# Currently IsInstanceAccessible means that it exists with in CMDB.
+		if (($ServerInstanceIsMonitored) -and ($SQLInstanceAccessible) -and ($IsServerAccessible))
 		{
-			Update-SQLOpDatabase -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+			Write-StatusUpdate -Message "Instance is monitored."
+
+			#Instance is monitored; before we collect the database information; we need to check for any
+			#existing AG configuration.  AG is only possible on SQL Server version 2012+.
+			if ($SQLServer_Major -ge 11)
+			{
+				#Request all the AG and their replica details for current instance.                   
+				$Results = Get-SIAvailabilityGroups -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
+
+				# If result set is empty this instance has no AG on it right now.
+				If ($Results -ne $Global:Error_ObjectsNotFound)
+				{
+					Update-SQLOpAvailabilityGroup -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+				}
+			}
+
+
+			Write-StatusUpdate -Message "Getting list of databases"
+
+			$Results = Get-SIDatabases -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal			
+
+			if ($Results)
+			{
+				Update-SQLOpDatabase -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+			}
+			else
+			{
+				Write-StatusUpdate -Message "No user databases found on [$($SQLServerRC.ServerInstance)]." -WriteToDB
+				$SQLInstanceAccessible = $false
+			}
+
+			Write-StatusUpdate -Message "Getting custom extended properties"
+
+			$Results = Get-SIExtendedProperties -ServerInstance $SQLServerRC.ServerInstanceConnectionString -CustomProperties
+
+			if ($Results)
+			{
+				Update-SQLOpExtendedProperties -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+			}
+
+			Write-StatusUpdate -Message "Collecting all server and database security information"
+			$Results = Get-SIServerRole -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
+			if ($Results)
+			{
+				Update-SQLOpServerRole -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+			}
+
+			$Results = Get-SIDatabaseRole -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
+			if ($Results)
+			{
+				Update-SQLOpDatabaseRole -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+			}
+
+			$Results = Get-SIServerPrincipalMembership -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
+			if ($Results)
+			{
+				Update-SQLOpServerPrincipalMembership -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+			}
+
+			$Results = Get-SIDatabasePrincipalMembership -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
+			if ($Results)
+			{
+				Update-SQLOpDatabasePrincipalMembership -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+			}
+
+			$Results = Get-SIServerPermission -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
+			if ($Results)
+			{
+				Update-SQLOpServerPermission -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+			}
+
+			$Results = Get-SIDatabasePermission -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
+			if ($Results)
+			{
+				Update-SQLOpDatabasePermission -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
+			}
+
+			if ($DCS_ErrorLogs)
+			{
+				# Get SQL Instance Error Logs.  Get the last collect date, then get only errors since last collection.
+				# record the errors in SQLOpsDB.  Then update all collection date time.
+
+				if ($DCS_ThrottleErrorLogCollection)
+				{
+
+					$LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString
+					$Last30Hours = (Get-Date).AddHours(-30)
+					$StartDataCollectionTime = [DateTime]$LastDataCollection.LastDateTimeCaptured
+
+					$StartProcessTime = Get-Date
+
+					if ($Last30Hours -ge $StartDataCollectionTime)
+					{
+						Write-StatusUpdate -Message "Skipping Error Logs for [$($SQLServerRC.ServerInstance)].  Skipped from '$StartDataCollectionTime' to '$Last30Hours'." -WriteToDB
+						$StartDataCollectionTime = $Last30Hours
+					}
+
+					$ThrottleTriggered = $true
+
+					While (($EndProcessTime - $StartProcessTime).Seconds -le $DCS_ThrottleLimit * 60)
+					{
+						# Cycle through error log one hour at a time.
+
+						$OneHourPlus = $StartDataCollectionTime.AddHours(1)
+						$ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -After $StartDataCollectionTime -Before $OneHourPlus -Internal
+						if ($ErrorLogs)
+						{
+							Update-SQLOpSQLErrorLog -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $ErrorLogs | Out-Null
+						}
+						Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString -DateTime $OneHourPlus | Out-Null 
+
+						$StartDataCollectionTime = $OneHourPlus
+						if ($StartDataCollectionTime.AddHours(1) -ge (Get-Date))
+						{
+							$ThrottleTriggered = $false
+							break
+						}
+						$EndProcessTime = Get-Date
+					}
+
+					if ($ThrottleTriggered)
+					{
+						Write-StatusUpdate -Message "Throttle Setting Triggered. Error logs for [$($SQLServerRC.ServerInstance)] did not finish.  Collection finished to [$StartDataCollectionTime]." -WriteToDB
+					}
+				}
+				else
+				{
+					$LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString
+					$ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -After $LastDataCollection.LastDateTimeCaptured -Internal
+					if ($ErrorLogs)
+					{
+						Update-SQLOpSQLErrorLog -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $ErrorLogs | Out-Null
+					}
+					Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString | Out-Null   
+				}
+			}
+
+			if ($DCS_SQLJobs)
+			{
+				# Get SQL Instance Error Logs.  Get the last collect date, then get only errors since last collection.
+				# record the errors in SQLOpsDB.  Then update all collection date time.
+
+				$LastDataCollection = Get-SQLOpSQLJobStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString
+				$SQLJobs = Get-SISQLJobs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -After $LastDataCollection.LastDateTimeCaptured -Internal
+				if ($SQLJobs)
+				{
+					Update-SQLOpSQLJobs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $SQLJobs | Out-Null
+				}
+				Update-SQLOpSQLJobStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString | Out-Null   
+			}
+				
 		}
-		else
+		elseif (!($ServerInstanceIsMonitored))
 		{
-			Write-StatusUpdate -Message "No user databases found on [$($SQLServerRC.ServerInstance)]." -WriteToDB
-			$SQLInstanceAccessible = $false
+			Write-StatusUpdate -Message "Instance is not monitored."
 		}
-
-		Write-StatusUpdate -Message "Getting custom extended properties"
-
-		$Results = Get-SIExtendedProperties -ServerInstance $SQLServerRC.ServerInstanceConnectionString -CustomProperties
-
-		if ($Results)
-		{
-			Update-SQLOpExtendedProperties -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
-		}
-
-		Write-StatusUpdate -Message "Collecting all server and database security information"
-		$Results = Get-SIServerRole -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
-		if ($Results)
-		{
-			Update-SQLOpServerRole -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
-		}
-
-		$Results = Get-SIDatabaseRole -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
-		if ($Results)
-		{
-			Update-SQLOpDatabaseRole -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
-		}
-
-		$Results = Get-SIServerPrincipalMembership -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
-		if ($Results)
-		{
-			Update-SQLOpServerPrincipalMembership -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
-		}
-
-		$Results = Get-SIDatabasePrincipalMembership -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
-		if ($Results)
-		{
-			Update-SQLOpDatabasePrincipalMembership -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
-		}
-
-		$Results = Get-SIServerPermission -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
-		if ($Results)
-		{
-			Update-SQLOpServerPermission -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
-		}
-
-		$Results = Get-SIDatabasePermission -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Internal
-		if ($Results)
-		{
-			Update-SQLOpDatabasePermission -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $Results | Out-Null
-		}
-
-        if ($DCS_ErrorLogs)
-        {
-            # Get SQL Instance Error Logs.  Get the last collect date, then get only errors since last collection.
-            # record the errors in SQLOpsDB.  Then update all collection date time.
-
-            if ($DCS_ThrottleErrorLogCollection)
-            {
-
-                $LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString
-                $Last30Hours = (Get-Date).AddHours(-30)
-                $StartDataCollectionTime = [DateTime]$LastDataCollection.LastDateTimeCaptured
-
-                $StartProcessTime = Get-Date
-
-                if ($Last30Hours -ge $StartDataCollectionTime)
-                {
-                    Write-StatusUpdate -Message "Skipping Error Logs for [$($SQLServerRC.ServerInstance)].  Skipped from '$StartDataCollectionTime' to '$Last30Hours'." -WriteToDB
-                    $StartDataCollectionTime = $Last30Hours
-                }
-
-                $ThrottleTriggered = $true
-
-                While (($EndProcessTime - $StartProcessTime).Seconds -le $DCS_ThrottleLimit * 60)
-                {
-                    # Cycle through error log one hour at a time.
-
-                    $OneHourPlus = $StartDataCollectionTime.AddHours(1)
-                    $ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -After $StartDataCollectionTime -Before $OneHourPlus -Internal
-                    if ($ErrorLogs)
-                    {
-                        Update-SQLOpSQLErrorLog -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $ErrorLogs | Out-Null
-                    }
-                    Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString -DateTime $OneHourPlus | Out-Null 
-
-                    $StartDataCollectionTime = $OneHourPlus
-                    if ($StartDataCollectionTime.AddHours(1) -ge (Get-Date))
-                    {
-                        $ThrottleTriggered = $false
-                        break
-                    }
-                    $EndProcessTime = Get-Date
-                }
-
-                if ($ThrottleTriggered)
-                {
-                    Write-StatusUpdate -Message "Throttle Setting Triggered. Error logs for [$($SQLServerRC.ServerInstance)] did not finish.  Collection finished to [$StartDataCollectionTime]." -WriteToDB
-                }
-            }
-            else
-            {
-                $LastDataCollection = Get-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString
-                $ErrorLogs = Get-SISQLErrorLogs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -After $LastDataCollection.LastDateTimeCaptured -Internal
-                if ($ErrorLogs)
-                {
-                    Update-SQLOpSQLErrorLog -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $ErrorLogs | Out-Null
-                }
-                Update-SQLOpSQLErrorLogStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString | Out-Null   
-            }
-        }
-
-        if ($DCS_SQLJobs)
-        {
-            # Get SQL Instance Error Logs.  Get the last collect date, then get only errors since last collection.
-            # record the errors in SQLOpsDB.  Then update all collection date time.
-
-            $LastDataCollection = Get-SQLOpSQLJobStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString
-            $SQLJobs = Get-SISQLJobs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -After $LastDataCollection.LastDateTimeCaptured -Internal
-            if ($SQLJobs)
-            {
-                Update-SQLOpSQLJobs -ServerInstance $SQLServerRC.ServerInstanceConnectionString -Data $SQLJobs | Out-Null
-            }
-            Update-SQLOpSQLJobStats -ServerInstance $SQLServerRC.ServerInstanceConnectionString | Out-Null   
-        }
-            
-    }
-    elseif (!($ServerInstanceIsMonitored))
-    {
-        Write-StatusUpdate -Message "Instance is not monitored."
-    }
+	}
 
 	#endregion Phase 2
 

@@ -104,6 +104,7 @@ function Update-SQLOpDatabasePermission
 							ON D.DatabaseName = DP.DatabaseName
 							AND D.SQLInstanceID = DP.SQLInstanceID
 				WHERE ProcessID = $ProcessID
+				  AND D.IsMonitored = 1
 				  AND DP.GranteeName IS NOT NULL) AS Source (SQLInstanceID, DatabaseID, GranteeID, GrantorID, ObjectType, ObjectName, Access, PermissionName)
 				ON (Target.DatabaseID = Source.DatabaseID AND 
 					Target.GranteeID = Source.GranteeID AND 
