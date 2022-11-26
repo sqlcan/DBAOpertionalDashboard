@@ -1,4 +1,0 @@
-* 2020-01-09 Notes
-* Look at moving all the setting expect server name and database names to the database.
-* These settings don't need to be in PowerShell.
-* Update the code to load the server name and database name from JSON file instead of having to update the GlobalSettings.psm1 file.

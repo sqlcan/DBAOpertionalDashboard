@@ -1,0 +1,21 @@
+Script Naming Standard
+- Execution Priority
+- Execute Or Ask "_Ask_" Tag.
+- Object Type/Priority Tag
+	-- C = Configuration/000
+	-- F = Function/200
+	-- T = Table/100
+	-- V = View/300
+	-- P = Procedure/400
+	-- O = Other/600
+	-- D = Data Generation/500
+- Followed by Schema Name - Optional with Other.
+- Followed by Object Name
+- Assumption I will never exceed 99 of each object type.
+
+- Schema Order (No functional need, but just organization)
+-- CMS, dbo, History, Policy, Trending, Security, Staging, Expired, Snapshot
+
+Example:
+
+000.O_Configure_CMSGroups_ASK_.sql
