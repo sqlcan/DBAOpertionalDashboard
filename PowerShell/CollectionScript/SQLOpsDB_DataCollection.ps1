@@ -446,7 +446,7 @@ ForEach ($SQLServerRC in $SQLServers)
 				$InnerResults = Add-SQLOpSQLInstance -ServerInstance $SQLServerRC.ServerInstanceConnectionString `
 													-SQLVersion $SQLVersion -SQLServer_Build $SQLServer_Build `
 													-SQLEdition $SQLEdition -ServerType $ServerType `
-													-EnvironmentType $EnvironmentType
+													-ServerEnviornment $EnvironmentType
 
 				switch ($InnerResults)
 				{

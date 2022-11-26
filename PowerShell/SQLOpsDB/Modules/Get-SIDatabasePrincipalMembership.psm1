@@ -24,6 +24,8 @@ Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2022.11.02 0.00.01 Initial Version
 2022.11.17 0.00.02 Updated logic for passive AG replica that are not readable.
+2022.11.25 0.00.04 Check for SQL version before checking for passive replica on AG.
+				   sp_MSforeachdb fixing the case to handle case sensetive servers.
 #>
 function Get-SIDatabasePrincipalMembership
 {
@@ -39,8 +41,8 @@ function Get-SIDatabasePrincipalMembership
     }
     
     $ModuleName = 'Get-SIDatabasePrincipalMembership'
-    $ModuleVersion = '0.00.02'
-    $ModuleLastUpdated = 'November 17, 2022'
+    $ModuleVersion = '0.00.04'
+    $ModuleLastUpdated = 'November 25, 2022'
 
     try
     {
@@ -54,11 +56,12 @@ function Get-SIDatabasePrincipalMembership
 			return
 		}
 		$ProcessID = $pid
+		$SQLProperties = Get-SQLOpSQLProperties -ServerInstance $ServerInstance
 
 		$TSQL = "CREATE TABLE #DatabaseMembership (DatabaseName VARCHAR(255), DatabaseRoleName VARCHAR(255), UserName VARCHAR(255), UserType VARCHAR(255), IsOrphaned bit)
 
 				INSERT INTO #DatabaseMembership (DatabaseName, DatabaseRoleName, UserName, UserType, IsOrphaned)
-				EXEC sp_MSForeachdb '
+				EXEC sp_MSforeachdb '
 				SELECT  ''?'' AS DatabaseName
 					, DR.name AS RoleName
 					, DP.name AS PrincipalName
@@ -86,7 +89,8 @@ function Get-SIDatabasePrincipalMembership
 				WHERE DP.type IN (''U'',''S'') 
 				AND DP.name NOT IN (''sys'',''INFORMATION_SCHEMA'')'
 				
-				INSERT INTO #DatabaseMembership (DatabaseName)
+				$(IF ($($SQLProperties.SQLBuild_Major) -ge 11)
+				{"INSERT INTO #DatabaseMembership (DatabaseName)
 				SELECT name AS DatabaseName
   				  FROM sys.databases d
   				  JOIN sys.dm_hadr_availability_replica_states rs
@@ -94,7 +98,7 @@ function Get-SIDatabasePrincipalMembership
  				 WHERE d.replica_id IS NOT NULL
    				   AND rs.role_desc = 'SECONDARY'
 				   AND d.name NOT IN (SELECT DISTINCT DatabaseName FROM #DatabaseMembership)
-				   AND d.name NOT IN ('master','model','msdb','SSISDB')		
+				   AND d.name NOT IN ('master','model','msdb','SSISDB')	"})					
 
 				  SELECT $(IF ($Internal) { "$ProcessID AS ProcessID, " })
 						 $(IF ($Internal) { "$($SQLInstanceObj.SQLInstanceID) AS InstanceID, " })

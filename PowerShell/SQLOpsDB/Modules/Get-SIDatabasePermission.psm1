@@ -22,6 +22,10 @@ Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2022.11.03 0.00.01 Initial Version
 2022.11.17 0.00.02 Updated logic for passive AG replica that are not readable.
+2022.11.25 0.00.05 Return error if SQL instance is not found.
+                   Check for SQL version before checking for passive replica on AG.
+				   Fixing the case sp_MSforeachdb procedure call to handle case
+				    senstive.
 #>
 function Get-SIDatabasePermission
 {
@@ -37,15 +41,23 @@ function Get-SIDatabasePermission
     }
     
     $ModuleName = 'Get-SIDatabasePermission'
-    $ModuleVersion = '0.00.02'
-    $ModuleLastUpdated = 'November 17, 2022'
+    $ModuleVersion = '0.00.05'
+    $ModuleLastUpdated = 'November 25, 2022'
 
     try
     {
         Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
 		$SQLInstanceObj = Get-SQLOpSQLInstance -ServerInstance $ServerInstance -Internal
+		IF ($SQLInstanceObj -eq $Global:Error_ObjectsNotFound)
+		{
+			Write-StatusUpdate "Failed to find SQL Instance [$ServerInstance] in SQLOpsDB." -WriteToDB
+			Write-Output $Global:Error_ObjectsNotFound
+			return
+		}
 		$ProcessID = $pid
+
+		$SQLProperties = Get-SQLOpSQLProperties -ServerInstance $ServerInstance
 
 		$TSQL = "CREATE TABLE #DatabasePermissions (DatabaseName VARCHAR(255), GranteeName VARCHAR(255),
                                    GrantorName VARCHAR(255), GranteeType VARCHAR(50), GrantorType VARCHAR(50),
@@ -53,7 +65,7 @@ function Get-SIDatabasePermission
 								   PermissionName VARCHAR(255))
 
 				INSERT INTO #DatabasePermissions
-				EXEC sp_msForeachDB '
+				EXEC sp_MSforeachdb '
 				SELECT ''?'' AS DatabaseName,
 						DP.name AS GranteeName,
 						DGP.name AS GrantorName,
@@ -85,7 +97,8 @@ function Get-SIDatabasePermission
 									''UtilityIMRReader'',''TargetServersRole'',''SQLAgentUserRole'',''dc_operator'',''dc_proxy'',''dc_admin'',''ServerGroupReaderRole'',
 									''db_ssisadmin'',''db_ssisltduser'',''db_ssisoperator'',''ServerGroupAdministratorRole'',''DatabaseMailUserRole'',''RSExecRole'')'
 
-				INSERT INTO #DatabasePermissions (DatabaseName)
+				$(IF ($($SQLProperties.SQLBuild_Major) -ge 11)
+				{"INSERT INTO #DatabasePermissions (DatabaseName)
 				SELECT name AS DatabaseName
   				  FROM sys.databases d
   				  JOIN sys.dm_hadr_availability_replica_states rs
@@ -93,7 +106,7 @@ function Get-SIDatabasePermission
  				 WHERE d.replica_id IS NOT NULL
    				   AND rs.role_desc = 'SECONDARY'
 				   AND d.name NOT IN (SELECT DISTINCT DatabaseName FROM #DatabasePermissions)
-				   AND d.name NOT IN ('master','model','msdb','SSISDB')
+				   AND d.name NOT IN ('master','model','msdb','SSISDB')"})
 
 				SELECT $(IF ($Internal) { "$ProcessID AS ProcessID, " })
 				$(IF ($Internal) { "$($SQLInstanceObj.SQLInstanceID) AS InstanceID, " })

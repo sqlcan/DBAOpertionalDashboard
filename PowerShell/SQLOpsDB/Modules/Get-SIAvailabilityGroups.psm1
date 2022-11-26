@@ -33,6 +33,7 @@ Date       Version Comments
 2022.10.13 0.00.04 Added internal switch to allow me to return SQL Instance ID
                    when updating the AG in SQLOpsDB.
 2022.10.29 0.00.05 Refactored code for correctness.
+2022.11.25 0.00.06 Fixing cases for aliase for case sensetive servers.
 #>
 function Get-SIAvailabilityGroups
 {
@@ -50,8 +51,8 @@ function Get-SIAvailabilityGroups
     }
     
     $ModuleName = 'Get-SIAvailabilityGroups'
-    $ModuleVersion = '0.00.05'
-    $ModuleLastUpdated = 'October 29, 2022'
+    $ModuleVersion = '0.00.06'
+    $ModuleLastUpdated = 'November 25, 2022'
 
     try
     {
@@ -89,10 +90,10 @@ function Get-SIAvailabilityGroups
 					ELSE
 						'mssqlserver'
 					END AS InstanceName,
-					CASE WHEN (rs.role_desc IS NULL) THEN 'PRIMARY' ELSE rs.role_desc END AS ReplicaRole
+					CASE WHEN (RS.role_desc IS NULL) THEN 'PRIMARY' ELSE RS.role_desc END AS ReplicaRole
 				FROM CTE C
-				LEFT JOIN sys.dm_hadr_availability_replica_states rs
-					ON c.ReplicaID = rs.replica_id"
+				LEFT JOIN sys.dm_hadr_availability_replica_states RS
+					ON C.ReplicaID = RS.replica_id"
 
 		Write-Debug $TSQL
 

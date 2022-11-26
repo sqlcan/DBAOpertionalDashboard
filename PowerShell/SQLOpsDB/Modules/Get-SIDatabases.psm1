@@ -32,7 +32,12 @@ Date       Version Comments
                     from collection list.  In security collection, it is very
 					constrainted on data collected.  Therefore various 
 					collections fail because of these DBs. Will revisit these
-					DB in the futur.
+					DB in the future.
+2022.11.25 0.00.05 Changed call from Get-SISQLProperties to Get-SQLOpSQLPropties
+                    both command-let return same information however, first returns
+					string and second returns integer.
+2022.11.25 0.00.06 Fixing the case for sp_MSforeachdb to handle case senstive 
+                    servers.
 #>
 function Get-SIDatabases
 {
@@ -48,14 +53,14 @@ function Get-SIDatabases
     }
     
     $ModuleName = 'Get-SIDatabases'
-    $ModuleVersion = '0.00.04'
-    $ModuleLastUpdated = 'November 3, 2022'
+    $ModuleVersion = '0.00.06'
+    $ModuleLastUpdated = 'November 25, 2022'
 
     try
     {
         Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
-		$SQLProperties = Get-SISQLProperties -ServerInstance $ServerInstance
+		$SQLProperties = Get-SQLOpSQLProperties -ServerInstance $ServerInstance
 		$SQLServer_Major = $SQLProperties['SQLBuild_Major']
 		$SQLInstanceObj = Get-SQLOpSQLInstance -ServerInstance $ServerInstance -Internal
 		$ProcessID = $pid
@@ -66,7 +71,7 @@ function Get-SIDatabases
 			$TSQL = "CREATE TABLE #DBApps (DatabaseID INT, ApplicationName VARCHAR(255))
 
 					 INSERT INTO #DBApps (DatabaseID, ApplicationName)
-					 EXEC sp_msforeachdb 'select db_id(''?'') as DatabaseID, CAST(value AS VARCHAR(255)) AS ApplicationName from [?].sys.extended_properties WHERE class_desc = ''DATABASE'' AND name = ''ApplicationName''';
+					 EXEC sp_MSforeachdb 'select db_id(''?'') as DatabaseID, CAST(value AS VARCHAR(255)) AS ApplicationName from [?].sys.extended_properties WHERE class_desc = ''DATABASE'' AND name = ''ApplicationName''';
 
 					  WITH DBDetails
 							AS (SELECT   DB_NAME(D.database_id) AS DatabaseName
@@ -97,7 +102,7 @@ function Get-SIDatabases
 			$TSQL = "CREATE TABLE #DBApps (DatabaseID INT, ApplicationName VARCHAR(255))
 
 					 INSERT INTO #DBApps (DatabaseID, ApplicationName)
-					 EXEC sp_msforeachdb 'select db_id(''?'') as DatabaseID, CAST(value AS VARCHAR(255)) AS ApplicationName from [?].sys.extended_properties WHERE class_desc = ''DATABASE'' AND name = ''ApplicationName''';
+					 EXEC sp_MSforeachdb 'select db_id(''?'') as DatabaseID, CAST(value AS VARCHAR(255)) AS ApplicationName from [?].sys.extended_properties WHERE class_desc = ''DATABASE'' AND name = ''ApplicationName''';
 			
 						WITH DBDetails
 							AS (SELECT   ISNULL(AG.group_id,CAST('00000000-0000-0000-0000-000000000000' AS uniqueidentifier)) AS AGGuid

@@ -27,6 +27,8 @@ Get-SISQLProperties -ServerInstance ContosSQL
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2020.03.12 0.00.01 Initial Version
+2022.11.25 0.00.03 Changed build information to integer to match Get-SQLOpSQLPropeties
+                   Added SQL 2022 build support.
 #>
 function Get-SISQLProperties
 {
@@ -42,8 +44,8 @@ function Get-SISQLProperties
     }
     
     $ModuleName = 'Get-SISQLProperties'
-    $ModuleVersion = '0.00.01'
-    $ModuleLastUpdated = 'March 11, 2020'
+    $ModuleVersion = '0.00.03'
+    $ModuleLastUpdated = 'November 25, 2022'
 
     try
     {
@@ -70,9 +72,9 @@ function Get-SISQLProperties
         #Build the SQL Server Version and Windows Version Details
         $TokenizedSQLBuild = $($Results.SQLBuild).Split('.')
 
-        $HashTable.Add('SQLBuild_Major',$TokenizedSQLBuild[0])
-        $HashTable.Add('SQLBuild_Minor',$TokenizedSQLBuild[1])
-        $HashTable.Add('SQLBuild_Build',$TokenizedSQLBuild[2])
+        $HashTable.Add('SQLBuild_Major',[int]$TokenizedSQLBuild[0])
+        $HashTable.Add('SQLBuild_Minor',[int]$TokenizedSQLBuild[1])
+        $HashTable.Add('SQLBuild_Build',[int]$TokenizedSQLBuild[2])
 
         $SQLVersion = 'Microsoft SQL Server'
 
@@ -120,6 +122,10 @@ function Get-SISQLProperties
             15
             {
                 $SQLVersion += ' 2019'
+            }
+			16
+            {
+                $SQLVersion += ' 2022'
             }
         }
 

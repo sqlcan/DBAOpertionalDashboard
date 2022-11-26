@@ -21,6 +21,7 @@ Get-SIServerPrincipalMembership -ServerInstance ContosSQL
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2022.11.02 0.00.01 Initial Version
+2022.11.25 0.00.02 Fixing cases with aliase names for case sensetive.
 #>
 function Get-SIServerPrincipalMembership
 {
@@ -36,8 +37,8 @@ function Get-SIServerPrincipalMembership
     }
     
     $ModuleName = 'Get-SIServerPrincipalMembership'
-    $ModuleVersion = '0.00.01'
-    $ModuleLastUpdated = 'October 31, 2022'
+    $ModuleVersion = '0.00.02'
+    $ModuleLastUpdated = 'November 25, 2022'
 
     try
     {
@@ -51,14 +52,14 @@ function Get-SIServerPrincipalMembership
 					FROM sys.server_principals 
 					WHERE type <> 'R'
 					UNION ALL
-					SELECT SR.name AS RoleName, SP.name AS LoginName, sp.type_desc AS LoginType
+					SELECT SR.name AS RoleName, SP.name AS LoginName, SP.type_desc AS LoginType
 						FROM sys.server_principals SR
 						JOIN sys.server_role_members SRM
 						ON SR.principal_id = SRM.role_principal_id                                   
 						JOIN sys.server_principals SP
 						ON SP.principal_id = SRM.member_principal_id                                 
 						WHERE SR.type = 'R'                                                           
-						AND sp.principal_id <> 1)
+						AND SP.principal_id <> 1)
 					SELECT $(IF ($Internal) { "$ProcessID AS ProcessID, " })
 					       $(IF ($Internal) { "$($SQLInstanceObj.SQLInstanceID) AS InstanceID, " })
 					       '$ServerInstance' AS ServerInstance,

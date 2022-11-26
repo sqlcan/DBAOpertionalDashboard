@@ -38,6 +38,7 @@ Date       Version Comments
                    Updated function name.
                    Added alias for parameter ComputerName.
                    Added ability to return full server list.
+2022.11.25 2.00.02 Fixed bugs with incorrect command-let names.
 #>
 
 function Update-SQLOpSQLClusterNode
@@ -59,14 +60,14 @@ function Update-SQLOpSQLClusterNode
 	}
 
 	$ModuleName = 'Update-SQLOpSQLClusterNode'
-	$ModuleVersion = '2.00.00'
-	$ModuleLastUpdated = 'March 15, 2020'
+	$ModuleVersion = '2.00.02'
+	$ModuleLastUpdated = 'November 25, 2022'
 
 	try
 	{
 		Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
-		$ClusterObj = Get-SQLOpCluster -ClusterName $Name -Internal
+		$ClusterObj = Get-SQLOpSQLCluster -ClusterName $Name -Internal
 		if ($ClusterObj -eq $Global:Error_ObjectsNotFound)
 		{
 			Write-Output $Global:Error_ObjectsNotFound
@@ -90,7 +91,7 @@ function Update-SQLOpSQLClusterNode
 			return
 		}
 
-		$ClusNodeObj = Get-SQLOpClusterNode -Name $Name -NodeName $NodeName
+		$ClusNodeObj = Get-SQLOpSQLClusterNode -Name $Name -NodeName $NodeName
 		if ($ClusNodeObj -eq $Global:Error_FailedToComplete)
 		{
 			Write-Output $Global:Error_FailedToComplete

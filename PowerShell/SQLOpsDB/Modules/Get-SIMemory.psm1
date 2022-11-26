@@ -25,6 +25,7 @@ Return the current processor details.
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2022.10.31 0.00.01 Initial Version
+2022.11.25 0.00.02 Handling multiple page files.
 #>
 function Get-SIMemory
 {
@@ -60,7 +61,12 @@ function Get-SIMemory
         $MemoryObj.PageFile_MB = 0
 
         $MemoryObj.Memory_MB = ((Get-CimInstance -ClassName Win32_ComputerSystem -ComputerName $ComputerName).TotalPhysicalMemory)/1MB
-		$MemoryObj.PageFile_MB = ((Get-CimInstance -ClassName Win32_PageFileUsage -ComputerName $ComputerName).AllocatedBaseSize)
+
+		$PageFiles = Get-CimInstance -ClassName Win32_PageFileUsage -ComputerName $ComputerName
+		ForEach ($PageFile in $PageFiles)
+		{
+			$MemoryObj.PageFile_MB += $PageFile.AllocatedBaseSize
+		}
 		
     }
     catch [System.Runtime.InteropServices.COMException]

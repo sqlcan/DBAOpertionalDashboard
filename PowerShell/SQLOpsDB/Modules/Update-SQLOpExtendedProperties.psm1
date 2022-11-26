@@ -24,6 +24,7 @@ Update-SQLOpExtendedProperties -ServerInstance ContosoSQL -Data $Data
 Date        Version Comments
 ----------  ------- ------------------------------------------------------------------
 2022.10.31  0.00.01 Initial Version.
+2022.10.24  0.00.02 Removing development code.
 #>
 function Update-SQLOpExtendedProperties
 {
@@ -40,8 +41,8 @@ function Update-SQLOpExtendedProperties
     }
     
     $ModuleName = 'Update-SQLOpExtendedProperties'
-    $ModuleVersion = '0.00.01'
-    $ModuleLastUpdated = 'October 31, 2022'
+    $ModuleVersion = '0.00.02'
+    $ModuleLastUpdated = 'November 24, 2022'
    
     try
     {
@@ -69,7 +70,6 @@ function Update-SQLOpExtendedProperties
 		ForEach ($Key IN $Data.Keys)
 		{
 			$TSQL = "INSERT INTO Staging.ExtendedProperties VALUES ($ProcessID,$($ServerInstanceObj.SQLInstanceID),'$Key','$($Data[$Key])')"
-			Write-Host $TSQL
 			Invoke-Sqlcmd -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
 			              -Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `
 			              -Query $TSQL
