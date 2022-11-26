@@ -29,6 +29,8 @@ Minor updated made:
 
 param([string]$CentralManagementServer=$(Throw `
 "Parameter missing: -CentralManagementServer SQLCMS"),
+[string]$HistoryDatabase=$(Throw `
+"Parameter missing: -HistoryDatabase SQLOpsDB"),
 [string]$ConfigurationGroup=$(Throw `
 "Parameter missing: -ConfigurationGroup ConfigGroup"),`
 [string]$PolicyCategoryFilter=$(Throw "Parameter missing: `
@@ -48,7 +50,6 @@ Import-Module SqlServer -DisableNameChecking -MinimumVersion "21.0.171.78"
 # Declare variables to define the central warehouse
 # in which to write the output, store the policies
 
-$HistoryDatabase = "SQLOpsDB"
 # Define the location to write the results of the policy evaluation
 $ResultDir = Join-Path $PSScriptRoot ".\Logs\"
 # End of variables
