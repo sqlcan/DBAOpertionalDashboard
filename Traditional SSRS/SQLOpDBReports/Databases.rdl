@@ -25,6 +25,9 @@
           <QueryParameter Name="@SQLInstanceID">
             <Value>=Parameters!SQLInstanceID.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@RptCaller">
+            <Value>=Parameters!RptCaller.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandText>WITH DatabaseSizeLastCollection AS (
   SELECT DatabaseID,
@@ -77,6 +80,7 @@ WHERE ((D.DatabaseState = @DatabaseState) OR (@DatabaseState = 'ALL'))
    AND ((SV.SQLVersionShortName = @SQLVersion) OR (@SQLVersion = 'ALL'))
    AND ((SI.SQLInstanceEnviornment = @SQLInstanceEnviornment) OR (@SQLInstanceEnviornment = 'ALL'))
    AND ((D.SQLInstanceID = @SQLInstanceID) OR (@SQLInstanceID = -1))
+AND ((@RptCaller IS NULL) OR ((@RptCaller = 'SQLOpDB') AND (D.LastUpdated &gt;= CAST(DATEADD(DAY,-1,GETDATE()) AS DATE))))
 AND  NOT EXISTS (SELECT *
                      FROM dbo.Databases_Exclusions DE
                     WHERE D.DatabaseID = DE.DatabaseID
@@ -1350,6 +1354,17 @@ IIF(Parameters!SQLInstanceEnviornment.Value&lt;&gt;"ALL"," for " &amp; Parameter
       <Prompt>SQLInstance ID</Prompt>
       <Hidden>true</Hidden>
     </ReportParameter>
+    <ReportParameter Name="RptCaller">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <DefaultValue>
+        <Values>
+          <Value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true" />
+        </Values>
+      </DefaultValue>
+      <Prompt>RptCaller</Prompt>
+      <Hidden>true</Hidden>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
@@ -1375,6 +1390,11 @@ IIF(Parameters!SQLInstanceEnviornment.Value&lt;&gt;"ALL"," for " &amp; Parameter
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>2</RowIndex>
           <ParameterName>SQLInstanceID</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>2</RowIndex>
+          <ParameterName>RptCaller</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>

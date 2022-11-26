@@ -159,7 +159,7 @@ OR @Status = 'Both')</CommandText>
         <CommandText>SELECT [VolumeOfChangeCategory]
       ,[SortKey]
       ,[TotalInstances]
-  FROM [SQLOpsDB].[Snapshot].[DiskVolumes]</CommandText>
+  FROM [Snapshot].[DiskVolumes]</CommandText>
       </Query>
       <Fields>
         <Field Name="VolumeOfChangeCategory">
@@ -265,53 +265,6 @@ OR @Status = 'Both')</CommandText>
     <ReportSection>
       <Body>
         <ReportItems>
-          <Textbox Name="Textbox6">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>SQL Server Opertional Dashboard</Value>
-                    <Style>
-                      <FontWeight>Bold</FontWeight>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style>
-                  <TextAlign>Left</TextAlign>
-                </Style>
-              </Paragraph>
-            </Paragraphs>
-            <rd:DefaultName>Textbox5</rd:DefaultName>
-            <Top>0.025in</Top>
-            <Left>0.02777in</Left>
-            <Height>0.22555in</Height>
-            <Width>11.15886in</Width>
-            <Style>
-              <Border>
-                <Style>Dashed</Style>
-              </Border>
-              <TopBorder>
-                <Style>None</Style>
-              </TopBorder>
-              <BottomBorder>
-                <Color>Black</Color>
-                <Style>Solid</Style>
-                <Width>1pt</Width>
-              </BottomBorder>
-              <LeftBorder>
-                <Style>None</Style>
-              </LeftBorder>
-              <RightBorder>
-                <Style>None</Style>
-              </RightBorder>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
           <Chart Name="ServicesStatus">
             <ChartCategoryHierarchy>
               <ChartMembers>
@@ -712,11 +665,10 @@ OR @Status = 'Both')</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>SQLServicesOverview</DataSetName>
-            <Top>0.31857in</Top>
-            <Left>0.10277in</Left>
+            <Top>0.08107in</Top>
+            <Left>0.11319in</Left>
             <Height>1.80066in</Height>
             <Width>2.38542in</Width>
-            <ZIndex>1</ZIndex>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -1123,11 +1075,11 @@ OR @Status = 'Both')</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>SQLErrorsOverview</DataSetName>
-            <Top>0.31857in</Top>
-            <Left>2.57291in</Left>
+            <Top>0.08107in</Top>
+            <Left>2.58333in</Left>
             <Height>1.80066in</Height>
             <Width>2.38542in</Width>
-            <ZIndex>2</ZIndex>
+            <ZIndex>1</ZIndex>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -1181,6 +1133,9 @@ OR @Status = 'Both')</CommandText>
                                 <Parameters>
                                   <Parameter Name="DatabaseState">
                                     <Value>=Fields!DatabaseState.Value</Value>
+                                  </Parameter>
+                                  <Parameter Name="RptCaller">
+                                    <Value>="SQLOpDB"</Value>
                                   </Parameter>
                                 </Parameters>
                               </Drillthrough>
@@ -1514,11 +1469,11 @@ OR @Status = 'Both')</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DatabaseOverview</DataSetName>
-            <Top>0.31999in</Top>
-            <Left>5.04444in</Left>
+            <Top>0.08249in</Top>
+            <Left>5.05486in</Left>
             <Height>1.80066in</Height>
             <Width>2.38542in</Width>
-            <ZIndex>3</ZIndex>
+            <ZIndex>2</ZIndex>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -1924,11 +1879,11 @@ OR @Status = 'Both')</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>SQLConfigurationHealthOverview</DataSetName>
-            <Top>2.21368in</Top>
-            <Left>0.10277in</Left>
+            <Top>1.97618in</Top>
+            <Left>0.11319in</Left>
             <Height>1.80066in</Height>
             <Width>2.38542in</Width>
-            <ZIndex>4</ZIndex>
+            <ZIndex>3</ZIndex>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -2317,11 +2272,11 @@ OR @Status = 'Both')</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>SQLJobsHistoryOverview</DataSetName>
-            <Top>2.21368in</Top>
+            <Top>1.97618in</Top>
             <Left>2.57291in</Left>
             <Height>1.80066in</Height>
             <Width>2.38542in</Width>
-            <ZIndex>5</ZIndex>
+            <ZIndex>4</ZIndex>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -2710,11 +2665,11 @@ OR @Status = 'Both')</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>InstanceDBSizeChangeOverview</DataSetName>
-            <Top>2.21368in</Top>
+            <Top>1.97618in</Top>
             <Left>5.04444in</Left>
             <Height>1.80066in</Height>
             <Width>2.38542in</Width>
-            <ZIndex>6</ZIndex>
+            <ZIndex>5</ZIndex>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -3292,11 +3247,11 @@ OR @Status = 'Both')</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>TopOffendingDiskOverview</DataSetName>
-            <Top>4.08378in</Top>
+            <Top>3.88378in</Top>
             <Left>0.10277in</Left>
             <Height>0.92708in</Height>
             <Width>7.32709in</Width>
-            <ZIndex>7</ZIndex>
+            <ZIndex>6</ZIndex>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -3935,11 +3890,11 @@ OR @Status = 'Both')</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DatabaseOverview</DataSetName>
-            <Top>0.31999in</Top>
-            <Left>7.5243in</Left>
+            <Top>0.08249in</Top>
+            <Left>7.53472in</Left>
             <Height>3.25in</Height>
             <Width>3.66233in</Width>
-            <ZIndex>8</ZIndex>
+            <ZIndex>7</ZIndex>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -3948,7 +3903,7 @@ OR @Status = 'Both')</CommandText>
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>5.01086in</Height>
+        <Height>4.90669in</Height>
         <Style>
           <Border>
             <Style>None</Style>
@@ -3984,11 +3939,9 @@ OR @Status = 'Both')</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>SQL Server Health State</Value>
+                      <Value>SQL Server Opertional Dashboard</Value>
                       <Style>
-                        <FontSize>12pt</FontSize>
                         <FontWeight>Bold</FontWeight>
-                        <Color>White</Color>
                       </Style>
                     </TextRun>
                   </TextRuns>

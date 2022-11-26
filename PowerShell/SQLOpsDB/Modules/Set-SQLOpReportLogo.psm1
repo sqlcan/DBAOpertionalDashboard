@@ -29,6 +29,7 @@ Set-SQLOpReportLogo -FilePath C:\Temp\SQLCanadaLogo.jpeg -FileType png
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2022.11.17 0.00.01 Initial version.
+2022.11.23 0.00.02 Fixed small bug as part of deployment testing.
 #>
 function Set-SQLOpReportLogo
 {
@@ -46,8 +47,8 @@ function Set-SQLOpReportLogo
     }
 
     $ModuleName = 'Set-SQLOpReportLogo'
-    $ModuleVersion = '0.00.01'
-    $ModuleLastUpdated = 'November 18, 2022'
+    $ModuleVersion = '0.00.02'
+    $ModuleLastUpdated = 'November 23, 2022'
 
     try
     {
@@ -63,7 +64,7 @@ function Set-SQLOpReportLogo
 		IF ($Results.RwCount -eq 0)
 		{
 			$TSQL = "INSERT INTO Reporting.ReportLogo (LogoFileName, LogoFileType, LogoFile)
-			            SELECT '$FileName', '$FileType', (SELECT * FROM OPENROWSET(BULK 'c:\temp\SQLCanadaLogo.png', SINGLE_BLOB) AS ReadFile) LogFile"
+			            SELECT '$FileName', '$FileType', (SELECT * FROM OPENROWSET(BULK '$FilePath', SINGLE_BLOB) AS ReadFile) LogFile"
 		}
 		else
 		{

@@ -1904,7 +1904,7 @@ ORDER BY  D.Environment,SV.SQLVersion, D.YearMonth</CommandText>
                                 <TextRun>
                                   <Value>=Sum(Fields!DatabaseTotalSize_mb.Value)/1024</Value>
                                   <Style>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0;(#,0)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -2339,7 +2339,7 @@ ORDER BY  D.Environment,SV.SQLVersion, D.YearMonth</CommandText>
                                 <TextRun>
                                   <Value>=Sum(Fields!DatabaseTotalSize_mb.Value)/1024</Value>
                                   <Style>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0;(#,0)</Format>
                                     <Color>White</Color>
                                   </Style>
                                 </TextRun>

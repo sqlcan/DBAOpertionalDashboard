@@ -253,41 +253,48 @@ LEFT JOIN dbo.SQLVersions SV
         </Field>
       </Fields>
     </DataSet>
-    <DataSet Name="gClusterSummary">
+    <DataSet Name="gInstanceTypeSummary">
       <Query>
         <DataSourceName>dsMain</DataSourceName>
-        <CommandText>WITH CTE AS (
-SELECT DISTINCT SQLNodeID, SQLClusterID
-  FROM dbo.SQLClusterNodes
- WHERE LastUpdated &gt;= DATEADD(DAY,-1,GETDATE())),
- CTE2 AS (
-SELECT SQLClusterID, SQLNodeID, ROW_NUMBER() OVER (PARTITION BY SQLClusterID ORDER BY SQLNodeID) AS RowNum
-  FROM CTE)
-SELECT OS.OperatingSystemShortName AS OSName,
-       SC.SQLClusterName,
-        S.ServerName
-  FROM CTE2
-  JOIN dbo.Servers S
-    ON SQLNodeID = S.ServerID
-  JOIN dbo.OperatingSystems OS
-    ON S.OperatingSystemID = OS.OperatingSystemID
-  JOIN dbo.SQLClusters SC
-    ON CTE2.SQLClusterID = SC.SQLClusterID
- WHERE RowNum = 1
-</CommandText>
+        <CommandText>SELECT SI.SQLInstanceType, COUNT(*) AS SQLInstanceCount
+  FROM dbo.SQLClusters SC
+  JOIN dbo.SQLInstances SI
+    ON SC.SQLClusterID = SI.SQLClusterID
+ WHERE SI.SQLInstanceType = 'Microsoft Clustering'
+    OR SI.SQLInstanceType = 'Veritas Clustering'
+GROUP BY SI.SQLInstanceType
+
+UNION ALL
+
+SELECT 'Microsoft Clustering', 0
+
+UNION ALL
+
+SELECT 'Veritas Clustering', 0 
+
+UNION ALL
+
+SELECT 'AlwaysOn Availiability Group', COUNT(DISTINCT SI.SQLInstanceID) AS ObjCount
+  FROM dbo.SQLInstances SI
+  JOIN dbo.AGInstances AGI
+   ON SI.SQLInstanceID=AGi.SQLInstanceID
+
+UNION ALL 
+
+SELECT 'Stand Alone', COUNT(*)
+  FROM dbo.SQLInstances SI
+ WHERE SI.SQLInstanceType &lt;&gt; 'Microsoft Clustering'
+   AND SI.SQLInstanceType &lt;&gt; 'Veritas Clustering'
+   AND SI.SQLInstanceID NOT IN (SELECT SQLInstanceID FROM dbo.AGInstances)</CommandText>
       </Query>
       <Fields>
-        <Field Name="OSName">
-          <DataField>OSName</DataField>
+        <Field Name="SQLInstanceType">
+          <DataField>SQLInstanceType</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="SQLClusterName">
-          <DataField>SQLClusterName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="ServerName">
-          <DataField>ServerName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+        <Field Name="SQLInstanceCount">
+          <DataField>SQLInstanceCount</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -399,6 +406,9 @@ SELECT OS.OperatingSystemShortName AS OSName,
                       <Style />
                     </ChartDataLabel>
                   </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>=Fields!SQLInstanceEnviornment.Value &amp; "(" &amp; Count(Fields!SQLVersion.Value) &amp; ")"</LegendText>
+                  </ChartItemInLegend>
                   <ValueAxisName>Primary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
                   <ChartSmartLabel>
@@ -1112,6 +1122,9 @@ SELECT OS.OperatingSystemShortName AS OSName,
                       <Style />
                     </ChartDataLabel>
                   </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>=Fields!SQLInstanceEnviornment.Value &amp; " (" &amp; SUM(Fields!DBCount.Value) &amp; ")"</LegendText>
+                  </ChartItemInLegend>
                   <ValueAxisName>Primary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
                   <ChartSmartLabel>
@@ -1439,6 +1452,9 @@ SELECT OS.OperatingSystemShortName AS OSName,
                       <Style />
                     </ChartDataLabel>
                   </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>=Fields!SQLInstanceEnviornment.Value &amp; " (" &amp; FormatNumber(SUM(Fields!DBSize_tb.Value),0) &amp; ")"</LegendText>
+                  </ChartItemInLegend>
                   <ValueAxisName>Primary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
                   <ChartSmartLabel>
@@ -1965,22 +1981,22 @@ SELECT OS.OperatingSystemShortName AS OSName,
                 <ChartMember>
                   <Group Name="Chart5_CategoryGroup">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!OSName.Value</GroupExpression>
+                      <GroupExpression>=Fields!SQLInstanceType.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!OSName.Value</Value>
+                      <Value>=Fields!SQLInstanceType.Value</Value>
                     </SortExpression>
                   </SortExpressions>
-                  <Label>=Fields!OSName.Value</Label>
+                  <Label>=Fields!SQLInstanceType.Value</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartCategoryHierarchy>
             <ChartSeriesHierarchy>
               <ChartMembers>
                 <ChartMember>
-                  <Label>SQLCluster Name</Label>
+                  <Label>SQLInstance Count</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
@@ -1990,7 +2006,7 @@ SELECT OS.OperatingSystemShortName AS OSName,
                   <ChartDataPoints>
                     <ChartDataPoint>
                       <ChartDataPointValues>
-                        <Y>=Count(Fields!SQLClusterName.Value)</Y>
+                        <Y>=Sum(Fields!SQLInstanceCount.Value)</Y>
                       </ChartDataPointValues>
                       <ChartDataLabel>
                         <Style />
@@ -2185,7 +2201,7 @@ SELECT OS.OperatingSystemShortName AS OSName,
             </ChartAreas>
             <ChartTitles>
               <ChartTitle Name="Title1">
-                <Caption>SQL Clusters Overview</Caption>
+                <Caption>SQL Instance Deployment Topologies</Caption>
                 <Style>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontWeight>Bold</FontWeight>
@@ -2211,7 +2227,7 @@ SELECT OS.OperatingSystemShortName AS OSName,
                 <VerticalAlign>Top</VerticalAlign>
               </Style>
             </ChartNoDataMessage>
-            <DataSetName>gClusterSummary</DataSetName>
+            <DataSetName>gInstanceTypeSummary</DataSetName>
             <Top>0.04167in</Top>
             <Left>7.3153in</Left>
             <Height>2.70099in</Height>

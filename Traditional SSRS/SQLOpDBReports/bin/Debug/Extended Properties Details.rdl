@@ -105,6 +105,9 @@ AND ((@SQLInstanceID IS NULL) OR (SI.SQLInstanceID = @SQLInstanceID))</CommandTe
                       <CellContents>
                         <Textbox Name="Textbox3">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!ExtendedPropertyName.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -137,6 +140,9 @@ AND ((@SQLInstanceID IS NULL) OR (SI.SQLInstanceID = @SQLInstanceID))</CommandTe
                       <CellContents>
                         <Textbox Name="Textbox6">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!ExtendedPropertyValue.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -163,6 +169,7 @@ AND ((@SQLInstanceID IS NULL) OR (SI.SQLInstanceID = @SQLInstanceID))</CommandTe
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -390,6 +397,9 @@ AND ((@SQLInstanceID IS NULL) OR (SI.SQLInstanceID = @SQLInstanceID))</CommandTe
                     <CellContents>
                       <Textbox Name="Textbox14">
                         <CanGrow>true</CanGrow>
+                        <UserSort>
+                          <SortExpression>=Fields!ServerInstance.Value</SortExpression>
+                        </UserSort>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
                           <Paragraph>
