@@ -1,0 +1,13 @@
+Copy Database, Logo, PowerShell, SQL Policies, Read Me and Traditional SSRS to Deployment Folder.
+Rename folder to SQLOp_Solution_V#.##.##.####
+In SSRS Reports delete all the *.data files.
+In SSRS Reports detete all the *backup* files.
+In SSRS Reports delete all the objects in BIN directory.
+In Global Settings : Disable Debug Mode IN 500.D_dbo_Setting.sql
+Fix CMS Script, to enable additional groups to be created.
+Remove Template.rdl file -- modify the SQLOpDBReports.rptproj file also.
+Remove ULM.ps1 file.
+Update Version information in 003.C_ExtendedProperties.sql.
+Pull out the deployment script before making zip.
+Zip The all the folders and rename it to SQLOp_Solution_V#.##.##.####.zip.
+calculate the hash and update the deployment script with new hash value.

@@ -1,0 +1,12 @@
+Post Deployment Tasks -- When Upgrading from Existing Version -- Where Database Name is NOT SQLOpsDB.
+- SQL Server Versions have been updated. Short Name introduced.  Run 503.D_dbo_SQLVersion.sql -- Review DB Name before executing.
+- Operating System, Short Name introduced. Run 501.D_dbo_OperatingSystems.sql -- Review DB Name before executing.
+- If deploying default policies including in deployment solution, use 504.D_Policy_PolicyShortName.sql.
+- If deploying non-default policies use the backup of your Policy.PolicyShortName table to repopulate the table.
+- Restore the EPM.PolicyExclusion Table.
+- Load Report Logo -- Make sure to size it to 225x54 pixcels
+- Only need to load logo if not loaded at deployment type.  
+- You can use Set-ReportLogo command let to upload the logo file.
+- Migrate all new settings over. Run 500.D_dbo_SEttings.sql -- Review DB Name before executing.
+- Update the DebugModeEnabled to DebugMode_Enabled -- This was a bug, that might need to be corrected.
+- Add default Application. Run 502.D_dbo.Application.sql. -- Review DB Name before executing.
