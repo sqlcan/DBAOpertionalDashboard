@@ -39,6 +39,7 @@ Date       Version Comments
                    Added alias for parameter ComputerName.
                    Added ability to return full server list.
 2022.11.25 2.00.02 Fixed bugs with incorrect command-let names.
+2022.11.28 2.00.03 Removed Alias on Update statement.
 #>
 
 function Update-SQLOpSQLClusterNode
@@ -60,8 +61,8 @@ function Update-SQLOpSQLClusterNode
 	}
 
 	$ModuleName = 'Update-SQLOpSQLClusterNode'
-	$ModuleVersion = '2.00.02'
-	$ModuleLastUpdated = 'November 25, 2022'
+	$ModuleVersion = '2.00.03'
+	$ModuleLastUpdated = 'November 28, 2022'
 
 	try
 	{
@@ -103,7 +104,7 @@ function Update-SQLOpSQLClusterNode
 			return
 		}
 
-		$TSQL = "UPDATE dbo.SQLClusterNodes CN
+		$TSQL = "UPDATE dbo.SQLClusterNodes
 				SET LastUpdated = CAST(GETDATE() AS DATE),
 				    IsActiveNode = $IsActive 
 				WHERE SQLClusterID = $($ClusterObj.SQLClusterID)
