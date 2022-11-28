@@ -895,6 +895,7 @@ LEFT JOIN CTE2
                   <SortExpressions>
                     <SortExpression>
                       <Value>=Fields!DateCaptured.Value</Value>
+                      <Direction>Descending</Direction>
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
@@ -1248,6 +1249,7 @@ LEFT JOIN CTE2
                   <SortExpressions>
                     <SortExpression>
                       <Value>=Fields!YearMonth.Value</Value>
+                      <Direction>Descending</Direction>
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
@@ -1284,6 +1286,7 @@ LEFT JOIN CTE2
                           <PaddingBottom>2pt</PaddingBottom>
                         </Style>
                       </Textbox>
+                      <rd:Selected>true</rd:Selected>
                     </CellContents>
                   </TablixHeader>
                 </TablixMember>

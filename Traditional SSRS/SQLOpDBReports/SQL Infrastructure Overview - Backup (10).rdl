@@ -2051,7 +2051,7 @@ SELECT 'Stand Alone', COUNT(*)
                       <FontSize>8pt</FontSize>
                     </Style>
                     <ChartAxisTitle>
-                      <Caption>Deployment Topolgy</Caption>
+                      <Caption>Operating System Version</Caption>
                       <Style>
                         <FontSize>8pt</FontSize>
                       </Style>

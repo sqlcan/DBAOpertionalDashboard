@@ -53,6 +53,7 @@
     <DataSource Include="dsMain.rds" />
   </ItemGroup>
   <ItemGroup>
+    <Report Include="Applications Detail.rdl" />
     <Report Include="Applications.rdl" />
     <Report Include="Configuration Health Details.rdl" />
     <Report Include="Configuration Health Overview.rdl" />

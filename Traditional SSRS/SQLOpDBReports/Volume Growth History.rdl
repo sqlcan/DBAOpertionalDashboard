@@ -24,7 +24,7 @@
 ),
 CTE2 AS (
 SELECT DBS1.DiskVolumeID, DBS1.DateCaptured,
-DBS2.SpaceUsed_mb - DBS1.SpaceUsed_mb AS UsedSpaceChange_mb,
+DBS1.SpaceUsed_mb - DBS2.SpaceUsed_mb AS UsedSpaceChange_mb,
        CAST(ROUND((1-((DBS2.SpaceUsed_mb*1.0)/DBS1.SpaceUsed_mb)),4) AS decimal(7,4)) AS GrowthInPercent
   FROM CTE DBS1 
   JOIN CTE DBS2
@@ -103,7 +103,7 @@ ORDER BY DVS.DateCaptured,  ComputerName, DiskVolumeName</CommandText>
 ),
 CTE2 AS (
 SELECT DBS1.DiskVolumeID, DBS1.YearMonth,
-DBS2.SpaceUsed_mb - DBS1.SpaceUsed_mb AS UsedSpaceChange_mb,
+DBS1.SpaceUsed_mb - DBS2.SpaceUsed_mb AS UsedSpaceChange_mb,
        CAST(ROUND((1-((DBS2.SpaceUsed_mb*1.0)/DBS1.SpaceUsed_mb)),4) AS decimal(7,4)) AS GrowthInPercent
   FROM CTE DBS1 
   JOIN CTE DBS2
@@ -767,6 +767,12 @@ WHERE        (DiskVolumeID = @DiskVolumeID)</CommandText>
                 </TablixMember>
                 <TablixMember>
                   <Group Name="MonthlyGrowth_Detail" />
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!YearMonth.Value</Value>
+                      <Direction>Descending</Direction>
+                    </SortExpression>
+                  </SortExpressions>
                 </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
@@ -1480,6 +1486,7 @@ WHERE        (DiskVolumeID = @DiskVolumeID)</CommandText>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -1686,6 +1693,12 @@ WHERE        (DiskVolumeID = @DiskVolumeID)</CommandText>
                   <Group Name="DailyGrowth_Details">
                     <DataElementName>Detail</DataElementName>
                   </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!DateCaptured.Value</Value>
+                      <Direction>Descending</Direction>
+                    </SortExpression>
+                  </SortExpressions>
                   <TablixMembers>
                     <TablixMember />
                   </TablixMembers>
