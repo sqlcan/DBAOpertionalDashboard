@@ -24,6 +24,7 @@ Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2020.03.15 0.00.01 Initial Version
 2020.03.16 0.00.02 Limited the data returned from command-let.
+2022.11.28 0.00.03 Removed System Date
 #>
 function Get-SIDiskVolume
 {
@@ -39,8 +40,8 @@ function Get-SIDiskVolume
     }
     
     $ModuleName = 'Get-SIDiskVolume'
-    $ModuleVersion = '0.00.01'
-    $ModuleLastUpdated = 'March 15, 2020'
+    $ModuleVersion = '0.00.03'
+    $ModuleLastUpdated = 'November 28, 2022'
     
     # Review: https://devblogs.microsoft.com/scripting/hey-scripting-guy-how-can-i-use-erroractionpreference-to-control-cmdlet-handling-of-errors/
     $ErrorActionPreference = 'Stop'
@@ -49,7 +50,7 @@ function Get-SIDiskVolume
     {
         Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"
 
-        $Volumes = Get-WmiObject -Class Win32_Volume -ComputerName $ComputerName -Filter "DriveType='3'" | Select-Object Name, Capacity, FreeSpace
+        $Volumes = Get-WmiObject -Class Win32_Volume -ComputerName $ComputerName -Filter "DriveType='3' AND SystemVolume = False" | Select-Object Name, Capacity, FreeSpace
 
         if ($Volumes)
         {
