@@ -61,6 +61,7 @@ BEGIN
 				ServerInstance VARCHAR(255),
 				AGGuid uniqueidentifier NULL,
 				ApplicationName VARCHAR(255) NULL,
+				ApplicationOwner VARCHAR(255) NULL,
 				DatabaseName varchar(255) NULL,
 				DatabaseState varchar(60) NULL,
 				FileType char(4) NULL,

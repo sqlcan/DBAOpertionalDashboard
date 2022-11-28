@@ -11,6 +11,7 @@ GO
 CREATE TABLE [dbo].[Application](
 	[ApplicationID] [int] IDENTITY(1,1) NOT NULL,
 	[ApplicationName] [varchar](255) NOT NULL,
+	[ApplicationOwner] [varchar](255) NOT NULL,
  CONSTRAINT [PK_Application] PRIMARY KEY CLUSTERED 
 (
 	[ApplicationID] ASC

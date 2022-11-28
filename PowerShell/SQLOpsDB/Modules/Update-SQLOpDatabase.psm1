@@ -29,6 +29,7 @@ Date        Version Comments
 2022.10.30	0.00.05 Fixed bug with merge stagement for Database Size updates.
 					Fixed bug with SQL Version compare.
 2022.10.31	0.00.06 Saved the Application Name for each Database.
+2022.11.28  0.00.07 Added Application Owner.
 #>
 function Update-SQLOpDatabase
 {
@@ -45,8 +46,8 @@ function Update-SQLOpDatabase
     }
     
     $ModuleName = 'Update-SQLOpDatabase'
-    $ModuleVersion = '0.00.06'
-    $ModuleLastUpdated = 'October 31, 2022'
+    $ModuleVersion = '0.00.07'
+    $ModuleLastUpdated = 'November 28, 2022'
    
     try
     {
@@ -90,14 +91,16 @@ function Update-SQLOpDatabase
 
 		# Step 3 : Update Application Information.
 		$TSQL = "WITH CTE AS
-				( SELECT DISTINCT ApplicationName
+				( SELECT DISTINCT ApplicationName, ApplicationOwner
 					FROM Staging.Databases
 				   WHERE ProcessID = $ProcessID)
 				MERGE dbo.Application AS Target
 				USING (SELECT ApplicationName FROM CTE) AS Source (ApplicationName)
 		           ON (Target.ApplicationName = Source.ApplicationName)
 				WHEN NOT MATCHED THEN
-			    	INSERT (ApplicationName) VALUES (Source.ApplicationName);"
+			    	INSERT (ApplicationName, ApplicationOwner) VALUES (Source.ApplicationName, Source.ApplicationOwner)
+				WHEN MATCHED THEN
+					UPDATE SET ApplicationOwner = Source.ApplicationOwner;"
 		Write-StatusUpdate -Message $TSQL -IsTSQL                    
 		Invoke-SQLCMD -ServerInstance $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.SQLInstance `
 						-Database $Global:SQLOpsDBConnections.Connections.SQLOpsDBServer.Database `

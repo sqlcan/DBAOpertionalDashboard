@@ -36,8 +36,9 @@ Date       Version Comments
 2022.11.25 0.00.05 Changed call from Get-SISQLProperties to Get-SQLOpSQLPropties
                     both command-let return same information however, first returns
 					string and second returns integer.
-2022.11.25 0.00.06 Fixing the case for sp_MSforeachdb to handle case senstive 
+2022.11.25 0.00.07 Fixing the case for sp_MSforeachdb to handle case senstive 
                     servers.
+2022.11.28 0.00.08 Collect application owner from extended properties.
 #>
 function Get-SIDatabases
 {
@@ -53,8 +54,8 @@ function Get-SIDatabases
     }
     
     $ModuleName = 'Get-SIDatabases'
-    $ModuleVersion = '0.00.06'
-    $ModuleLastUpdated = 'November 25, 2022'
+    $ModuleVersion = '0.00.08'
+    $ModuleLastUpdated = 'November 28, 2022'
 
     try
     {
@@ -68,21 +69,24 @@ function Get-SIDatabases
 
 		if (($SQLServer_Major -ge 9) -and ($SQLServer_Major -le 10))
 		{
-			$TSQL = "CREATE TABLE #DBApps (DatabaseID INT, ApplicationName VARCHAR(255))
+			$TSQL = "CREATE TABLE #DBApps (DatabaseID INT, ApplicationName VARCHAR(255), ApplicationOwner VARCHAR(255))
 
-					 INSERT INTO #DBApps (DatabaseID, ApplicationName)
-					 EXEC sp_MSforeachdb 'select db_id(''?'') as DatabaseID, CAST(value AS VARCHAR(255)) AS ApplicationName from [?].sys.extended_properties WHERE class_desc = ''DATABASE'' AND name = ''ApplicationName''';
+					 INSERT INTO #DBApps (DatabaseID, ApplicationName, ApplicationOwner)
+					 EXEC sp_MSforeachdb 'SELECT db_id(''?'') AS DatabaseID, 
+					 (SELECT CAST(value AS VARCHAR(255)) AS ApplicationName from [?].sys.extended_properties WHERE class_desc = ''DATABASE'' AND name = ''ApplicationName'') AS ApplicationName,
+					 (SELECT CAST(value AS VARCHAR(255)) AS ApplicationName from [?].sys.extended_properties WHERE class_desc = ''DATABASE'' AND name = ''ApplicationOwner'') AS ApplicationOwner';
 
 					  WITH DBDetails
 							AS (SELECT   DB_NAME(D.database_id) AS DatabaseName
 										, D.state_desc AS DatabaseState
 										, CASE WHEN D.database_id = 2 THEN 'Microsoft SQL Server' ELSE ISNULL(DA.ApplicationName, 'Unknown') END AS ApplicationName
+										, CASE WHEN D.database_id = 2 THEN 'SQL Server DBA Team' ELSE ISNULL(DA.ApplicationOwner, 'Unknown') END AS ApplicationOwner
 										, CASE WHEN type = 0 THEN 'Data' ELSE 'Log' END AS FileType
 										, size/128 AS FileSize_mb
 								FROM sys.master_files mf
 								JOIN sys.databases D
 									ON mf.database_id = D.database_id
-							LEFT JOIN #DBApps DA ON d.database_id = DA.DatabaseID
+							LEFT JOIN #DBApps DA ON D.database_id = DA.DatabaseID
 								WHERE D.database_id NOT IN (1,3,4)
 								  AND db_name(D.database_id) <> 'SSISDB')
 						SELECT   $(IF ($Internal) { "$ProcessID AS ProcessID, " })
@@ -99,16 +103,19 @@ function Get-SIDatabases
 		}
 		else
 		{
-			$TSQL = "CREATE TABLE #DBApps (DatabaseID INT, ApplicationName VARCHAR(255))
+			$TSQL = "CREATE TABLE #DBApps (DatabaseID INT, ApplicationName VARCHAR(255), ApplicationOwner VARCHAR(255))
 
-					 INSERT INTO #DBApps (DatabaseID, ApplicationName)
-					 EXEC sp_MSforeachdb 'select db_id(''?'') as DatabaseID, CAST(value AS VARCHAR(255)) AS ApplicationName from [?].sys.extended_properties WHERE class_desc = ''DATABASE'' AND name = ''ApplicationName''';
+					 INSERT INTO #DBApps (DatabaseID, ApplicationName, ApplicationOwner)
+					 EXEC sp_MSforeachdb 'SELECT db_id(''?'') AS DatabaseID, 
+					 (SELECT CAST(value AS VARCHAR(255)) AS ApplicationName from [?].sys.extended_properties WHERE class_desc = ''DATABASE'' AND name = ''ApplicationName'') AS ApplicationName,
+					 (SELECT CAST(value AS VARCHAR(255)) AS ApplicationName from [?].sys.extended_properties WHERE class_desc = ''DATABASE'' AND name = ''ApplicationOwner'') AS ApplicationOwner';
 			
 						WITH DBDetails
 							AS (SELECT   ISNULL(AG.group_id,CAST('00000000-0000-0000-0000-000000000000' AS uniqueidentifier)) AS AGGuid
 									, DB_NAME(MF.database_id) AS DatabaseName
 									, D.state_desc AS DatabaseState
 									, CASE WHEN D.database_id = 2 THEN 'Microsoft SQL Server' ELSE ISNULL(DA.ApplicationName, 'Unknown') END AS ApplicationName
+									, CASE WHEN D.database_id = 2 THEN 'SQL Server DBA Team' ELSE ISNULL(DA.ApplicationOwner, 'Unknown') END AS ApplicationOwner
 									, CASE WHEN type = 0 THEN 'Data' ELSE 'Log' END AS FileType
 									, size/128 AS FileSize_mb
 								FROM sys.master_files MF
@@ -118,7 +125,7 @@ function Get-SIDatabases
 									ON D.replica_id = AR.replica_id
 							LEFT JOIN sys.availability_groups AG
 									ON AR.group_id = AG.group_id
-							LEFT JOIN #DBApps DA ON d.database_id = DA.DatabaseID
+							LEFT JOIN #DBApps DA ON D.database_id = DA.DatabaseID
 								WHERE MF.database_id NOT IN (1,3,4)
 								  AND db_name(MF.database_id) <> 'SSISDB')
 					SELECT   $(IF ($Internal) { "$ProcessID AS ProcessID, " })
@@ -126,12 +133,13 @@ function Get-SIDatabases
 						  	 '$ServerInstance' AS ServerInstance
 							, AGGuid
 							, ApplicationName
+							, ApplicationOwner
 							, DatabaseName
 							, UPPER(DatabaseState) AS DatabaseState 
 							, FileType
 							, SUM(FileSize_mb) AS FileSize_mb
 						FROM DBDetails
-					GROUP BY AGGuid, ApplicationName, DatabaseName, DatabaseState, FileType"
+					GROUP BY AGGuid, ApplicationName, ApplicationOwner, DatabaseName, DatabaseState, FileType"
 		}
 
 		Write-StatusUpdate -Message $TSQL -IsTSQL                    
