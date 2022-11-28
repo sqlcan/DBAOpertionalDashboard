@@ -1012,9 +1012,9 @@ IIF(Parameters!Status.Value&lt;&gt;"ALL"," that are currently " &amp; Parameters
                     <TextRun>
                       <Value>SQL Services Installed on Server(s)</Value>
                       <Style>
-                        <FontSize>12pt</FontSize>
+                        <FontFamily>Arial Black</FontFamily>
+                        <FontSize>14pt</FontSize>
                         <FontWeight>Bold</FontWeight>
-                        <Color>White</Color>
                       </Style>
                     </TextRun>
                   </TextRuns>
@@ -1033,7 +1033,7 @@ IIF(Parameters!Status.Value&lt;&gt;"ALL"," that are currently " &amp; Parameters
                 <Border>
                   <Style>None</Style>
                 </Border>
-                <BackgroundColor>DimGray</BackgroundColor>
+                <BackgroundColor>Silver</BackgroundColor>
                 <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>

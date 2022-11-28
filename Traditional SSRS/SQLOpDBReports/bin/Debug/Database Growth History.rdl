@@ -272,7 +272,6 @@ LEFT JOIN CTE2
                           <Format>#,0.00;(#,0.00)</Format>
                         </Style>
                         <UseValueAsLabel>true</UseValueAsLabel>
-                        <Visible>true</Visible>
                       </ChartDataLabel>
                       <Style />
                       <ChartMarker>
@@ -1853,9 +1852,9 @@ LEFT JOIN CTE2
                     <TextRun>
                       <Value>Database Growth History</Value>
                       <Style>
-                        <FontSize>12pt</FontSize>
+                        <FontFamily>Arial Black</FontFamily>
+                        <FontSize>14pt</FontSize>
                         <FontWeight>Bold</FontWeight>
-                        <Color>White</Color>
                       </Style>
                     </TextRun>
                   </TextRuns>
@@ -1873,7 +1872,7 @@ LEFT JOIN CTE2
                 <Border>
                   <Style>None</Style>
                 </Border>
-                <BackgroundColor>DimGray</BackgroundColor>
+                <BackgroundColor>Silver</BackgroundColor>
                 <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>

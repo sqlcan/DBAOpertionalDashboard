@@ -2718,9 +2718,9 @@ ORDER BY  D.Environment,SV.SQLVersion, D.YearMonth</CommandText>
                     <TextRun>
                       <Value>SQL Server Infrastructure Historical Trend</Value>
                       <Style>
-                        <FontFamily>Arial Black</FontFamily>
-                        <FontSize>14pt</FontSize>
+                        <FontSize>12pt</FontSize>
                         <FontWeight>Bold</FontWeight>
+                        <Color>White</Color>
                       </Style>
                     </TextRun>
                   </TextRuns>
@@ -2738,7 +2738,7 @@ ORDER BY  D.Environment,SV.SQLVersion, D.YearMonth</CommandText>
                 <Border>
                   <Style>None</Style>
                 </Border>
-                <BackgroundColor>Silver</BackgroundColor>
+                <BackgroundColor>DimGray</BackgroundColor>
                 <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>

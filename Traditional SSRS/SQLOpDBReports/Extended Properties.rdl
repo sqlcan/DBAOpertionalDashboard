@@ -51,7 +51,7 @@
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>5.43055in</Width>
+                  <Width>6.10555in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -166,7 +166,7 @@
             <Top>0.025in</Top>
             <Left>0.0125in</Left>
             <Height>0.5in</Height>
-            <Width>5.43055in</Width>
+            <Width>6.10555in</Width>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -174,13 +174,13 @@
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>0.54667in</Height>
+        <Height>0.525in</Height>
         <Style />
       </Body>
-      <Width>5.49166in</Width>
+      <Width>6.11944in</Width>
       <Page>
         <PageHeader>
-          <Height>0.42972in</Height>
+          <Height>0.43805in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -215,7 +215,8 @@
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
-              <Left>3.62152in</Left>
+              <Top>0.0125in</Top>
+              <Left>4.29652in</Left>
               <Height>0.21528in</Height>
               <Width>1.82292in</Width>
               <ZIndex>1</ZIndex>
@@ -248,8 +249,8 @@
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
-              <Top>0.24306in</Top>
-              <Left>3.62013in</Left>
+              <Top>0.25556in</Top>
+              <Left>4.29513in</Left>
               <Height>0.16999in</Height>
               <Width>1.82292in</Width>
               <ZIndex>2</ZIndex>
@@ -272,9 +273,9 @@
                     <TextRun>
                       <Value>Extended Properties</Value>
                       <Style>
-                        <FontSize>12pt</FontSize>
+                        <FontFamily>Arial Black</FontFamily>
+                        <FontSize>14pt</FontSize>
                         <FontWeight>Bold</FontWeight>
-                        <Color>White</Color>
                       </Style>
                     </TextRun>
                   </TextRuns>
@@ -287,13 +288,13 @@
               <Top>0.01667in</Top>
               <Left>1.82292in</Left>
               <Height>0.41305in</Height>
-              <Width>1.7986in</Width>
+              <Width>2.45485in</Width>
               <ZIndex>3</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
                 </Border>
-                <BackgroundColor>DimGray</BackgroundColor>
+                <BackgroundColor>LightGrey</BackgroundColor>
                 <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>

@@ -16,6 +16,9 @@
           <QueryParameter Name="@DiskVolume">
             <Value>=Parameters!DiskVolume.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@ComputerName">
+            <Value>=Parameters!ComputerName.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandText>-- Is Monitored check is not needed, as it is applied in the view.
 
@@ -23,6 +26,7 @@ SELECT *
   FROM dbo.vDiskVolumeSpace
     WHERE ((DiskVolumeID = @DiskVolume) OR (@DiskVolume = 0))
 AND DiskVolumeName NOT LIKE '\\?\%'
+AND ((@ComputerName = '&lt;ALL&gt;') OR (ComputerName = @ComputerName))
  ORDER BY DaysUntil_OutOfSpace, ComputerName, DiskVolumeName</CommandText>
       </Query>
       <Fields>
@@ -1093,11 +1097,11 @@ SELECT 'Default',0,'&lt;ALL&gt;'</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Server Volumes</Value>
+                      <Value>Volumes</Value>
                       <Style>
-                        <FontSize>12pt</FontSize>
+                        <FontFamily>Arial Black</FontFamily>
+                        <FontSize>14pt</FontSize>
                         <FontWeight>Bold</FontWeight>
-                        <Color>White</Color>
                       </Style>
                     </TextRun>
                   </TextRuns>
@@ -1115,7 +1119,7 @@ SELECT 'Default',0,'&lt;ALL&gt;'</CommandText>
                 <Border>
                   <Style>None</Style>
                 </Border>
-                <BackgroundColor>DimGray</BackgroundColor>
+                <BackgroundColor>Silver</BackgroundColor>
                 <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>

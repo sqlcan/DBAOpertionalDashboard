@@ -345,7 +345,7 @@
             <Top>0.02639in</Top>
             <Left>0.0125in</Left>
             <Height>3.62152in</Height>
-            <Width>7.4875in</Width>
+            <Width>8.2375in</Width>
             <Style>
               <Border>
                 <Color>LightGrey</Color>
@@ -376,7 +376,7 @@
             <Top>3.71735in</Top>
             <Left>0.0125in</Left>
             <Height>0.36835in</Height>
-            <Width>7.47361in</Width>
+            <Width>8.24792in</Width>
             <ZIndex>1</ZIndex>
             <Style>
               <Border>
@@ -392,7 +392,7 @@
         <Height>4.13749in</Height>
         <Style />
       </Body>
-      <Width>7.54167in</Width>
+      <Width>8.26042in</Width>
       <Page>
         <PageHeader>
           <Height>0.41305in</Height>
@@ -429,7 +429,7 @@
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
-              <Left>5.67708in</Left>
+              <Left>6.42708in</Left>
               <Height>0.21528in</Height>
               <Width>1.82292in</Width>
               <ZIndex>1</ZIndex>
@@ -463,7 +463,7 @@
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
               <Top>0.24306in</Top>
-              <Left>5.66319in</Left>
+              <Left>6.41319in</Left>
               <Height>0.16999in</Height>
               <Width>1.82292in</Width>
               <ZIndex>2</ZIndex>
@@ -486,9 +486,9 @@
                     <TextRun>
                       <Value>SQLOpDB Soon-To-Be Deleted Overview</Value>
                       <Style>
-                        <FontSize>12pt</FontSize>
+                        <FontFamily>Arial Black</FontFamily>
+                        <FontSize>14pt</FontSize>
                         <FontWeight>Bold</FontWeight>
-                        <Color>White</Color>
                       </Style>
                     </TextRun>
                   </TextRuns>
@@ -500,13 +500,13 @@
               <rd:DefaultName>Textbox5</rd:DefaultName>
               <Left>1.82292in</Left>
               <Height>0.41305in</Height>
-              <Width>3.84027in</Width>
+              <Width>4.53819in</Width>
               <ZIndex>3</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
                 </Border>
-                <BackgroundColor>DimGray</BackgroundColor>
+                <BackgroundColor>Silver</BackgroundColor>
                 <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>

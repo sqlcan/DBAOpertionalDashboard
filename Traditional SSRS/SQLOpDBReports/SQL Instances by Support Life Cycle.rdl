@@ -107,16 +107,16 @@ SELECT cte2.SQLVersion, cte2.InstCount, cte2.SupportEndDate AS BuildSupportEndDa
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>2.43402in</Width>
+                  <Width>2.46527in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.76042in</Width>
+                  <Width>1.79167in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.29167in</Width>
+                  <Width>2.32292in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1in</Width>
+                  <Width>1.03125in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -304,7 +304,6 @@ SELECT cte2.SQLVersion, cte2.InstCount, cte2.SupportEndDate AS BuildSupportEndDa
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -469,7 +468,7 @@ SELECT cte2.SQLVersion, cte2.InstCount, cte2.SupportEndDate AS BuildSupportEndDa
             <Top>0.0225in</Top>
             <Left>0.0125in</Left>
             <Height>0.46in</Height>
-            <Width>7.48611in</Width>
+            <Width>7.61111in</Width>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -480,13 +479,13 @@ SELECT cte2.SQLVersion, cte2.InstCount, cte2.SupportEndDate AS BuildSupportEndDa
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>2.4987in</Width>
+                  <Width>2.54037in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.4987in</Width>
+                  <Width>2.54037in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.4887in</Width>
+                  <Width>2.53037in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -619,7 +618,7 @@ SELECT cte2.SQLVersion, cte2.InstCount, cte2.SupportEndDate AS BuildSupportEndDa
             <Top>0.52375in</Top>
             <Left>0.0125in</Left>
             <Height>0.25in</Height>
-            <Width>7.4861in</Width>
+            <Width>7.61111in</Width>
             <ZIndex>1</ZIndex>
             <Style>
               <Border>
@@ -631,7 +630,7 @@ SELECT cte2.SQLVersion, cte2.InstCount, cte2.SupportEndDate AS BuildSupportEndDa
         <Height>0.77375in</Height>
         <Style />
       </Body>
-      <Width>7.52083in</Width>
+      <Width>7.6375in</Width>
       <Page>
         <PageHeader>
           <Height>0.44611in</Height>
@@ -647,9 +646,9 @@ SELECT cte2.SQLVersion, cte2.InstCount, cte2.SupportEndDate AS BuildSupportEndDa
                     <TextRun>
                       <Value>SQL Instance by Support Life Cycle</Value>
                       <Style>
-                        <FontSize>12pt</FontSize>
+                        <FontFamily>Arial Black</FontFamily>
+                        <FontSize>14pt</FontSize>
                         <FontWeight>Bold</FontWeight>
-                        <Color>White</Color>
                       </Style>
                     </TextRun>
                   </TextRuns>
@@ -662,12 +661,12 @@ SELECT cte2.SQLVersion, cte2.InstCount, cte2.SupportEndDate AS BuildSupportEndDa
               <Top>0.00181in</Top>
               <Left>1.82292in</Left>
               <Height>0.41305in</Height>
-              <Width>3.84027in</Width>
+              <Width>3.96527in</Width>
               <Style>
                 <Border>
                   <Style>None</Style>
                 </Border>
-                <BackgroundColor>DimGray</BackgroundColor>
+                <BackgroundColor>Silver</BackgroundColor>
                 <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>
@@ -693,7 +692,7 @@ SELECT cte2.SQLVersion, cte2.InstCount, cte2.SupportEndDate AS BuildSupportEndDa
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
               <Top>0.00181in</Top>
-              <Left>5.67708in</Left>
+              <Left>5.81458in</Left>
               <Height>0.21528in</Height>
               <Width>1.82292in</Width>
               <ZIndex>1</ZIndex>
@@ -727,7 +726,7 @@ SELECT cte2.SQLVersion, cte2.InstCount, cte2.SupportEndDate AS BuildSupportEndDa
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
               <Top>0.24487in</Top>
-              <Left>5.66319in</Left>
+              <Left>5.80069in</Left>
               <Height>0.16999in</Height>
               <Width>1.82292in</Width>
               <ZIndex>2</ZIndex>

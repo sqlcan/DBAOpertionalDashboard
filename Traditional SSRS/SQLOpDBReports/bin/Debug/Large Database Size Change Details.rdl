@@ -101,13 +101,13 @@ WHERE VolumeOfChangeCategory = @CategoryName</CommandText>
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>2.1493in</Width>
+                  <Width>2.60764in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.36805in</Width>
+                  <Width>2.70138in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.9618in</Width>
+                  <Width>2.67013in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -384,7 +384,7 @@ WHERE VolumeOfChangeCategory = @CategoryName</CommandText>
             <Top>0.24499in</Top>
             <Left>0.00695in</Left>
             <Height>0.43in</Height>
-            <Width>7.47915in</Width>
+            <Width>7.97916in</Width>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -413,7 +413,7 @@ WHERE VolumeOfChangeCategory = @CategoryName</CommandText>
             <rd:DefaultName>Textbox5</rd:DefaultName>
             <Left>0.00695in</Left>
             <Height>0.22555in</Height>
-            <Width>7.48611in</Width>
+            <Width>7.97916in</Width>
             <ZIndex>1</ZIndex>
             <Style>
               <Border>
@@ -440,10 +440,10 @@ WHERE VolumeOfChangeCategory = @CategoryName</CommandText>
             </Style>
           </Textbox>
         </ReportItems>
-        <Height>0.72458in</Height>
+        <Height>0.69333in</Height>
         <Style />
       </Body>
-      <Width>7.5in</Width>
+      <Width>8in</Width>
       <Page>
         <PageHeader>
           <Height>0.41597in</Height>
@@ -480,7 +480,7 @@ WHERE VolumeOfChangeCategory = @CategoryName</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
-              <Left>5.67708in</Left>
+              <Left>6.17708in</Left>
               <Height>0.21528in</Height>
               <Width>1.82292in</Width>
               <ZIndex>1</ZIndex>
@@ -514,7 +514,7 @@ WHERE VolumeOfChangeCategory = @CategoryName</CommandText>
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
               <Top>0.24598in</Top>
-              <Left>5.66319in</Left>
+              <Left>6.16319in</Left>
               <Height>0.16999in</Height>
               <Width>1.82292in</Width>
               <ZIndex>2</ZIndex>
@@ -537,9 +537,9 @@ WHERE VolumeOfChangeCategory = @CategoryName</CommandText>
                     <TextRun>
                       <Value>Large Database Size Change Details</Value>
                       <Style>
-                        <FontSize>12pt</FontSize>
+                        <FontFamily>Arial Black</FontFamily>
+                        <FontSize>14pt</FontSize>
                         <FontWeight>Bold</FontWeight>
-                        <Color>White</Color>
                       </Style>
                     </TextRun>
                   </TextRuns>
@@ -551,13 +551,13 @@ WHERE VolumeOfChangeCategory = @CategoryName</CommandText>
               <rd:DefaultName>Textbox5</rd:DefaultName>
               <Left>1.82292in</Left>
               <Height>0.41305in</Height>
-              <Width>3.84027in</Width>
+              <Width>4.35416in</Width>
               <ZIndex>3</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
                 </Border>
-                <BackgroundColor>DimGray</BackgroundColor>
+                <BackgroundColor>Silver</BackgroundColor>
                 <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>

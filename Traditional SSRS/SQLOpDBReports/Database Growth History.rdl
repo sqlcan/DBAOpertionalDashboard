@@ -272,7 +272,6 @@ LEFT JOIN CTE2
                           <Format>#,0.00;(#,0.00)</Format>
                         </Style>
                         <UseValueAsLabel>true</UseValueAsLabel>
-                        <Visible>true</Visible>
                       </ChartDataLabel>
                       <Style />
                       <ChartMarker>
@@ -604,38 +603,6 @@ LEFT JOIN CTE2
                 <TablixCornerRow>
                   <TablixCornerCell>
                     <CellContents>
-                      <Textbox Name="Textbox22">
-                        <CanGrow>true</CanGrow>
-                        <KeepTogether>true</KeepTogether>
-                        <Paragraphs>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value />
-                                <Style />
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                        </Paragraphs>
-                        <rd:DefaultName>Textbox22</rd:DefaultName>
-                        <Style>
-                          <Border>
-                            <Color>LightGrey</Color>
-                            <Style>Solid</Style>
-                          </Border>
-                          <PaddingLeft>2pt</PaddingLeft>
-                          <PaddingRight>2pt</PaddingRight>
-                          <PaddingTop>2pt</PaddingTop>
-                          <PaddingBottom>2pt</PaddingBottom>
-                        </Style>
-                      </Textbox>
-                    </CellContents>
-                  </TablixCornerCell>
-                </TablixCornerRow>
-                <TablixCornerRow>
-                  <TablixCornerCell>
-                    <CellContents>
                       <Textbox Name="Textbox16">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
@@ -829,17 +796,27 @@ LEFT JOIN CTE2
             <TablixColumnHierarchy>
               <TablixMembers>
                 <TablixMember>
+                  <Group Name="FileType">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!FileType.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!FileType.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
                   <TablixHeader>
-                    <Size>0.23958in</Size>
+                    <Size>0.26042in</Size>
                     <CellContents>
-                      <Textbox Name="Textbox23">
+                      <Textbox Name="FileType">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>Daily Database Growth History</Value>
+                                <Value>=Fields!FileType.Value</Value>
                                 <Style>
                                   <FontWeight>Bold</FontWeight>
                                 </Style>
@@ -850,12 +827,13 @@ LEFT JOIN CTE2
                             </Style>
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>Textbox23</rd:DefaultName>
+                        <rd:DefaultName>FileType</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
                             <Style>Solid</Style>
                           </Border>
+                          <BackgroundColor>=IIF(RowNumber("DailyGrowthDetails") MOD 2,"White","WhiteSmoke")</BackgroundColor>
                           <PaddingLeft>2pt</PaddingLeft>
                           <PaddingRight>2pt</PaddingRight>
                           <PaddingTop>2pt</PaddingTop>
@@ -865,58 +843,8 @@ LEFT JOIN CTE2
                     </CellContents>
                   </TablixHeader>
                   <TablixMembers>
-                    <TablixMember>
-                      <Group Name="FileType">
-                        <GroupExpressions>
-                          <GroupExpression>=Fields!FileType.Value</GroupExpression>
-                        </GroupExpressions>
-                      </Group>
-                      <SortExpressions>
-                        <SortExpression>
-                          <Value>=Fields!FileType.Value</Value>
-                        </SortExpression>
-                      </SortExpressions>
-                      <TablixHeader>
-                        <Size>0.26042in</Size>
-                        <CellContents>
-                          <Textbox Name="FileType">
-                            <CanGrow>true</CanGrow>
-                            <KeepTogether>true</KeepTogether>
-                            <Paragraphs>
-                              <Paragraph>
-                                <TextRuns>
-                                  <TextRun>
-                                    <Value>=Fields!FileType.Value</Value>
-                                    <Style>
-                                      <FontWeight>Bold</FontWeight>
-                                    </Style>
-                                  </TextRun>
-                                </TextRuns>
-                                <Style>
-                                  <TextAlign>Center</TextAlign>
-                                </Style>
-                              </Paragraph>
-                            </Paragraphs>
-                            <rd:DefaultName>FileType</rd:DefaultName>
-                            <Style>
-                              <Border>
-                                <Color>LightGrey</Color>
-                                <Style>Solid</Style>
-                              </Border>
-                              <BackgroundColor>=IIF(RowNumber("DailyGrowthDetails") MOD 2,"White","WhiteSmoke")</BackgroundColor>
-                              <PaddingLeft>2pt</PaddingLeft>
-                              <PaddingRight>2pt</PaddingRight>
-                              <PaddingTop>2pt</PaddingTop>
-                              <PaddingBottom>2pt</PaddingBottom>
-                            </Style>
-                          </Textbox>
-                        </CellContents>
-                      </TablixHeader>
-                      <TablixMembers>
-                        <TablixMember />
-                        <TablixMember />
-                      </TablixMembers>
-                    </TablixMember>
+                    <TablixMember />
+                    <TablixMember />
                   </TablixMembers>
                 </TablixMember>
               </TablixMembers>
@@ -1009,9 +937,11 @@ LEFT JOIN CTE2
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>GrowthHistory_Daily</DataSetName>
-            <Top>2.29222in</Top>
-            <Left>0.0125in</Left>
-            <Height>0.98958in</Height>
+            <PageBreak>
+              <BreakLocation>End</BreakLocation>
+            </PageBreak>
+            <Top>2.56722in</Top>
+            <Height>0.75in</Height>
             <Width>4.18402in</Width>
             <ZIndex>2</ZIndex>
             <Style>
@@ -1023,38 +953,6 @@ LEFT JOIN CTE2
           <Tablix Name="MonthlyGrowthDetails">
             <TablixCorner>
               <TablixCornerRows>
-                <TablixCornerRow>
-                  <TablixCornerCell>
-                    <CellContents>
-                      <Textbox Name="Textbox28">
-                        <CanGrow>true</CanGrow>
-                        <KeepTogether>true</KeepTogether>
-                        <Paragraphs>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value />
-                                <Style />
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                        </Paragraphs>
-                        <rd:DefaultName>Textbox22</rd:DefaultName>
-                        <Style>
-                          <Border>
-                            <Color>LightGrey</Color>
-                            <Style>Solid</Style>
-                          </Border>
-                          <PaddingLeft>2pt</PaddingLeft>
-                          <PaddingRight>2pt</PaddingRight>
-                          <PaddingTop>2pt</PaddingTop>
-                          <PaddingBottom>2pt</PaddingBottom>
-                        </Style>
-                      </Textbox>
-                    </CellContents>
-                  </TablixCornerCell>
-                </TablixCornerRow>
                 <TablixCornerRow>
                   <TablixCornerCell>
                     <CellContents>
@@ -1251,17 +1149,27 @@ LEFT JOIN CTE2
             <TablixColumnHierarchy>
               <TablixMembers>
                 <TablixMember>
+                  <Group Name="FileType2">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!FileType.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!FileType.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
                   <TablixHeader>
-                    <Size>0.23958in</Size>
+                    <Size>0.26042in</Size>
                     <CellContents>
-                      <Textbox Name="Textbox24">
+                      <Textbox Name="FileType2">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>Monthly Database Growth History</Value>
+                                <Value>=Fields!FileType.Value</Value>
                                 <Style>
                                   <FontWeight>Bold</FontWeight>
                                 </Style>
@@ -1272,12 +1180,13 @@ LEFT JOIN CTE2
                             </Style>
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>Textbox23</rd:DefaultName>
+                        <rd:DefaultName>FileType</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
                             <Style>Solid</Style>
                           </Border>
+                          <BackgroundColor>=IIF(RowNumber("MonthlyGrowthDetails") MOD 2,"White","WhiteSmoke")</BackgroundColor>
                           <PaddingLeft>2pt</PaddingLeft>
                           <PaddingRight>2pt</PaddingRight>
                           <PaddingTop>2pt</PaddingTop>
@@ -1287,58 +1196,8 @@ LEFT JOIN CTE2
                     </CellContents>
                   </TablixHeader>
                   <TablixMembers>
-                    <TablixMember>
-                      <Group Name="FileType2">
-                        <GroupExpressions>
-                          <GroupExpression>=Fields!FileType.Value</GroupExpression>
-                        </GroupExpressions>
-                      </Group>
-                      <SortExpressions>
-                        <SortExpression>
-                          <Value>=Fields!FileType.Value</Value>
-                        </SortExpression>
-                      </SortExpressions>
-                      <TablixHeader>
-                        <Size>0.26042in</Size>
-                        <CellContents>
-                          <Textbox Name="FileType2">
-                            <CanGrow>true</CanGrow>
-                            <KeepTogether>true</KeepTogether>
-                            <Paragraphs>
-                              <Paragraph>
-                                <TextRuns>
-                                  <TextRun>
-                                    <Value>=Fields!FileType.Value</Value>
-                                    <Style>
-                                      <FontWeight>Bold</FontWeight>
-                                    </Style>
-                                  </TextRun>
-                                </TextRuns>
-                                <Style>
-                                  <TextAlign>Center</TextAlign>
-                                </Style>
-                              </Paragraph>
-                            </Paragraphs>
-                            <rd:DefaultName>FileType</rd:DefaultName>
-                            <Style>
-                              <Border>
-                                <Color>LightGrey</Color>
-                                <Style>Solid</Style>
-                              </Border>
-                              <BackgroundColor>=IIF(RowNumber("MonthlyGrowthDetails") MOD 2,"White","WhiteSmoke")</BackgroundColor>
-                              <PaddingLeft>2pt</PaddingLeft>
-                              <PaddingRight>2pt</PaddingRight>
-                              <PaddingTop>2pt</PaddingTop>
-                              <PaddingBottom>2pt</PaddingBottom>
-                            </Style>
-                          </Textbox>
-                        </CellContents>
-                      </TablixHeader>
-                      <TablixMembers>
-                        <TablixMember />
-                        <TablixMember />
-                      </TablixMembers>
-                    </TablixMember>
+                    <TablixMember />
+                    <TablixMember />
                   </TablixMembers>
                 </TablixMember>
               </TablixMembers>
@@ -1431,9 +1290,8 @@ LEFT JOIN CTE2
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>GrowthHistory_Monthly</DataSetName>
-            <Top>5.36347in</Top>
-            <Left>0.03195in</Left>
-            <Height>0.98958in</Height>
+            <Top>5.62597in</Top>
+            <Height>0.75in</Height>
             <Width>4.18402in</Width>
             <ZIndex>3</ZIndex>
             <Style>
@@ -1490,7 +1348,6 @@ LEFT JOIN CTE2
                           <Format>#,0.00;(#,0.00)</Format>
                         </Style>
                         <UseValueAsLabel>true</UseValueAsLabel>
-                        <Visible>true</Visible>
                       </ChartDataLabel>
                       <Style />
                       <ChartMarker>
@@ -1803,11 +1660,7 @@ LEFT JOIN CTE2
               </Style>
             </ChartNoDataMessage>
             <DataSetName>GrowthHistory_Monthly</DataSetName>
-            <PageBreak>
-              <BreakLocation>Start</BreakLocation>
-            </PageBreak>
-            <Top>3.33569in</Top>
-            <Left>0.01945in</Left>
+            <Top>3.34819in</Top>
             <Height>2in</Height>
             <Width>7.48611in</Width>
             <ZIndex>4</ZIndex>
@@ -1820,11 +1673,74 @@ LEFT JOIN CTE2
               <BackgroundGradientType>None</BackgroundGradientType>
             </Style>
           </Chart>
+          <Textbox Name="Textbox29">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>Daily Growth History</Value>
+                    <Style>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox22</rd:DefaultName>
+            <Top>2.3075in</Top>
+            <Height>0.25in</Height>
+            <Width>7.48611in</Width>
+            <ZIndex>5</ZIndex>
+            <Style>
+              <BackgroundColor>White</BackgroundColor>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Textbox Name="Textbox30">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>Daily Growth History</Value>
+                    <Style>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox22</rd:DefaultName>
+            <Top>5.36403in</Top>
+            <Left>0.00695in</Left>
+            <Height>0.25in</Height>
+            <Width>7.48611in</Width>
+            <ZIndex>6</ZIndex>
+            <Style>
+              <BackgroundColor>White</BackgroundColor>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
         </ReportItems>
-        <Height>6.85305in</Height>
+        <Height>6.39472in</Height>
         <Style />
       </Body>
-      <Width>7.50556in</Width>
+      <Width>7.5in</Width>
       <Page>
         <PageHeader>
           <Height>0.43751in</Height>
@@ -1853,9 +1769,9 @@ LEFT JOIN CTE2
                     <TextRun>
                       <Value>Database Growth History</Value>
                       <Style>
-                        <FontSize>12pt</FontSize>
+                        <FontFamily>Arial Black</FontFamily>
+                        <FontSize>14pt</FontSize>
                         <FontWeight>Bold</FontWeight>
-                        <Color>White</Color>
                       </Style>
                     </TextRun>
                   </TextRuns>
@@ -1873,7 +1789,7 @@ LEFT JOIN CTE2
                 <Border>
                   <Style>None</Style>
                 </Border>
-                <BackgroundColor>DimGray</BackgroundColor>
+                <BackgroundColor>Silver</BackgroundColor>
                 <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>

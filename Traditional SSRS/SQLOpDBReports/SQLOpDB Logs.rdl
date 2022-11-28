@@ -106,6 +106,9 @@ SELECT DATEADD(DAY,-1,DateValue)
                       <CellContents>
                         <Textbox Name="textbox2">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!DateTimeCaptured.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -303,7 +306,6 @@ SELECT DATEADD(DAY,-1,DateValue)
               <Value>=First(Fields!LogoFile.Value, "ReportLogo")</Value>
               <MIMEType>="image/" &amp; First(Fields!LogoFileType.Value, "ReportLogo")</MIMEType>
               <Sizing>FitProportional</Sizing>
-              <Top>0in</Top>
               <Height>0.41305in</Height>
               <Width>1.82292in</Width>
               <Style>
@@ -321,9 +323,9 @@ SELECT DATEADD(DAY,-1,DateValue)
                     <TextRun>
                       <Value>SQL Server Opertional Dashboard Data Collection Logs</Value>
                       <Style>
-                        <FontSize>12pt</FontSize>
+                        <FontFamily>Arial Black</FontFamily>
+                        <FontSize>14pt</FontSize>
                         <FontWeight>Bold</FontWeight>
-                        <Color>White</Color>
                       </Style>
                     </TextRun>
                   </TextRuns>
@@ -333,7 +335,6 @@ SELECT DATEADD(DAY,-1,DateValue)
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox5</rd:DefaultName>
-              <Top>0in</Top>
               <Left>1.82292in</Left>
               <Height>0.41305in</Height>
               <Width>6.25138in</Width>
@@ -342,7 +343,7 @@ SELECT DATEADD(DAY,-1,DateValue)
                 <Border>
                   <Style>None</Style>
                 </Border>
-                <BackgroundColor>DimGray</BackgroundColor>
+                <BackgroundColor>Silver</BackgroundColor>
                 <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>
@@ -434,6 +435,11 @@ SELECT DATEADD(DAY,-1,DateValue)
     <ReportParameter Name="DescriptionFilter">
       <DataType>String</DataType>
       <Nullable>true</Nullable>
+      <DefaultValue>
+        <Values>
+          <Value>Processing %</Value>
+        </Values>
+      </DefaultValue>
       <AllowBlank>true</AllowBlank>
       <Prompt>Description To Filter Out</Prompt>
     </ReportParameter>
