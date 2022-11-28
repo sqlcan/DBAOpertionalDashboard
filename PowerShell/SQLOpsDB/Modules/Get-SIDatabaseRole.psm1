@@ -23,6 +23,7 @@ Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2022.11.02 0.00.01 Initial Version
 2022.11.25 0.00.02 Fixing sp_MSforeachdb case to handle case senstive servers.
+2022.11.25 0.00.03 sp_MSforeachdb was only executing against master db.
 #>
 function Get-SIDatabaseRole
 {
@@ -38,8 +39,8 @@ function Get-SIDatabaseRole
     }
     
     $ModuleName = 'Get-SIDatabaseRole'
-    $ModuleVersion = '0.00.02'
-    $ModuleLastUpdated = 'November 25, 2022'
+    $ModuleVersion = '0.00.03'
+    $ModuleLastUpdated = 'November 28, 2022'
 
     try
     {
@@ -51,7 +52,7 @@ function Get-SIDatabaseRole
 		$TSQL = "CREATE TABLE #DatabaseRoles (RoleName VARCHAR(255), RoleType VARCHAR(255))
 
 				INSERT INTO #DatabaseRoles (RoleName, RoleType)
-				EXEC sp_MSforeachdb 'SELECT name AS RoleName, type_desc As RoleType FROM sys.database_principals WHERE type = ''R'''
+				EXEC sp_MSforeachdb 'SELECT name AS RoleName, type_desc As RoleType FROM [?].sys.database_principals WHERE type = ''R'''
 				
 				SELECT DISTINCT $(IF ($Internal) { "$ProcessID AS ProcessID, " })
 				$(IF ($Internal) { "$($SQLInstanceObj.SQLInstanceID) AS InstanceID, " })
