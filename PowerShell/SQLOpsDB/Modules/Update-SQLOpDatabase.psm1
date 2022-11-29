@@ -30,6 +30,7 @@ Date        Version Comments
 					Fixed bug with SQL Version compare.
 2022.10.31	0.00.06 Saved the Application Name for each Database.
 2022.11.28  0.00.07 Added Application Owner.
+2022.11.29  0.00.08 Missed Application Owner in CTE reference.
 #>
 function Update-SQLOpDatabase
 {
@@ -46,8 +47,8 @@ function Update-SQLOpDatabase
     }
     
     $ModuleName = 'Update-SQLOpDatabase'
-    $ModuleVersion = '0.00.07'
-    $ModuleLastUpdated = 'November 28, 2022'
+    $ModuleVersion = '0.00.08'
+    $ModuleLastUpdated = 'November 29, 2022'
    
     try
     {
@@ -95,7 +96,7 @@ function Update-SQLOpDatabase
 					FROM Staging.Databases
 				   WHERE ProcessID = $ProcessID)
 				MERGE dbo.Application AS Target
-				USING (SELECT ApplicationName FROM CTE) AS Source (ApplicationName)
+				USING (SELECT ApplicationName, ApplicationOwner FROM CTE) AS Source (ApplicationName, ApplicationOwner)
 		           ON (Target.ApplicationName = Source.ApplicationName)
 				WHEN NOT MATCHED THEN
 			    	INSERT (ApplicationName, ApplicationOwner) VALUES (Source.ApplicationName, Source.ApplicationOwner)
