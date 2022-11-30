@@ -53,7 +53,7 @@ function Update-SQLOpSQLJobStats
     }
     
     $ModuleName = 'Update-SQLOpSQLJobStats'
-    $ModuleVersion = '0.03'
+    $ModuleVersion = '0.00.03'
     $ModuleLastUpdated = 'October 28, 2022'
    
     try

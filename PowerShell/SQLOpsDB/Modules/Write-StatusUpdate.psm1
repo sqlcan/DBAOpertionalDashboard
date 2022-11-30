@@ -69,7 +69,7 @@ function Write-StatusUpdate
     )
 
     $ModuleName = 'Write-StatusUpdate'
-    $ModuleVersion = '0.10'
+    $ModuleVersion = '0.00.10'
     $ModuleLastUpdated = 'March 11, 2020'
 
     if ((Initialize-SQLOpsDB) -eq $Global:Error_FailedToComplete)

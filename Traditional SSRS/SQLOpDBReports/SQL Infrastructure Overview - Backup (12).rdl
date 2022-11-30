@@ -600,7 +600,6 @@ AND SI.LastUpdated &gt;= DATEADD(DAY,-1,GETDATE())</CommandText>
               <ChartTitle Name="Title1">
                 <Caption>SQL Server Instance Overview</Caption>
                 <Style>
-                  <BackgroundColor>Silver</BackgroundColor>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontWeight>Bold</FontWeight>
                   <TextDecoration>None</TextDecoration>
@@ -684,7 +683,7 @@ AND SI.LastUpdated &gt;= DATEADD(DAY,-1,GETDATE())</CommandText>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>Silver</BackgroundColor>
+                            <BackgroundColor>White</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1317,7 +1316,6 @@ AND SI.LastUpdated &gt;= DATEADD(DAY,-1,GETDATE())</CommandText>
               <ChartTitle Name="Default">
                 <Caption># of Databases by Version and Environment</Caption>
                 <Style>
-                  <BackgroundColor>Silver</BackgroundColor>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontWeight>Bold</FontWeight>
                   <TextDecoration>None</TextDecoration>
@@ -1648,7 +1646,6 @@ AND SI.LastUpdated &gt;= DATEADD(DAY,-1,GETDATE())</CommandText>
               <ChartTitle Name="Default">
                 <Caption>Total Databases Size (TB) by Version and Environment</Caption>
                 <Style>
-                  <BackgroundColor>Silver</BackgroundColor>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontWeight>Bold</FontWeight>
                   <TextDecoration>None</TextDecoration>
@@ -1943,7 +1940,6 @@ AND SI.LastUpdated &gt;= DATEADD(DAY,-1,GETDATE())</CommandText>
               <ChartTitle Name="Title1">
                 <Caption>Server Overview</Caption>
                 <Style>
-                  <BackgroundColor>Silver</BackgroundColor>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontWeight>Bold</FontWeight>
                   <TextDecoration>None</TextDecoration>
@@ -2210,7 +2206,6 @@ AND SI.LastUpdated &gt;= DATEADD(DAY,-1,GETDATE())</CommandText>
               <ChartTitle Name="Title1">
                 <Caption>SQL Instance Deployment Topologies</Caption>
                 <Style>
-                  <BackgroundColor>Silver</BackgroundColor>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontWeight>Bold</FontWeight>
                   <TextDecoration>None</TextDecoration>

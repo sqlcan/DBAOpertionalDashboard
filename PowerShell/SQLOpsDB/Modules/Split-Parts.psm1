@@ -26,6 +26,7 @@ Description
 .NOTES
 Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
+2016.06.09 0.00.01 Initial Version
 #>
 function Split-Parts
 {
@@ -42,7 +43,7 @@ function Split-Parts
     }
 
     $ModuleName = 'Split-Parts'
-    $ModuleVersion = '0.01'
+    $ModuleVersion = '0.00.01'
     $ModuleLastUpdated = 'June 9, 2016'
 
     Write-StatusUpdate -Message "$ModuleName [Version $ModuleVersion] - Last Updated ($ModuleLastUpdated)"

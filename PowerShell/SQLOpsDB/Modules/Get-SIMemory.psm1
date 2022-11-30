@@ -26,6 +26,7 @@ Date       Version Comments
 ---------- ------- ------------------------------------------------------------------
 2022.10.31 0.00.01 Initial Version
 2022.11.25 0.00.02 Handling multiple page files.
+2022.11.30 0.00.03 Reverting Get-CIMInstance to Get-WMIObject
 #>
 function Get-SIMemory
 {
@@ -41,8 +42,8 @@ function Get-SIMemory
     }
     
     $ModuleName = 'Get-SIMemory'
-    $ModuleVersion = '0.00.01'
-    $ModuleLastUpdated = 'October 31, 2022'
+    $ModuleVersion = '0.00.03'
+    $ModuleLastUpdated = 'November 30, 2022'
     
     # Review: https://devblogs.microsoft.com/scripting/hey-scripting-guy-how-can-i-use-erroractionpreference-to-control-cmdlet-handling-of-errors/
     $ErrorActionPreference = 'Stop'
@@ -60,9 +61,9 @@ function Get-SIMemory
         $MemoryObj.Memory_MB = 0
         $MemoryObj.PageFile_MB = 0
 
-        $MemoryObj.Memory_MB = ((Get-CimInstance -ClassName Win32_ComputerSystem -ComputerName $ComputerName).TotalPhysicalMemory)/1MB
+        $MemoryObj.Memory_MB = ((Get-WMIObject -ClassName Win32_ComputerSystem -ComputerName $ComputerName).TotalPhysicalMemory)/1MB
 
-		$PageFiles = Get-CimInstance -ClassName Win32_PageFileUsage -ComputerName $ComputerName
+		$PageFiles = Get-WMIObject -ClassName Win32_PageFileUsage -ComputerName $ComputerName
 		ForEach ($PageFile in $PageFiles)
 		{
 			$MemoryObj.PageFile_MB += $PageFile.AllocatedBaseSize

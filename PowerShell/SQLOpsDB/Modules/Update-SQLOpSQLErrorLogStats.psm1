@@ -56,7 +56,7 @@ function Update-SQLOpSQLErrorLogStats
     }
     
     $ModuleName = 'Update-SQLOpSQLErrorLogStats'
-    $ModuleVersion = '0.07'
+    $ModuleVersion = '0.00.07'
     $ModuleLastUpdated = 'October 28, 2022'
    
     try

@@ -260,8 +260,9 @@ LEFT JOIN dbo.SQLVersions SV
   FROM dbo.SQLClusters SC
   JOIN dbo.SQLInstances SI
     ON SC.SQLClusterID = SI.SQLClusterID
- WHERE SI.SQLInstanceType = 'Microsoft Clustering'
-    OR SI.SQLInstanceType = 'Veritas Clustering'
+ WHERE (SI.SQLInstanceType = 'Microsoft Clustering'
+    OR SI.SQLInstanceType = 'Veritas Clustering')
+AND SI.LastUpdated &gt;= DATEADD(DAY,-1,GETDATE())
 GROUP BY SI.SQLInstanceType
 
 UNION ALL
@@ -278,6 +279,7 @@ SELECT 'AlwaysOn Availiability Group', COUNT(DISTINCT SI.SQLInstanceID) AS ObjCo
   FROM dbo.SQLInstances SI
   JOIN dbo.AGInstances AGI
    ON SI.SQLInstanceID=AGi.SQLInstanceID
+WHERE SI.LastUpdated &gt;= DATEADD(DAY,-1,GETDATE())
 
 UNION ALL 
 
@@ -285,7 +287,8 @@ SELECT 'Stand Alone', COUNT(*)
   FROM dbo.SQLInstances SI
  WHERE SI.SQLInstanceType &lt;&gt; 'Microsoft Clustering'
    AND SI.SQLInstanceType &lt;&gt; 'Veritas Clustering'
-   AND SI.SQLInstanceID NOT IN (SELECT SQLInstanceID FROM dbo.AGInstances)</CommandText>
+   AND SI.SQLInstanceID NOT IN (SELECT SQLInstanceID FROM dbo.AGInstances)
+AND SI.LastUpdated &gt;= DATEADD(DAY,-1,GETDATE())</CommandText>
       </Query>
       <Fields>
         <Field Name="SQLInstanceType">
@@ -597,6 +600,7 @@ SELECT 'Stand Alone', COUNT(*)
               <ChartTitle Name="Title1">
                 <Caption>SQL Server Instance Overview</Caption>
                 <Style>
+                  <BackgroundColor>Silver</BackgroundColor>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontWeight>Bold</FontWeight>
                   <TextDecoration>None</TextDecoration>
@@ -680,7 +684,7 @@ SELECT 'Stand Alone', COUNT(*)
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1313,6 +1317,7 @@ SELECT 'Stand Alone', COUNT(*)
               <ChartTitle Name="Default">
                 <Caption># of Databases by Version and Environment</Caption>
                 <Style>
+                  <BackgroundColor>Silver</BackgroundColor>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontWeight>Bold</FontWeight>
                   <TextDecoration>None</TextDecoration>
@@ -1643,6 +1648,7 @@ SELECT 'Stand Alone', COUNT(*)
               <ChartTitle Name="Default">
                 <Caption>Total Databases Size (TB) by Version and Environment</Caption>
                 <Style>
+                  <BackgroundColor>Silver</BackgroundColor>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontWeight>Bold</FontWeight>
                   <TextDecoration>None</TextDecoration>
@@ -1937,6 +1943,7 @@ SELECT 'Stand Alone', COUNT(*)
               <ChartTitle Name="Title1">
                 <Caption>Server Overview</Caption>
                 <Style>
+                  <BackgroundColor>Silver</BackgroundColor>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontWeight>Bold</FontWeight>
                   <TextDecoration>None</TextDecoration>
@@ -2051,7 +2058,7 @@ SELECT 'Stand Alone', COUNT(*)
                       <FontSize>8pt</FontSize>
                     </Style>
                     <ChartAxisTitle>
-                      <Caption>Operating System Version</Caption>
+                      <Caption>Deployment Topolgy</Caption>
                       <Style>
                         <FontSize>8pt</FontSize>
                       </Style>
@@ -2203,6 +2210,7 @@ SELECT 'Stand Alone', COUNT(*)
               <ChartTitle Name="Title1">
                 <Caption>SQL Instance Deployment Topologies</Caption>
                 <Style>
+                  <BackgroundColor>Silver</BackgroundColor>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontWeight>Bold</FontWeight>
                   <TextDecoration>None</TextDecoration>

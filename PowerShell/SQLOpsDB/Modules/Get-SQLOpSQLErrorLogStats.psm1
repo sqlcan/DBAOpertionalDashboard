@@ -56,7 +56,7 @@ function Get-SQLOpSQLErrorLogStats
     }
     
     $ModuleName = 'Get-SQLOpSQLErrorLogStats'
-    $ModuleVersion = '0.09'
+    $ModuleVersion = '0.00.09'
     $ModuleLastUpdated = 'October 29, 2022'
 
     try

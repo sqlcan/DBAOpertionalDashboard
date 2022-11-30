@@ -8,6 +8,8 @@
 #
 # 2022.11.15 Added setting for Policy Results Clean up.
 
+$ModuleVersion = '0.00.03'
+
 # By default connection information will be loaded from JSON File.
 $Global:JSONSettingsFile = '\..\Config\SQLOpsDB.json'
 $Global:SQLOpsDBConnections = $null # Loaded via Initialize-SQLOpsDB

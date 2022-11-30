@@ -41,7 +41,7 @@ function Update-SQLOpServerPermission
     }
     
     $ModuleName = 'Update-SQLOpServerPermission'
-    $ModuleVersion = '0.01'
+    $ModuleVersion = '0.00.01'
     $ModuleLastUpdated = 'November 2, 2022'
 
     # Validate sql instance exists.

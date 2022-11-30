@@ -16,6 +16,9 @@ Script Naming Standard
 - Schema Order (No functional need, but just organization)
 -- CMS, dbo, History, Policy, Trending, Security, Staging, Expired, Snapshot
 
+- After release of Version 3.00.00.0000, future database updates will be made with alter script.
+- The main scripts will change as whole. But will provide upgrade path for incremental changes.
+
 Example:
 
 000.O_Configure_CMSGroups_ASK_.sql

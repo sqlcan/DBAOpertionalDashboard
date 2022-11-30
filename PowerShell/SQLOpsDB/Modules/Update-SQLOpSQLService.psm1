@@ -52,7 +52,7 @@ function Update-SQLOpSQLService
     }
     
     $ModuleName = 'Update-SQLOpSQLService'
-    $ModuleVersion = '00.00.09'
+    $ModuleVersion = '0.00.09'
     $ModuleLastUpdated = 'October 31, 2022'
 
     try

@@ -638,6 +638,7 @@ OR @Status = 'Both')</CommandText>
               <ChartTitle Name="Default">
                 <Caption>SQL Services Overview</Caption>
                 <Style>
+                  <BackgroundColor>Silver</BackgroundColor>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontSize>9pt</FontSize>
                   <FontWeight>Bold</FontWeight>
@@ -1048,6 +1049,7 @@ OR @Status = 'Both')</CommandText>
               <ChartTitle Name="Default">
                 <Caption>SQL Errors Overview</Caption>
                 <Style>
+                  <BackgroundColor>Silver</BackgroundColor>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontSize>9pt</FontSize>
                   <FontWeight>Bold</FontWeight>
@@ -1442,6 +1444,7 @@ OR @Status = 'Both')</CommandText>
               <ChartTitle Name="Default">
                 <Caption>Database Overview</Caption>
                 <Style>
+                  <BackgroundColor>Silver</BackgroundColor>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontSize>9pt</FontSize>
                   <FontWeight>Bold</FontWeight>
@@ -1852,6 +1855,7 @@ OR @Status = 'Both')</CommandText>
               <ChartTitle Name="Default">
                 <Caption>SQL Configuration Health</Caption>
                 <Style>
+                  <BackgroundColor>Silver</BackgroundColor>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontSize>9pt</FontSize>
                   <FontWeight>Bold</FontWeight>
@@ -1959,7 +1963,9 @@ OR @Status = 'Both')</CommandText>
                         </Actions>
                       </ActionInfo>
                       <Style>
-                        <Color>=IIF(Fields!JobStatus.Value="Successful","Green","Red")</Color>
+                        <Color>=IIF(Fields!JobStatus.Value="Successful",
+   "Green",
+   IIF(Fields!JobStatus.Value="Cancelled","Tomato","Red"))</Color>
                       </Style>
                       <ChartMarker>
                         <Style />
@@ -2245,6 +2251,7 @@ OR @Status = 'Both')</CommandText>
               <ChartTitle Name="Default">
                 <Caption>SQL Jobs Overview</Caption>
                 <Style>
+                  <BackgroundColor>Silver</BackgroundColor>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontSize>9pt</FontSize>
                   <FontWeight>Bold</FontWeight>
@@ -2362,6 +2369,7 @@ OR @Status = 'Both')</CommandText>
                     </ChartDataPoint>
                   </ChartDataPoints>
                   <Type>Shape</Type>
+                  <Subtype>Doughnut</Subtype>
                   <Style />
                   <ChartEmptyPoints>
                     <Style />
@@ -2639,6 +2647,7 @@ OR @Status = 'Both')</CommandText>
               <ChartTitle Name="Default">
                 <Caption>Large Database Size Change</Caption>
                 <Style>
+                  <BackgroundColor>Silver</BackgroundColor>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontSize>9pt</FontSize>
                   <FontWeight>Bold</FontWeight>
@@ -2730,7 +2739,7 @@ OR @Status = 'Both')</CommandText>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>

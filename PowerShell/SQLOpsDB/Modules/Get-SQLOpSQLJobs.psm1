@@ -36,7 +36,7 @@ function Get-SQLOpSQLJobs
     }
 
     $ModuleName = 'Get-SQLOpSQLJobs'
-    $ModuleVersion = '0.01'
+    $ModuleVersion = '0.00.01'
     $ModuleLastUpdated = 'March 6, 2020'
 
     try

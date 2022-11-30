@@ -35,5 +35,3 @@ ALTER TABLE [dbo].[SQLClusters] ADD  CONSTRAINT [DF_SQLClusters_IsMonitored]  DE
 ALTER TABLE [dbo].[SQLClusters] ADD  CONSTRAINT [DF_SQLClusters_DiscoveryOn]  DEFAULT (getdate()) FOR [DiscoveryOn]
 
 ALTER TABLE [dbo].[SQLClusters] ADD  CONSTRAINT [DF_SQLClusters_LastUpdated]  DEFAULT (getdate()) FOR [LastUpdated]
-
-CREATE UNIQUE INDEX ui_SQLClusters_SQLClusterName ON dbo.SQLClusters(SQLClusterName)

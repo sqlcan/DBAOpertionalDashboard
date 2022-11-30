@@ -1,0 +1,38 @@
+Version Change Guidance & Reporting to Field
+
+Each file has a version.
+- Report File.
+- Command Let Scripts.
+- Collection Scripts.
+- Policy Zip File.
+- Database Scripts.
+
+Major.Minor.Build.Revision
+#.##.##.####
+
+If higher level version change, all lower level reset to 0.
+E.g. Changing 3.00.10.0000 to 3.01.00.0000 (the #.##.10.#### reset to 0).
+
+Revision
+--------
+Value goes from 0000 to 9999.  Should most likely never reset by itself.
+Minor fixes such as spelling mistakes, formatting, etc.
+Code refactor - with no change to functionality.
+Reporting minor changing formating, fixing layout, etc.
+
+Build
+-----
+Value goes from 00 to 99 before restarting to 00 and increasing Minor version.
+Minor bug fixes, requires changes few command-lets and maybe some changes in collection script.
+Code refactor - with minor change to functionality.
+Updating reporting needs, new data shown - New parameters, etc.
+
+Minor
+-----
+Value goes from 00 to 99 before restarting to 00 and increasing Major version.
+Rewrite command-lets, collection script, or such.
+Report re-write.
+
+Major
+-----
+Should not update without incremental updates.

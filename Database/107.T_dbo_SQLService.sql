@@ -11,7 +11,7 @@
 USE [SQLOpsDB]
 GO
 
-CREATE TABLE dbo.SQLService (SQLServiceID INT PRIMARY KEY IDENTITY (1,1) NOT NULL,
+CREATE TABLE dbo.SQLService (SQLServiceID INT IDENTITY (1,1) NOT NULL,
 							 ServerID INT,
 							 ServiceName VARCHAR(255),
 							 InstanceName VARCHAR(255),
@@ -24,11 +24,13 @@ CREATE TABLE dbo.SQLService (SQLServiceID INT PRIMARY KEY IDENTITY (1,1) NOT NUL
 							 ServiceBuild VARCHAR(25),
 							 Status VARCHAR(25),
 							 DiscoveryOn DATE DEFAULT(GetDate()),
-							 LastUpdated DATE DEFAULT(GetDate()))
+							 LastUpdated DATE DEFAULT(GetDate()),
+							CONSTRAINT [PK_SQLService] PRIMARY KEY CLUSTERED 
+							( [SQLServiceID] ASC)
+							WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY])
 
 ALTER TABLE [dbo].[SQLService]  WITH CHECK ADD  CONSTRAINT [FK_SQLService_Servers] FOREIGN KEY([ServerID])
 REFERENCES [dbo].[Servers] ([ServerID])
 
 ALTER TABLE [dbo].[SQLService] CHECK CONSTRAINT [FK_SQLService_Servers]
 
-CREATE INDEX idx_SQLService_ServerID ON dbo.SQLService(ServerID)

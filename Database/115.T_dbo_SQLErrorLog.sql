@@ -31,7 +31,3 @@ ALTER TABLE [dbo].[SQLErrorLog]  WITH CHECK ADD  CONSTRAINT [FK_SQLErrorLog_SQLI
 REFERENCES [dbo].[SQLInstances] ([SQLInstanceID])
 
 ALTER TABLE [dbo].[SQLErrorLog] CHECK CONSTRAINT [FK_SQLErrorLog_SQLInstances]
-
-CREATE INDEX idx_SQLErrorLog_SQLInstanceID ON [dbo].[SQLErrorLog]([SQLInstanceID])
-
-CREATE INDEX idx_SQLErrorLog_DateTime ON [dbo].[SQLErrorLog]([DateTime])

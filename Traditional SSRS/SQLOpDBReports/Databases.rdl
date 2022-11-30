@@ -35,10 +35,27 @@
          MAX(DatabaseSizeID) AS LastCollectionID
     FROM dbo.DatabaseSize DS
 GROUP BY DatabaseID, FileType),
+DatabaseSizeLastCollectionPrevious AS (
+SELECT DS.DatabaseID,
+         DS.FileType,
+         MAX(DatabaseSizeID) AS LastCollectionID
+    FROM dbo.DatabaseSize DS
+	JOIN DatabaseSizeLastCollection C
+	  ON DS.DatabaseID = C.DatabaseID
+	 AND DS.FileType = C.FileType
+	 AND DS.DatabaseSizeID &lt;&gt; C.LastCollectionID
+GROUP BY DS.DatabaseID, DS.FileType),
 DatabaseSize_mb AS (
 SELECT DS.DatabaseID, DS.DateCaptured, DS.FileType, DS.FileSize_mb
   FROM dbo.DatabaseSize DS
   JOIN DatabaseSizeLastCollection DSL
+    ON DS.DatabaseID = DSL.DatabaseID
+   AND DS.DatabaseSizeID = DSL.LastCollectionID
+   AND DS.FileType = DSL.FileType),
+DatabaseSizePrevious_mb AS (
+SELECT DS.DatabaseID, DS.DateCaptured, DS.FileType, DS.FileSize_mb
+  FROM dbo.DatabaseSize DS
+  JOIN DatabaseSizeLastCollectionPrevious DSL
     ON DS.DatabaseID = DSL.DatabaseID
    AND DS.DatabaseSizeID = DSL.LastCollectionID
    AND DS.FileType = DSL.FileType)
@@ -53,6 +70,8 @@ SELECT   SI.ServerInstance
           , D.DatabaseState
           , ISNULL(DSd.FileSize_mb,0) AS DataFileSize_mb
           , ISNULL(DSl.FileSize_mb,0) AS LogFileSize_mb
+          , ISNULL(DSd2.FileSize_mb,0) AS pDataFileSize_mb
+          , ISNULL(DSl2.FileSize_mb,0) AS pLogFileSize_mb
 		  , AG.AGID
 		  , AG.AGName AS AvailabilityGroupName
           , D.DiscoveryOn
@@ -66,6 +85,12 @@ LEFT JOIN DatabaseSize_mb DSd
 LEFT  JOIN DatabaseSize_mb DSl
     ON D.DatabaseID  = DSl.DatabaseID
    AND DSl.FileType = 'Log'
+LEFT JOIN DatabaseSizePrevious_mb DSd2
+    ON D.DatabaseID = DSd2.DatabaseID
+   AND DSd2.FileType = 'Data'
+LEFT JOIN DatabaseSizePrevious_mb DSl2
+   ON D.DatabaseID = DSl2.DatabaseID
+  AND DSl2.FileType = 'Log'
   JOIN dbo.SQLVersions SV
     ON SI.SQLInstanceVersionID = SV.SQLVersionID
 LEFT JOIN dbo.Application App
@@ -132,9 +157,17 @@ AND  NOT EXISTS (SELECT *
           <DataField>LogFileSize_mb</DataField>
           <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
+        <Field Name="pDataFileSize_mb">
+          <DataField>pDataFileSize_mb</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
         <Field Name="AGID">
           <DataField>AGID</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="pLogFileSize_mb">
+          <DataField>pLogFileSize_mb</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
         <Field Name="DiscoveryOn">
           <DataField>DiscoveryOn</DataField>
@@ -184,6 +217,9 @@ AND  NOT EXISTS (SELECT *
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.17708in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.61458in</Width>
@@ -327,6 +363,41 @@ AND  NOT EXISTS (SELECT *
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox30</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox3">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Change 1D (MB)</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox3</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -620,6 +691,41 @@ AND  NOT EXISTS (SELECT *
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
+                        <Textbox Name="Textbox4">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=(Fields!DataFileSize_mb.Value+Fields!LogFileSize_mb.Value)-(Fields!pDataFileSize_mb.Value+Fields!pLogFileSize_mb.Value)</Value>
+                                  <Style>
+                                    <Format>#,0;(#,0)</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox4</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=IIF(RowNumber("DBList") MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
                         <Textbox Name="AvailabilityGroupName">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -827,6 +933,7 @@ AND  NOT EXISTS (SELECT *
             </TablixBody>
             <TablixColumnHierarchy>
               <TablixMembers>
+                <TablixMember />
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
@@ -1116,7 +1223,7 @@ AND  NOT EXISTS (SELECT *
             <Top>0.26139in</Top>
             <Left>0.0125in</Left>
             <Height>0.5in</Height>
-            <Width>14.46875in</Width>
+            <Width>15.64583in</Width>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -1145,7 +1252,7 @@ IIF(Parameters!SQLInstanceEnviornment.Value&lt;&gt;"ALL"," for " &amp; Parameter
             <rd:DefaultName>Textbox5</rd:DefaultName>
             <Top>0.01389in</Top>
             <Height>0.22555in</Height>
-            <Width>14.48125in</Width>
+            <Width>15.65833in</Width>
             <ZIndex>1</ZIndex>
             <Style>
               <Border>
@@ -1175,7 +1282,7 @@ IIF(Parameters!SQLInstanceEnviornment.Value&lt;&gt;"ALL"," for " &amp; Parameter
         <Height>0.80722in</Height>
         <Style />
       </Body>
-      <Width>14.48125in</Width>
+      <Width>15.68958in</Width>
       <Page>
         <PageHeader>
           <Height>0.42694in</Height>
@@ -1218,7 +1325,7 @@ IIF(Parameters!SQLInstanceEnviornment.Value&lt;&gt;"ALL"," for " &amp; Parameter
               <rd:DefaultName>Textbox5</rd:DefaultName>
               <Left>1.82292in</Left>
               <Height>0.41305in</Height>
-              <Width>10.83541in</Width>
+              <Width>11.96041in</Width>
               <ZIndex>1</ZIndex>
               <Style>
                 <Border>
@@ -1250,7 +1357,7 @@ IIF(Parameters!SQLInstanceEnviornment.Value&lt;&gt;"ALL"," for " &amp; Parameter
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
               <Top>0.01389in</Top>
-              <Left>12.65833in</Left>
+              <Left>13.78333in</Left>
               <Height>0.21528in</Height>
               <Width>1.82292in</Width>
               <ZIndex>2</ZIndex>
@@ -1284,7 +1391,7 @@ IIF(Parameters!SQLInstanceEnviornment.Value&lt;&gt;"ALL"," for " &amp; Parameter
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
               <Top>0.25695in</Top>
-              <Left>12.65833in</Left>
+              <Left>13.78333in</Left>
               <Height>0.16999in</Height>
               <Width>1.82292in</Width>
               <ZIndex>3</ZIndex>

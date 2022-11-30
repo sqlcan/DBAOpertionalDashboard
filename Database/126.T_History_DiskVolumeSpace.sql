@@ -28,3 +28,8 @@ CREATE TABLE [History].[DiskVolumeSpace](
 	[SpaceHistoryID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
+
+ALTER TABLE [History].[DiskVolumeSpace]  WITH CHECK ADD  CONSTRAINT [FK_DiskVolumeSpace_DiskVolumeID] FOREIGN KEY([DiskVolumeID])
+REFERENCES [dbo].[DiskVolumes] ([DiskVolumeID])
+
+ALTER TABLE [History].[DiskVolumeSpace] CHECK CONSTRAINT [FK_DiskVolumeSpace_DiskVolumeID]

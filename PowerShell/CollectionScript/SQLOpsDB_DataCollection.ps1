@@ -44,7 +44,8 @@ catch
 
 if (($SQLServers -eq $Global:Error_FailedToComplete) -or ($SQLServers -eq $Global:Error_ObjectsNotFound))
 {
-    Write-Error "No SQL Server instances found with criteria supplied. Collection failed."
+	Write-StatusUpdate "No SQL Server instances found. Review Get-SQLOpCMSGroup." -WriteToDB
+	Write-StatusUpdate "SQLOpsDB - Collection End" -WriteToDB
     return
 }
 #endregion
@@ -233,7 +234,7 @@ ForEach ($SQLServerRC in $SQLServers)
 
                     Write-StatusUpdate -Message "... New server, adding to database."
                     $InnerResults = Add-SQLOpServer -ComputerName $ServerName -OperatingSystem $OperatingSystem -ProcessorName $ProcessorObj.Name `
-                                                    -NumberOfCores $ProcessorObj.NumberOfCores -NumberOfLogicalCores $ProcessorObj.NumberOfLogicalProcessors `
+                                                    -NumberOfCores $ProcessorObj.NumberOfCores -NumberOfLogicalCores $ProcessorObj.NumberOfLogicalCores `
                                                     -IsPhysical $IsPhysical -Memory $MemoryObj.Memory_MB -PageFile $MemoryObj.PageFile_MB
                     Switch ($InnerResults)
                     {
@@ -263,7 +264,7 @@ ForEach ($SQLServerRC in $SQLServers)
                     if ($ServerIsMonitored)
                     {
                         $InnerResults = Update-SQLOpServer -ComputerName $ServerName -OperatingSystem $OperatingSystem -ProcessorName $ProcessorObj.Name `
-                                                           -NumberOfCores $ProcessorObj.NumberOfCores -NumberOfLogicalCores $ProcessorObj.NumberOfLogicalProcessors `
+                                                           -NumberOfCores $ProcessorObj.NumberOfCores -NumberOfLogicalCores $ProcessorObj.NumberOfLogicalCores `
                                                            -IsPhysical $IsPhysical -Memory $MemoryObj.Memory_MB -PageFile $MemoryObj.PageFile_MB
 
                         if ($InnerResults -eq $Global:Error_FailedToComplete)
@@ -659,7 +660,7 @@ Write-StatusUpdate -Message "Phase 3: Create Daily Snapshot"
 Publish-SQLOpSnapshot | Out-Null
 
 #Phase 4: Utility Functions (Cleanup, Aggregate, Truncate, etc.)
-Write-StatusUpdate -Message "Phase 4: Utility Functions (Cleanup, Aggregate, Truncate, etc.)"
+Write-StatusUpdate -Message "Phase 4: Utility Functions (Cleanup, Aggregate, Truncate, etc.)"  -WriteToDB
 
     $CurrentDate = Get-Date
     $FirstDayOfMonth = Get-Date -Year $CurrentDate.Year -Month $CurrentDate.Month -Day 1
@@ -667,11 +668,11 @@ Write-StatusUpdate -Message "Phase 4: Utility Functions (Cleanup, Aggregate, Tru
     $FirstDayOfMonth = $FirstDayOfMonth.ToString('yyyyMMdd')
 
     #Phase 4.1: Clean Up Expired Data
-    Write-StatusUpdate -Message "Phase 4.1: Clean Up Expired Data"
+    Write-StatusUpdate -Message "Phase 4.1: Clean Up Expired Data"  -WriteToDB
 	Clear-SQLOpData -DataSet Expired | Out-Null
 
     #Phase 4.2: Aggregate Data for Disk Space and Database Space
-    Write-StatusUpdate -Message "Phase 4.2: Aggregate Data for Disk Space and Database Space"
+    Write-StatusUpdate -Message "Phase 4.2: Aggregate Data for Disk Space and Database Space"  -WriteToDB
     if ($Today -eq $FirstDayOfMonth)
     {
         Publish-SQLOpMonthlyAggregate | Out-Null
@@ -679,11 +680,11 @@ Write-StatusUpdate -Message "Phase 4: Utility Functions (Cleanup, Aggregate, Tru
     }
 
     #Phase 4.3: Truncate Raw Data for Disk Space and Database Space
-    Write-StatusUpdate -Message "Phase 4.3: Truncate Raw Data for Disk Space and Database Space"
+    Write-StatusUpdate -Message "Phase 4.3: Truncate Raw Data for Disk Space and Database Space"  -WriteToDB
 	Clear-SQLOpData -DataSet RawData | Out-Null
 
     #Phase 3.4: Build Trending Data, Truncate Aggregate Data
-    Write-StatusUpdate -Message "Phase 4.4: Build Trending Data, Truncate Aggregate Data"
+    Write-StatusUpdate -Message "Phase 4.4: Build Trending Data, Truncate Aggregate Data" -WriteToDB
     if ($Today -eq $FirstDayOfMonth)
     {
         Publish-SQLOpTreadData | Out-Null
@@ -691,25 +692,25 @@ Write-StatusUpdate -Message "Phase 4: Utility Functions (Cleanup, Aggregate, Tru
     }
 
     #Phase 4.5: Clean Up Expired Data
-    Write-StatusUpdate -Message "Phase 4.5: Clean Up SQL Logs"
+    Write-StatusUpdate -Message "Phase 4.5: Clean Up SQL Logs" -WriteToDB
 	Clear-SQLOpData -DataSet SQL_ErrorLog | Out-Null
 
     #Phase 4.6: Clean Up Expired Data
-    Write-StatusUpdate -Message "Phase 4.6: Clean Up SQL Agent Logs"
+    Write-StatusUpdate -Message "Phase 4.6: Clean Up SQL Agent Logs" -WriteToDB
 	Clear-SQLOpData -DataSet SQL_JobHistory | Out-Null
 
     #Phase 4.7: Clean Up Policy Result History
-    Write-StatusUpdate -Message "Phase 4.7: Clean Up Policy Results Data"
+    Write-StatusUpdate -Message "Phase 4.7: Clean Up Policy Results Data" -WriteToDB
 	Clear-SQLOpData -DataSet Policy_Results | Out-Null
 
     #Phase 4.8: Clean Up SQLOpsDB Log Data
-    Write-StatusUpdate -Message "Phase 4.8: Clean Up SQLOpDB Log Data"
+    Write-StatusUpdate -Message "Phase 4.8: Clean Up SQLOpDB Log Data" -WriteToDB
 
     if ($Today -eq $FirstDayOfMonth)
     {
         Clear-SQLOpData -DataSet SQLOps_Logs | Out-Null
     }
 
-	Write-StatusUpdate "SQLOpsDB - Collection End" -WriteToDB
+Write-StatusUpdate "SQLOpsDB - Collection End" -WriteToDB
 
 ## Code End

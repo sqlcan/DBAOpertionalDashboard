@@ -47,7 +47,7 @@ function Update-SQLOpSQLErrorLog
     }
     
     $ModuleName = 'Update-SQLOpSQLErrorLog'
-    $ModuleVersion = '0.06'
+    $ModuleVersion = '0.00.06'
     $ModuleLastUpdated = 'October 31, 2022'
 
     # Validate sql instance exists.

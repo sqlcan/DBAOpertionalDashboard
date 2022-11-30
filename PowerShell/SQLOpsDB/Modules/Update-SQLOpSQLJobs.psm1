@@ -45,7 +45,7 @@ function Update-SQLOpSQLJobs
     }
     
     $ModuleName = 'Update-SQLOpSQLJobs'
-    $ModuleVersion = '0.04'
+    $ModuleVersion = '0.00.04'
     $ModuleLastUpdated = 'October 31, 2022'
 
     # Validate sql instance exists.

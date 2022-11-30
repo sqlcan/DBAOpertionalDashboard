@@ -285,7 +285,8 @@ WHERE VolumeOfChangeCategory = @CategoryName</CommandText>
                                   <Value>=Fields!SQLInstanceName.Value</Value>
                                   <Style>
                                     <FontFamily />
-                                    <Color>#333333</Color>
+                                    <TextDecoration>Underline</TextDecoration>
+                                    <Color>CornflowerBlue</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -293,6 +294,20 @@ WHERE VolumeOfChangeCategory = @CategoryName</CommandText>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>SQLInstanceName</rd:DefaultName>
+                          <ActionInfo>
+                            <Actions>
+                              <Action>
+                                <Drillthrough>
+                                  <ReportName>SQL Instances</ReportName>
+                                  <Parameters>
+                                    <Parameter Name="ComputerName">
+                                      <Value>=Fields!ComputerName.Value</Value>
+                                    </Parameter>
+                                  </Parameters>
+                                </Drillthrough>
+                              </Action>
+                            </Actions>
+                          </ActionInfo>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -384,7 +399,7 @@ WHERE VolumeOfChangeCategory = @CategoryName</CommandText>
             <Top>0.24499in</Top>
             <Left>0.00695in</Left>
             <Height>0.43in</Height>
-            <Width>7.97916in</Width>
+            <Width>7.97915in</Width>
             <Style>
               <Border>
                 <Style>Solid</Style>

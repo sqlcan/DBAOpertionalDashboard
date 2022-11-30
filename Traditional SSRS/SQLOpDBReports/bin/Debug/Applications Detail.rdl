@@ -1,79 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+<Report MustUnderstand="df" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:df="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition/defaultfontfamily">
+  <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="dsMain">
       <DataSourceReference>dsMain</DataSourceReference>
       <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>0d8fb927-d867-4167-b2c1-4dc23b87205c</rd:DataSourceID>
+      <rd:DataSourceID>504787bb-2691-445e-9a5e-6038752a276d</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <DataSets>
-    <DataSet Name="report_ObjectDetails">
-      <Query>
-        <DataSourceName>dsMain</DataSourceName>
-        <QueryParameters>
-          <QueryParameter Name="@PolicyName">
-            <Value>=Parameters!PolicyName.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@PolicyResult">
-            <Value>=Parameters!PolicyResult.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@CategoryName">
-            <Value>=Parameters!CategoryName.Value</Value>
-          </QueryParameter>
-        </QueryParameters>
-        <CommandText>SELECT CategoryName
-      ,PSN.Policy_ID
-      ,PolicyName
-      ,EvaluatedServer
-      ,ObjectName
-      ,EvaluationDateTime
-      ,PolicyResult
-  FROM Policy.PolicyHistorySummary PHS
-  JOIN Policy.PolicyShortName PSN
-    ON PHS.policy_id = PSN.Policy_ID
- WHERE PSN.Policy_ShortName = @PolicyName
-   AND PolicyResult = @PolicyResult
-   AND CategoryName LIKE '%' + @CategoryName
-   AND NOT EXISTS (SELECT *
-                     FROM Policy.PolicyExclusions PE
-                    WHERE PHS.EvaluatedServer LIKE PE.EvaluatedServer
-                      AND PHS.ObjectName LIKE PE.ObjectName
-                      AND PHS.policy_id = PE.Policy_ID)</CommandText>
-        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
-      </Query>
-      <Fields>
-        <Field Name="EvaluatedServer">
-          <DataField>EvaluatedServer</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="CategoryName">
-          <DataField>CategoryName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Policy_ID">
-          <DataField>Policy_ID</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ObjectName">
-          <DataField>ObjectName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="PolicyName">
-          <DataField>PolicyName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="EvaluationDateTime">
-          <DataField>EvaluationDateTime</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="PolicyResult">
-          <DataField>PolicyResult</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
     <DataSet Name="ReportLogo">
       <SharedDataSet>
         <SharedDataSetReference>ReportLogo</SharedDataSetReference>
@@ -89,38 +25,88 @@
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="ApplicationDetails">
+      <Query>
+        <DataSourceName>dsMain</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@ApplicationName">
+            <Value>=Parameters!ApplicationName.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>WITH CTE AS (SELECT DatabaseID, MAX(DateCaptured) AS LastDate FROM dbo.DatabaseSize GROUP BY DatabaseID)
+SELECT SI.ServerInstance, SI.SQLInstanceEnviornment, App.ApplicationName, App.ApplicationOwner, D.DatabaseName, SUM(DS.FileSize_mb) AS TotalDBSize_mb
+  FROM dbo.Application App
+  JOIN dbo.Databases D
+    ON App.ApplicationID = D.ApplicationID
+  JOIN dbo.vSQLInstances SI
+    ON D.SQLInstanceID = SI.SQLInstanceID
+  JOIN dbo.DatabaseSize DS
+    ON DS.DatabaseID = D.DatabaseID
+  JOIN CTE C
+    ON DS.DatabaseID = C.DatabaseID
+   AND DS.DateCaptured = C.LastDate
+WHERE ApplicationName = @ApplicationName
+GROUP BY SI.ServerInstance, SI.SQLInstanceEnviornment, App.ApplicationName, App.ApplicationOwner, D.DatabaseName</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ServerInstance">
+          <DataField>ServerInstance</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="SQLInstanceEnviornment">
+          <DataField>SQLInstanceEnviornment</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ApplicationName">
+          <DataField>ApplicationName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ApplicationOwner">
+          <DataField>ApplicationOwner</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="DatabaseName">
+          <DataField>DatabaseName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TotalDBSize_mb">
+          <DataField>TotalDBSize_mb</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
       <Body>
         <ReportItems>
-          <Tablix Name="Tablix1">
+          <Tablix Name="T1">
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>1.67708in</Width>
+                  <Width>2.21041in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1in</Width>
+                  <Width>3.08959in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.5625in</Width>
+                  <Width>1.49722in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
-                  <Height>0.21875in</Height>
+                  <Height>0.25in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox4">
+                        <Textbox Name="Textbox1">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Object</Value>
+                                  <Value>Server Instance</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -129,48 +115,12 @@
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox4</rd:DefaultName>
+                          <rd:DefaultName>Textbox1</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox14">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Status</Value>
-                                  <Style>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox14</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BackgroundColor>White</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -188,7 +138,39 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Evaluation Date Time</Value>
+                                  <Value>Database</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox3</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox6">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Size (MB)</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -199,13 +181,12 @@
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox3</rd:DefaultName>
+                          <rd:DefaultName>Textbox6</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>White</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -221,27 +202,27 @@
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="ObjectName">
+                        <Textbox Name="Textbox18">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!ObjectName.Value</Value>
+                                  <Value />
                                   <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>ObjectName</rd:DefaultName>
+                          <rd:DefaultName>Textbox18</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>=IIF(RowNumber("Tablix1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <BackgroundColor>=IIF(RowNumber("T1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -252,27 +233,27 @@
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="PolicyResult">
+                        <Textbox Name="Textbox19">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!PolicyResult.Value</Value>
+                                  <Value />
                                   <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>PolicyResult</rd:DefaultName>
+                          <rd:DefaultName>Textbox19</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>=IIF(RowNumber("Tablix1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <BackgroundColor>=IIF(RowNumber("T1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -283,16 +264,116 @@
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="EvaluationDateTime">
+                        <Textbox Name="Textbox22">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!EvaluationDateTime.Value</Value>
+                                  <Value />
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox22</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=IIF(RowNumber("T1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="ServerInstance">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!ServerInstance.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>ServerInstance</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=IIF(RowNumber("T1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="DatabaseName">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!DatabaseName.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>DatabaseName</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=IIF(RowNumber("T1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="TotalDBSize_mb">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!TotalDBSize_mb.Value</Value>
                                   <Style>
-                                    <Format>g</Format>
+                                    <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -301,13 +382,118 @@
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>EvaluationDateTime</rd:DefaultName>
+                          <rd:DefaultName>TotalDBSize_mb</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>=IIF(RowNumber("Tablix1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <BackgroundColor>=IIF(RowNumber("T1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox21">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox21</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>Gainsboro</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox4">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=COUNT(Fields!DatabaseName.Value)</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox4</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>Gainsboro</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="TotalDBSize_mb1">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Sum(Fields!TotalDBSize_mb.Value)</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <Format>#,0.00;(#,0.00)</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>TotalDBSize_mb1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>Gainsboro</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -331,7 +517,7 @@
               <TablixMembers>
                 <TablixMember>
                   <TablixHeader>
-                    <Size>1.82292in</Size>
+                    <Size>1.81042in</Size>
                     <CellContents>
                       <Textbox Name="Textbox8">
                         <CanGrow>true</CanGrow>
@@ -340,8 +526,9 @@
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>Server Instance</Value>
+                                <Value>Application</Value>
                                 <Style>
+                                  <FontFamily>Arial</FontFamily>
                                   <FontWeight>Bold</FontWeight>
                                 </Style>
                               </TextRun>
@@ -355,7 +542,6 @@
                             <Color>LightGrey</Color>
                             <Style>Solid</Style>
                           </Border>
-                          <BackgroundColor>White</BackgroundColor>
                           <PaddingLeft>2pt</PaddingLeft>
                           <PaddingRight>2pt</PaddingRight>
                           <PaddingTop>2pt</PaddingTop>
@@ -367,17 +553,18 @@
                   <TablixMembers>
                     <TablixMember>
                       <TablixHeader>
-                        <Size>1.70833in</Size>
+                        <Size>1.71805in</Size>
                         <CellContents>
-                          <Textbox Name="Textbox10">
+                          <Textbox Name="Textbox2">
                             <CanGrow>true</CanGrow>
                             <KeepTogether>true</KeepTogether>
                             <Paragraphs>
                               <Paragraph>
                                 <TextRuns>
                                   <TextRun>
-                                    <Value>Category </Value>
+                                    <Value>Application Owner</Value>
                                     <Style>
+                                      <FontFamily>Arial</FontFamily>
                                       <FontWeight>Bold</FontWeight>
                                     </Style>
                                   </TextRun>
@@ -385,13 +572,12 @@
                                 <Style />
                               </Paragraph>
                             </Paragraphs>
-                            <rd:DefaultName>Textbox10</rd:DefaultName>
+                            <rd:DefaultName>Textbox2</rd:DefaultName>
                             <Style>
                               <Border>
                                 <Color>LightGrey</Color>
                                 <Style>Solid</Style>
                               </Border>
-                              <BackgroundColor>White</BackgroundColor>
                               <PaddingLeft>2pt</PaddingLeft>
                               <PaddingRight>2pt</PaddingRight>
                               <PaddingTop>2pt</PaddingTop>
@@ -403,17 +589,18 @@
                       <TablixMembers>
                         <TablixMember>
                           <TablixHeader>
-                            <Size>2.22917in</Size>
+                            <Size>0.92431in</Size>
                             <CellContents>
-                              <Textbox Name="Textbox7">
+                              <Textbox Name="Textbox16">
                                 <CanGrow>true</CanGrow>
                                 <KeepTogether>true</KeepTogether>
                                 <Paragraphs>
                                   <Paragraph>
                                     <TextRuns>
                                       <TextRun>
-                                        <Value>Policy Name</Value>
+                                        <Value>Enviornment</Value>
                                         <Style>
+                                          <FontFamily>Arial</FontFamily>
                                           <FontWeight>Bold</FontWeight>
                                         </Style>
                                       </TextRun>
@@ -421,13 +608,12 @@
                                     <Style />
                                   </Paragraph>
                                 </Paragraphs>
-                                <rd:DefaultName>Textbox7</rd:DefaultName>
+                                <rd:DefaultName>Textbox16</rd:DefaultName>
                                 <Style>
                                   <Border>
                                     <Color>LightGrey</Color>
                                     <Style>Solid</Style>
                                   </Border>
-                                  <BackgroundColor>White</BackgroundColor>
                                   <PaddingLeft>2pt</PaddingLeft>
                                   <PaddingRight>2pt</PaddingRight>
                                   <PaddingTop>2pt</PaddingTop>
@@ -444,43 +630,43 @@
                     </TablixMember>
                   </TablixMembers>
                   <KeepWithGroup>After</KeepWithGroup>
-                  <RepeatOnNewPage>true</RepeatOnNewPage>
                 </TablixMember>
                 <TablixMember>
-                  <Group Name="EvaluatedServer">
+                  <Group Name="ApplicationName">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!EvaluatedServer.Value</GroupExpression>
+                      <GroupExpression>=Fields!ApplicationName.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!EvaluatedServer.Value</Value>
+                      <Value>=Fields!ApplicationName.Value</Value>
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
-                    <Size>1.82292in</Size>
+                    <Size>1.81042in</Size>
                     <CellContents>
-                      <Textbox Name="EvaluatedServer1">
+                      <Textbox Name="txtApplicationName">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>=Fields!EvaluatedServer.Value</Value>
-                                <Style />
+                                <Value>=Fields!ApplicationName.Value</Value>
+                                <Style>
+                                  <FontFamily>Arial</FontFamily>
+                                </Style>
                               </TextRun>
                             </TextRuns>
                             <Style />
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>EvaluatedServer1</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
                             <Style>Solid</Style>
                           </Border>
-                          <BackgroundColor>=IIF(RowNumber("Tablix1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                          <BackgroundColor>=IIF(RowNumber("T1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
                           <PaddingLeft>2pt</PaddingLeft>
                           <PaddingRight>2pt</PaddingRight>
                           <PaddingTop>2pt</PaddingTop>
@@ -491,40 +677,32 @@
                   </TablixHeader>
                   <TablixMembers>
                     <TablixMember>
-                      <Group Name="CategoryName">
-                        <GroupExpressions>
-                          <GroupExpression>=Fields!CategoryName.Value</GroupExpression>
-                        </GroupExpressions>
-                      </Group>
-                      <SortExpressions>
-                        <SortExpression>
-                          <Value>=Fields!CategoryName.Value</Value>
-                        </SortExpression>
-                      </SortExpressions>
                       <TablixHeader>
-                        <Size>1.70833in</Size>
+                        <Size>1.71805in</Size>
                         <CellContents>
-                          <Textbox Name="CategoryName">
+                          <Textbox Name="ApplicationOwner">
                             <CanGrow>true</CanGrow>
                             <KeepTogether>true</KeepTogether>
                             <Paragraphs>
                               <Paragraph>
                                 <TextRuns>
                                   <TextRun>
-                                    <Value>=Fields!CategoryName.Value</Value>
-                                    <Style />
+                                    <Value>=Fields!ApplicationOwner.Value</Value>
+                                    <Style>
+                                      <FontFamily>Arial</FontFamily>
+                                    </Style>
                                   </TextRun>
                                 </TextRuns>
                                 <Style />
                               </Paragraph>
                             </Paragraphs>
-                            <rd:DefaultName>CategoryName</rd:DefaultName>
+                            <rd:DefaultName>ApplicationOwner</rd:DefaultName>
                             <Style>
                               <Border>
                                 <Color>LightGrey</Color>
                                 <Style>Solid</Style>
                               </Border>
-                              <BackgroundColor>=IIF(RowNumber("Tablix1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                              <BackgroundColor>=IIF(RowNumber("T1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
                               <PaddingLeft>2pt</PaddingLeft>
                               <PaddingRight>2pt</PaddingRight>
                               <PaddingTop>2pt</PaddingTop>
@@ -535,57 +713,42 @@
                       </TablixHeader>
                       <TablixMembers>
                         <TablixMember>
-                          <Group Name="PolicyName">
+                          <Group Name="SQLInstanceEnviornment">
                             <GroupExpressions>
-                              <GroupExpression>=Fields!PolicyName.Value</GroupExpression>
+                              <GroupExpression>=Fields!SQLInstanceEnviornment.Value</GroupExpression>
                             </GroupExpressions>
                           </Group>
                           <SortExpressions>
                             <SortExpression>
-                              <Value>=Fields!PolicyName.Value</Value>
+                              <Value>=Fields!SQLInstanceEnviornment.Value</Value>
                             </SortExpression>
                           </SortExpressions>
                           <TablixHeader>
-                            <Size>2.22917in</Size>
+                            <Size>0.92431in</Size>
                             <CellContents>
-                              <Textbox Name="PolicyName1">
+                              <Textbox Name="SQLInstanceEnviornment">
                                 <CanGrow>true</CanGrow>
                                 <KeepTogether>true</KeepTogether>
                                 <Paragraphs>
                                   <Paragraph>
                                     <TextRuns>
                                       <TextRun>
-                                        <Value>=Fields!PolicyName.Value</Value>
+                                        <Value>=Fields!SQLInstanceEnviornment.Value</Value>
                                         <Style>
-                                          <TextDecoration>Underline</TextDecoration>
-                                          <Color>CornflowerBlue</Color>
+                                          <FontFamily>Arial</FontFamily>
                                         </Style>
                                       </TextRun>
                                     </TextRuns>
                                     <Style />
                                   </Paragraph>
                                 </Paragraphs>
-                                <rd:DefaultName>PolicyName1</rd:DefaultName>
-                                <ActionInfo>
-                                  <Actions>
-                                    <Action>
-                                      <Drillthrough>
-                                        <ReportName>Configuration Policy Info</ReportName>
-                                        <Parameters>
-                                          <Parameter Name="PolicyID">
-                                            <Value>=Fields!Policy_ID.Value</Value>
-                                          </Parameter>
-                                        </Parameters>
-                                      </Drillthrough>
-                                    </Action>
-                                  </Actions>
-                                </ActionInfo>
+                                <rd:DefaultName>SQLInstanceEnviornment</rd:DefaultName>
                                 <Style>
                                   <Border>
                                     <Color>LightGrey</Color>
                                     <Style>Solid</Style>
                                   </Border>
-                                  <BackgroundColor>=IIF(RowNumber("Tablix1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
+                                  <BackgroundColor>=IIF(RowNumber("T1") MOD 2,"White","WhiteSmoke")</BackgroundColor>
                                   <PaddingLeft>2pt</PaddingLeft>
                                   <PaddingRight>2pt</PaddingRight>
                                   <PaddingTop>2pt</PaddingTop>
@@ -596,17 +759,58 @@
                           </TablixHeader>
                           <TablixMembers>
                             <TablixMember>
+                              <KeepWithGroup>After</KeepWithGroup>
+                            </TablixMember>
+                            <TablixMember>
                               <Group Name="Details" />
-                              <SortExpressions>
-                                <SortExpression>
-                                  <Value>=Fields!EvaluatedServer.Value</Value>
-                                </SortExpression>
-                                <SortExpression>
-                                  <Value>=Fields!ObjectName.Value</Value>
-                                </SortExpression>
-                              </SortExpressions>
+                              <Visibility>
+                                <Hidden>true</Hidden>
+                                <ToggleItem>SQLInstanceEnviornment</ToggleItem>
+                              </Visibility>
                             </TablixMember>
                           </TablixMembers>
+                          <Visibility>
+                            <Hidden>true</Hidden>
+                            <ToggleItem>txtApplicationName</ToggleItem>
+                          </Visibility>
+                        </TablixMember>
+                        <TablixMember>
+                          <TablixHeader>
+                            <Size>0.92431in</Size>
+                            <CellContents>
+                              <Textbox Name="Textbox20">
+                                <CanGrow>true</CanGrow>
+                                <KeepTogether>true</KeepTogether>
+                                <Paragraphs>
+                                  <Paragraph>
+                                    <TextRuns>
+                                      <TextRun>
+                                        <Value>Total</Value>
+                                        <Style>
+                                          <FontFamily>Arial</FontFamily>
+                                          <FontWeight>Bold</FontWeight>
+                                        </Style>
+                                      </TextRun>
+                                    </TextRuns>
+                                    <Style />
+                                  </Paragraph>
+                                </Paragraphs>
+                                <rd:DefaultName>Textbox20</rd:DefaultName>
+                                <Style>
+                                  <Border>
+                                    <Color>LightGrey</Color>
+                                    <Style>Solid</Style>
+                                  </Border>
+                                  <BackgroundColor>Gainsboro</BackgroundColor>
+                                  <PaddingLeft>2pt</PaddingLeft>
+                                  <PaddingRight>2pt</PaddingRight>
+                                  <PaddingTop>2pt</PaddingTop>
+                                  <PaddingBottom>2pt</PaddingBottom>
+                                </Style>
+                              </Textbox>
+                            </CellContents>
+                          </TablixHeader>
+                          <KeepWithGroup>Before</KeepWithGroup>
                         </TablixMember>
                       </TablixMembers>
                     </TablixMember>
@@ -614,11 +818,11 @@
                 </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
-            <DataSetName>report_ObjectDetails</DataSetName>
-            <Top>0.00472in</Top>
+            <DataSetName>ApplicationDetails</DataSetName>
+            <Top>0.025in</Top>
             <Left>0.0125in</Left>
-            <Height>0.46875in</Height>
-            <Width>10in</Width>
+            <Height>1in</Height>
+            <Width>11.25in</Width>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -626,13 +830,13 @@
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>0.4943in</Height>
+        <Height>1.05625in</Height>
         <Style />
       </Body>
-      <Width>10.03125in</Width>
+      <Width>11.29375in</Width>
       <Page>
         <PageHeader>
-          <Height>0.41777in</Height>
+          <Height>0.41305in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -666,8 +870,7 @@
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
-              <Top>0.00472in</Top>
-              <Left>8.17708in</Left>
+              <Left>9.43958in</Left>
               <Height>0.21528in</Height>
               <Width>1.82292in</Width>
               <ZIndex>1</ZIndex>
@@ -700,8 +903,8 @@
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox10</rd:DefaultName>
-              <Top>0.24778in</Top>
-              <Left>8.16319in</Left>
+              <Top>0.24306in</Top>
+              <Left>9.42569in</Left>
               <Height>0.16999in</Height>
               <Width>1.82292in</Width>
               <ZIndex>2</ZIndex>
@@ -722,7 +925,7 @@
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>SQL Configuration Health Details</Value>
+                      <Value>Applications</Value>
                       <Style>
                         <FontFamily>Arial Black</FontFamily>
                         <FontSize>14pt</FontSize>
@@ -738,7 +941,7 @@
               <rd:DefaultName>Textbox5</rd:DefaultName>
               <Left>1.82292in</Left>
               <Height>0.41305in</Height>
-              <Width>6.35416in</Width>
+              <Width>7.61666in</Width>
               <ZIndex>3</ZIndex>
               <Style>
                 <Border>
@@ -768,41 +971,21 @@
     </ReportSection>
   </ReportSections>
   <ReportParameters>
-    <ReportParameter Name="PolicyName">
+    <ReportParameter Name="ApplicationName">
       <DataType>String</DataType>
-      <Prompt>PolicyName</Prompt>
-      <Hidden>true</Hidden>
-    </ReportParameter>
-    <ReportParameter Name="PolicyResult">
-      <DataType>String</DataType>
-      <Prompt>PolicyResult</Prompt>
-      <Hidden>true</Hidden>
-    </ReportParameter>
-    <ReportParameter Name="CategoryName">
-      <DataType>String</DataType>
-      <Prompt>CategoryName</Prompt>
+      <Prompt>ApplicationName</Prompt>
       <Hidden>true</Hidden>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>3</NumberOfColumns>
-      <NumberOfRows>1</NumberOfRows>
+      <NumberOfColumns>4</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>PolicyName</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>PolicyResult</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>2</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>CategoryName</ParameterName>
+          <ParameterName>ApplicationName</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
@@ -810,5 +993,5 @@
   <Language>en-US</Language>
   <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
   <rd:ReportUnitType>Inch</rd:ReportUnitType>
-  <rd:ReportID>73018d29-33c5-4752-bd80-b64ac82a869e</rd:ReportID>
+  <rd:ReportID>9c36f318-ae4d-4f66-a40e-6b9188870972</rd:ReportID>
 </Report>
