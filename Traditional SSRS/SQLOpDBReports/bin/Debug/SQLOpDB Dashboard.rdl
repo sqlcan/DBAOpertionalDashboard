@@ -1948,6 +1948,7 @@ OR @Status = 'Both')</CommandText>
                           </Actions>
                         </ActionInfo>
                       </ChartDataLabel>
+                      <ToolTip>=Fields!JobStatus.Value</ToolTip>
                       <ActionInfo>
                         <Actions>
                           <Action>
@@ -2347,6 +2348,7 @@ OR @Status = 'Both')</CommandText>
                           </Actions>
                         </ActionInfo>
                       </ChartDataLabel>
+                      <ToolTip>=Fields!VolumeOfChangeCategory.Value</ToolTip>
                       <ActionInfo>
                         <Actions>
                           <Action>
@@ -2369,7 +2371,6 @@ OR @Status = 'Both')</CommandText>
                     </ChartDataPoint>
                   </ChartDataPoints>
                   <Type>Shape</Type>
-                  <Subtype>Doughnut</Subtype>
                   <Style />
                   <ChartEmptyPoints>
                     <Style />

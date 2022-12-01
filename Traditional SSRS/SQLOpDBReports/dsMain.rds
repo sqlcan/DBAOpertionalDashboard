@@ -2,7 +2,7 @@
 <RptDataSource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="dsMain">
   <ConnectionProperties>
     <Extension>SQL</Extension>
-    <ConnectString>Data Source=SQLCMS;Initial Catalog=SQLOpsDB</ConnectString>
+    <ConnectString>Data Source=SQLCMS;Initial Catalog=SQLOpsDB_Main</ConnectString>
     <IntegratedSecurity>true</IntegratedSecurity>
   </ConnectionProperties>
   <DataSourceID>a92dd8b8-e524-4634-b662-5dc799a8668c</DataSourceID>

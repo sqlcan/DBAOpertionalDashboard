@@ -179,52 +179,64 @@ Write-Status -Level 2 -Message "Deploy the policies located in [$Solution_SQLPol
 Write-Status -Level 2 -Message "If you have existing policies deployed these are not required.  However, verify the policy categories do match in the 'EPM\EPMExecution.ps1'" -Color "White"
 Write-Status -Level 2 -Message "Press Enter to continue deployment." -Color "Yellow"
 Read-Host
-Write-Status -Level 1 -Message "Deploying SQL Scripts to [$ServerInstance]" -Color "White"
-$TotalSQLFiles = ((Get-ChildItem -Path $Solution_DatabaseScripts) | Measure-Object).Count
-Write-Status -Level 2 -Message "Total SQL Scripts found: $TotalSQLFiles" -Color "Gray"
-Write-Status -Level 2 -Message "Starting deployment" -Color "White"
-$SQLFiles = Get-ChildItem -Path $Solution_DatabaseScripts -Filter *.sql
-ForEach ($SQLFile in $SQLFiles)
+
+Write-Status -Level 1 -Message "Checking of [SQLOpsDB] exists on [$ServerInstance]" -Color "White"
+$Results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Database master -Query "SELECT COUNT(*) DBCount FROM sys.databases WHERE name = 'SQLOpsDB'"
+
+if ($Results.DBCount -eq 0)
 {
-    $SQLFileName = $SQLFile.FullName  
-    $Decision = 0
+	Write-Status -Level 2 -Message "New database ..." -Color "White"	
+	Write-Status -Level 1 -Message "Deploying SQL Scripts to [$ServerInstance]" -Color "White"
+	$TotalSQLFiles = ((Get-ChildItem -Path $Solution_DatabaseScripts) | Measure-Object).Count
+	Write-Status -Level 2 -Message "Total SQL Scripts found: $TotalSQLFiles" -Color "Gray"
+	Write-Status -Level 2 -Message "Starting deployment" -Color "White"
+	$SQLFiles = Get-ChildItem -Path $Solution_DatabaseScripts -Filter *.sql
+	ForEach ($SQLFile in $SQLFiles)
+	{
+		$SQLFileName = $SQLFile.FullName  
+		$Decision = 0
 
-    if ($SQLFileName -like '*_Ask*')
-    {
-        Write-Status -Level 3 -Message "[$SQLFileName] has been marked optional." -Color "Yellow"
-        $Decision = $Host.UI.PromptForChoice('Do you want to run the optional script? If not sure refer to GitHub for details.','Should the script be deployed?',@('&Yes','&No'),1)
-    }
+		if ($SQLFileName -like '*_Ask*')
+		{
+			Write-Status -Level 3 -Message "[$SQLFileName] has been marked optional." -Color "Yellow"
+			$Decision = $Host.UI.PromptForChoice('Do you want to run the optional script? If not sure refer to GitHub for details.','Should the script be deployed?',@('&Yes','&No'),1)
+		}
 
-    if ($Decision -eq 0)
-    {
-        Write-Status -Level 3 -Message "Deploying [$SQLFileName]." -Color "Yellow"
+		if ($Decision -eq 0)
+		{
+			Write-Status -Level 3 -Message "Deploying [$SQLFileName]." -Color "Yellow"
 
-        try
-        {        
-            Invoke-Sqlcmd -ServerInstance $ServerInstance -Database master -InputFile $SQLFileName
-        }
-        catch
-        {
-            Write-Status -Level 4 -Message "Script failed [$SQLFileName]." -Color "Red"
-        }
-    }
-}
-Write-Status -Level 2 -Message "Database Deployment Completed." -Color "Green"
+			try
+			{        
+				Invoke-Sqlcmd -ServerInstance $ServerInstance -Database master -InputFile $SQLFileName
+			}
+			catch
+			{
+				Write-Status -Level 4 -Message "Script failed [$SQLFileName]." -Color "Red"
+			}
+		}
+	}
+	Write-Status -Level 2 -Message "Database Deployment Completed." -Color "Green"
 
-if ($ReportLogo -eq "SQLCanadaLogo.png")
-{
-    $LogoFile = Join-Path $Solution_Logo $ReportLogo
+	if ($ReportLogo -eq "SQLCanadaLogo.png")
+	{
+		$LogoFile = Join-Path $Solution_Logo $ReportLogo
+	}
+	else
+	{
+		$LogoFile = $ReportLogo
+	}
+	Write-Status -Level 1 -Message "Deploying Report Logo." -Color "White"
+	$TSQL = "INSERT INTO Reporting.ReportLogo (LogoFileName, LogoFileType, LogoFile)
+			 SELECT 'DefaultReportLogo', 'png', (SELECT * FROM OPENROWSET(BULK '$LogoFile', SINGLE_BLOB) AS ReadFile) LogFile"
+	Invoke-Sqlcmd -ServerInstance $ServerInstance -Database SQLOpsDB -Query $TSQL
+
+	Write-Status -Level 2 -Message "Report Logo Deployed." -Color "Green"
 }
 else
 {
-    $LogoFile = $ReportLogo
+	Write-Status -Level 2 -Message "Database already exists.  Database will not be deployed." -Color "Yellow"
 }
-Write-Status -Level 1 -Message "Deploying Report Logo." -Color "White"
-$TSQL = "INSERT INTO Reporting.ReportLogo (LogoFileName, LogoFileType, LogoFile)
-	     SELECT 'DefaultReportLogo', 'png', (SELECT * FROM OPENROWSET(BULK '$LogoFile', SINGLE_BLOB) AS ReadFile) LogFile"
-Invoke-Sqlcmd -ServerInstance $ServerInstance -Database SQLOpsDB -Query $TSQL
-
-Write-Status -Level 2 -Message "Report Logo Deployed." -Color "Green"
 
 Write-Status -Level 1 -Message "Deploying the PowerShell Solution." -Color "White"
 Copy-Item -Path $Solution_PowershellScripts -Destination $DeploymentLocation -Recurse -Force
@@ -250,7 +262,7 @@ if ($Decision -eq 0)
 
         $CollectionScript = Join-Path $DeploymentLocation "PowerShell\CollectionScript\SQLOpsDB_DataCollection.ps1"
 	    $taskAction = New-ScheduledTaskAction -Execute 'powershell.exe' `
-	    -Argument "-File `"$CollectionScript`" -ExecutionPolicy ByPass" `
+	    -Argument "-ExecutionPolicy Bypass -File `"$CollectionScript`" " `
 	    -WorkingDirectory "$(Join-Path $DeploymentLocation "PowerShell\CollectionScript")"
 
 	    Register-ScheduledTask -TaskName 'SQLOpsDB.DataCollection' `
@@ -274,7 +286,7 @@ if ($Decision -eq 0)
 
         $CollectionScript = Join-Path $DeploymentLocation "PowerShell\EPM\EPMExecution.ps1"
 	    $taskAction = New-ScheduledTaskAction -Execute 'powershell.exe' `
-	    -Argument "-File `"$CollectionScript`" -IsDailyCheck -CentralManagementServer `"$ServerInstance`" -ExecutionPolicy ByPass" `
+	    -Argument "-ExecutionPolicy ByPass -File `"$CollectionScript`" -IsDailyRun" `
 	    -WorkingDirectory "$(Join-Path $DeploymentLocation "PowerShell\EPM")"
 
 	    Register-ScheduledTask -TaskName 'SQLOpsDB.ConfigurationHealth.Daily' `
@@ -298,7 +310,7 @@ if ($Decision -eq 0)
 
         $CollectionScript = Join-Path $DeploymentLocation "PowerShell\EPM\EPMExecution.ps1"
 	    $taskAction = New-ScheduledTaskAction -Execute 'powershell.exe' `
-	    -Argument "-File `"$CollectionScript`" -CentralManagementServer `"$ServerInstance`" -ExecutionPolicy ByPass" `
+	    -Argument "-ExecutionPolicy ByPass -File `"$CollectionScript`"" `
 	    -WorkingDirectory "$(Join-Path $DeploymentLocation "PowerShell\EPM")"
 
 	    Register-ScheduledTask -TaskName 'SQLOpsDB.ConfigurationHealth.Weekly' `
