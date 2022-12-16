@@ -764,9 +764,6 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>ServerMembershipsAndLogins</DataSetName>
-            <PageBreak>
-              <BreakLocation>End</BreakLocation>
-            </PageBreak>
             <Top>0.26695in</Top>
             <Left>0.0125in</Left>
             <Height>0.5in</Height>
@@ -1470,8 +1467,7 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
             </TablixRowHierarchy>
             <RepeatRowHeaders>true</RepeatRowHeaders>
             <DataSetName>DatabaseExplicitPermissions</DataSetName>
-            <Top>1.05771in</Top>
-            <Left>0.00625in</Left>
+            <Top>1.30771in</Top>
             <Height>0.5in</Height>
             <Width>12.91052in</Width>
             <ZIndex>2</ZIndex>
@@ -1500,7 +1496,7 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox5</rd:DefaultName>
-            <Top>0.8064in</Top>
+            <Top>1.0564in</Top>
             <Left>0.01562in</Left>
             <Height>0.22555in</Height>
             <Width>12.90114in</Width>
@@ -1529,8 +1525,24 @@ AND (((SP.IsArchived = 1) AND (@Status = 'Audit')) OR
               <PaddingBottom>2pt</PaddingBottom>
             </Style>
           </Textbox>
+          <Rectangle Name="dummyPageBreak">
+            <PageBreak>
+              <BreakLocation>End</BreakLocation>
+            </PageBreak>
+            <KeepTogether>true</KeepTogether>
+            <Top>0.7732in</Top>
+            <Left>0.01958in</Left>
+            <Height>0.28451in</Height>
+            <Width>0.19792in</Width>
+            <ZIndex>4</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Rectangle>
         </ReportItems>
-        <Height>1.58834in</Height>
+        <Height>1.82854in</Height>
         <Style />
       </Body>
       <Width>12.91677in</Width>

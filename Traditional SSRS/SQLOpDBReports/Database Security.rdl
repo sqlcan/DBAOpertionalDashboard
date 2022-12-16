@@ -938,9 +938,6 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DatabaseMembershipsAndUsers</DataSetName>
-            <PageBreak>
-              <BreakLocation>End</BreakLocation>
-            </PageBreak>
             <Top>0.26695in</Top>
             <Left>0.0125in</Left>
             <Height>0.5in</Height>
@@ -1664,7 +1661,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
             </TablixRowHierarchy>
             <RepeatRowHeaders>true</RepeatRowHeaders>
             <DataSetName>DatabaseExplicitPermissions</DataSetName>
-            <Top>1.04521in</Top>
+            <Top>1.32021in</Top>
             <Left>0.00625in</Left>
             <Height>0.5in</Height>
             <Width>12.90426in</Width>
@@ -1694,7 +1691,7 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox5</rd:DefaultName>
-            <Top>0.79494in</Top>
+            <Top>1.05744in</Top>
             <Height>0.22555in</Height>
             <Width>12.91676in</Width>
             <ZIndex>3</ZIndex>
@@ -1722,8 +1719,23 @@ AND (((DP.IsArchived = 1) AND (@Status = 'Audit')) OR
               <PaddingBottom>2pt</PaddingBottom>
             </Style>
           </Textbox>
+          <Rectangle Name="dummyPageBreaker">
+            <PageBreak>
+              <BreakLocation>End</BreakLocation>
+            </PageBreak>
+            <KeepTogether>true</KeepTogether>
+            <Top>0.78362in</Top>
+            <Height>0.26159in</Height>
+            <Width>0.12833in</Width>
+            <ZIndex>4</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Rectangle>
         </ReportItems>
-        <Height>1.59875in</Height>
+        <Height>1.82021in</Height>
         <Style />
       </Body>
       <Width>12.91676in</Width>
