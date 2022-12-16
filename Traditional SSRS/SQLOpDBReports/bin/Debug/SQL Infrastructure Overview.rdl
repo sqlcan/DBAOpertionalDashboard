@@ -378,7 +378,7 @@ AND SI.LastUpdated &gt;= DATEADD(DAY,-1,GETDATE())</CommandText>
                               <ReportName>SQL Instances</ReportName>
                               <Parameters>
                                 <Parameter Name="SQLServerVersion">
-                                  <Value>=First(Fields!SQLVersion.Value, "gSQLInstanceSummary")</Value>
+                                  <Value>=Fields!SQLVersion.Value</Value>
                                 </Parameter>
                                 <Parameter Name="Environment">
                                   <Value>=Fields!SQLInstanceEnviornment.Value</Value>
