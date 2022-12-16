@@ -21,15 +21,22 @@
             <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>SELECT CategoryName
-      ,PSN.Policy_ShortName
+        <CommandText>IF EXISTS (SELECT 1 FROM Policy.PolicyHistorySummary WHERE policy_id NOT IN (SELECT Policy_ID FROM Policy.PolicyShortName))
+BEGIN
+	INSERT INTO dbo.Logs
+	SELECT DISTINCT GETDATE(), 0, 'Warning: ' + PolicyName + ' [Policy ID: ' + CAST(policy_id AS VARCHAR) + '] is missing short name.  Defaulting to full name.'
+	  FROM Policy.PolicyHistorySummary WHERE policy_id NOT IN (SELECT Policy_ID FROM Policy.PolicyShortName)
+END
+
+SELECT CategoryName
+      ,CASE WHEN (PSN.Policy_ShortName IS NULL) THEN PHS.PolicyName ELSE PSN.Policy_ShortName END AS Policy_ShortName
       ,PolicyName
       ,EvaluatedServer
       ,ObjectName
       ,EvaluationDateTime
       ,PolicyResult
   FROM Policy.PolicyHistorySummary PHS
-  JOIN Policy.PolicyShortName PSN
+  LEFT JOIN Policy.PolicyShortName PSN
     ON PHS.policy_id = PSN.Policy_ID
  WHERE ((CategoryName LIKE '%' + @CategoryName) OR (@CategoryName = 'ALL'))
  AND ((PolicyResult LIKE '%' + @PolicyResult) OR (@PolicyResult= 'ALL'))

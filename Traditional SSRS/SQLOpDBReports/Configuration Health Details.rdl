@@ -24,16 +24,16 @@
           </QueryParameter>
         </QueryParameters>
         <CommandText>SELECT CategoryName
-      ,PSN.Policy_ID
+      ,PHS.Policy_ID
       ,PolicyName
       ,EvaluatedServer
       ,ObjectName
       ,EvaluationDateTime
       ,PolicyResult
   FROM Policy.PolicyHistorySummary PHS
-  JOIN Policy.PolicyShortName PSN
+  LEFT JOIN Policy.PolicyShortName PSN
     ON PHS.policy_id = PSN.Policy_ID
- WHERE PSN.Policy_ShortName = @PolicyName
+ WHERE (PSN.Policy_ShortName = @PolicyName OR PHS.PolicyName = @PolicyName)
    AND PolicyResult = @PolicyResult
    AND CategoryName LIKE '%' + @CategoryName
    AND NOT EXISTS (SELECT *

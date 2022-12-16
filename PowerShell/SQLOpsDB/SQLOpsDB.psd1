@@ -145,6 +145,9 @@
 	'.\Modules\Get-SQLOpCMSServerInstance.psm1';
 	'.\Modules\Get-SQLOpCMSGroups.psm1';	           
 	'.\Modules\Set-SQLOpCMSGroups.psm1';
+	# SQL Policies
+	'.\Modules\Get-SQLOpSQLPolicies.psm1';
+	'.\Modules\Set-SQLOpSQLPolicy.psm1';
 	# Snapshot, Aggregrate, Cleanup Modules
 	'.\Modules\Publish-SQLOpMonthlyAggregate.psm1';
     '.\Modules\Publish-SQLOpTreadData.psm1';

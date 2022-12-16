@@ -5,3 +5,4 @@ Version		Date		Comment
 3.00.00.0002	2022.12.16	Fixed bug #130. Report fixes only.
 3.00.00.0003	2022.12.16	Fixed bug #128. Report fixes only.
 3.00.00.0004	2022.12.16	Fixed bug #131. Update procedure 414.P_History_CreateAggregate.sql.
+3.01.00.0000	2022.12.16	Finished enhancement #127. PowerShell SQLOpDB Module and Report updates.
