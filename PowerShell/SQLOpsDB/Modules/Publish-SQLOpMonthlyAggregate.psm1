@@ -31,6 +31,7 @@ Date       Version Comments
 2022.10.30 0.00.05 Updated command let name with standard "SQLOp".
 2022.11.04 0.00.06 Simplified the command let to create both disk and database
                     aggregate at same time.
+2022.12.16 0.00.07 Fixing logic bug on date range calculation.
 #>
 function Publish-SQLOpMonthlyAggregate
 {
@@ -44,8 +45,8 @@ function Publish-SQLOpMonthlyAggregate
     }
 
     $ModuleName = 'Publish-SQLOpMonthlyAggregate'
-    $ModuleVersion = '0.00.06'
-    $ModuleLastUpdated = 'November 4, 2022'
+    $ModuleVersion = '0.00.07'
+    $ModuleLastUpdated = 'December 16, 2022'
 
     try
     {
@@ -55,9 +56,19 @@ function Publish-SQLOpMonthlyAggregate
         $Month = $CurrentDate.Month
         $Year = $CurrentDate.Year
 
-        if ($Month -eq 1)
+		# This procesure ideally should be called on the first of the month.  It might be called in middle
+		# manually.  Each time the Create Aggregate should create aggreagte for previous month only.
+		#
+		# If current = -1, then previous month = 12.
+		#
+		# Start date of aggreagte will be 1st of previous month to last day of previous month.
+		# Calculated in the stored procedure.
+
+		$Month -= 1
+
+        if ($Month -eq 0)
         {
-            $Month = 12
+			$Month = 12
             $Year--
         }
 
