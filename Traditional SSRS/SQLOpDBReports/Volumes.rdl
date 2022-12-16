@@ -681,6 +681,20 @@ SELECT 'Default',0,'&lt;ALL&gt;'</CommandText>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>ComputerName1</rd:DefaultName>
+                          <ActionInfo>
+                            <Actions>
+                              <Action>
+                                <Drillthrough>
+                                  <ReportName>Server Detail</ReportName>
+                                  <Parameters>
+                                    <Parameter Name="ComputerName">
+                                      <Value>=Fields!ComputerName.Value</Value>
+                                    </Parameter>
+                                  </Parameters>
+                                </Drillthrough>
+                              </Action>
+                            </Actions>
+                          </ActionInfo>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
